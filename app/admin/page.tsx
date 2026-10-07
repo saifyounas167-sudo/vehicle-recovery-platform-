@@ -1,3 +1,7 @@
+import { requireRole } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
+
 const modules = [
   ["Driver approvals", "Review recovery professionals, documents and approval status.", "Pending"],
   ["Live recovery jobs", "Monitor submitted, offered, assigned and in-progress jobs.", "Monitor"],
@@ -7,7 +11,8 @@ const modules = [
   ["Platform activity", "Maintain a clear operational view for the marketplace.", "Audit"],
 ];
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  await requireRole("admin");
   return (
     <main className="dashboard-shell">
       <header className="dashboard-header"><div className="container dashboard-nav"><div><p className="dashboard-kicker">Platform operations</p><h1>Admin dashboard</h1></div><span className="badge dark">Protected area foundation</span></div></header>
