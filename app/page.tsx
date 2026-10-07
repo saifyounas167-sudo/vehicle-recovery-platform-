@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { CSSProperties, FormEvent, useState } from "react";
 import InstallAppButton from "./install-app-button";
 import PublicHeader from "./components/public-header";
 
 const services=[["⚡","Breakdown Recovery"],["!","Accident Recovery"],["↔","Vehicle Transport"],["↗","Car Towing"],["+","Jump Start"],["○","Flat Tyre Assistance"],["◇","Motorbike Recovery"],["▰","Van Recovery"]];
+// Replace this single URL later with the approved UK Recovery hero image.
+const HERO_BACKGROUND_IMAGE="https://images.unsplash.com/photo-1699542108036-1c11c6ee0da3?auto=format&fit=crop&q=82&w=2400";
 const steps=[["01","REQUEST RECOVERY","Enter pickup, destination and vehicle details."],["02","GET AN ESTIMATE","See an estimated recovery price."],["03","RECEIVE DRIVER OFFERS","Nearby verified recovery companies send price + ETA."],["04","CHOOSE YOUR DRIVER","Compare offers and select the company you prefer."],["05","RECOVERY COMPLETED","Your selected driver completes the recovery."]];
 export default function HomePage(){
  const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [locationText,setLocationText]=useState("");
@@ -12,16 +14,17 @@ export default function HomePage(){
  function locate(){if(!navigator.geolocation){setLocationText("Location is not available on this device.");return}setLocationText("Finding your location…");navigator.geolocation.getCurrentPosition(({coords})=>{const v=coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5);setPickup(v);setLocationText("Current location captured.")},()=>setLocationText("Location permission was not granted."))}
  return <main className="uk-home">
   <PublicHeader/>
-  <section className="uk-hero"><div className="uk-hero-shade"/><div className="uk-hero-inner">
-   <div className="uk-hero-copy"><span className="uk-kicker">UK-WIDE VEHICLE RECOVERY MARKETPLACE</span><h1>Need Vehicle Recovery?<br/><em>Get Help From Trusted Local Professionals.</em></h1><p>Request recovery in minutes, get an estimated price and compare offers from verified recovery companies near you.</p>
-    <div className="uk-hero-account"><Link href="/login?mode=signup">CREATE ACCOUNT</Link><span>Already registered? <Link href="/login">LOG IN</Link></span><Link href="/driver/register">ARE YOU A RECOVERY DRIVER? <b>JOIN AS A DRIVER →</b></Link></div>
-   </div>
-   <form className="quote-panel" onSubmit={quote}><div className="quote-top"><span>GET RECOVERY HELP</span><b>Start with your journey</b></div>
-    <label>Pickup Location<input value={pickup} onChange={e=>setPickup(e.target.value)} placeholder="Enter pickup postcode" required/></label>
-    <button type="button" className="use-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
-    <label>Destination<input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Enter destination postcode" required/></label>
-    <button className="estimate-cta">GET RECOVERY ESTIMATE <span>→</span></button>
-    <div className="quote-trust"><span>✓ Verified Recovery Companies</span><span>✓ UK-Wide Coverage</span><span>✓ Compare Driver Offers</span><span>✓ Available 24/7</span></div>
+  <section className="uk-hero uk-hero-photo" style={{"--hero-image":`url("${HERO_BACKGROUND_IMAGE}")`} as CSSProperties}><div className="uk-hero-shade"/><div className="uk-hero-inner hero-reference-layout">
+   <div className="uk-hero-copy"><span className="uk-kicker hero-trust-badge">★ UK-WIDE VEHICLE RECOVERY MARKETPLACE</span><h1>Vehicle Recovery<br/><em>Made Simple</em></h1><p>Request recovery, get an estimated price and compare offers from verified recovery professionals near you.</p></div>
+   <form className="quote-panel hero-quote-panel" onSubmit={quote}>
+    <div className="hero-quote-grid">
+     <label><span>Pickup postcode</span><div className="hero-input-wrap"><b>⌖</b><input value={pickup} onChange={e=>setPickup(e.target.value)} placeholder="Enter pickup postcode" required/></div></label>
+     <label><span>Drop-off postcode</span><div className="hero-input-wrap"><b>●</b><input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Enter destination postcode" required/></div></label>
+    </div>
+    <button type="button" className="use-location hero-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
+    <button className="estimate-cta hero-estimate">GET RECOVERY ESTIMATE <span>→</span></button>
+    <Link href="/recovery/request" className="hero-secondary">START RECOVERY REQUEST</Link>
+    <p className="hero-market-note">Estimate first → post your request → compare nearby driver offers → choose your preferred recovery professional.</p>
    </form>
   </div></section>
 
