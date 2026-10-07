@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export default async function DriverPage() {
   const { user } = await requireRole("driver");
   const supabase = await createClient();
