@@ -1,28 +1,87 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-const recoveryTypes=["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"];
-const stages=["Location","Vehicle","Service","Problem","Details","Quote"];
+const steps=["Location","Vehicle","Recovery","Details"];
+const services=["Breakdown","Accident","Transport","Towing","Other assistance"];
 
 export default function RecoveryRequestPage(){
- const [locationStatus,setLocationStatus]=useState(""); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
- function useCurrentLocation(){if(!navigator.geolocation)return setLocationStatus("GPS is not supported on this device.");setLocationStatus("Requesting your location…");navigator.geolocation.getCurrentPosition(({coords})=>setLocationStatus("Location captured: "+coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5)),()=>setLocationStatus("Location permission was not granted."));}
- async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setError("");setBusy(true);const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user){window.location.href="/login?reason=auth&next=/recovery/request";return;}const form=new FormData(e.currentTarget);const payload=Object.fromEntries(form.entries());const res=await fetch("/api/recovery/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,urgent:form.get("urgent")==="on"})});if(!res.ok){const body=await res.json().catch(()=>({}));setError(body.error||"We could not submit the recovery request.");setBusy(false);return;}const body=await res.json();window.location.href="/customer?submitted="+body.job.id;}
- return <main className="page-shell"><div className="page-card"><span className="eyebrow">Customer recovery request</span><h1>Tell us what happened.</h1><p>Start with your location, then add the vehicle and recovery details needed for an estimated quote.</p><div className="request-steps" aria-label="Recovery request stages">{stages.map((stage,index)=><span key={stage}><b>{String(index+1).padStart(2,"0")}</b>{stage}</span>)}</div>{error&&<div className="alert error">{error}</div>}<form className="form-grid" onSubmit={submit}>
- <label>Recovery service<select name="recoveryType" defaultValue="" required><option value="" disabled>Select a service</option>{recoveryTypes.map(x=><option key={x}>{x}</option>)}</select></label>
- <div className="two-column"><label>Pickup postcode<input name="pickupPostcode" autoComplete="postal-code" placeholder="e.g. M1 1AA" required /></label><div className="form-action"><span>At the roadside?</span><button type="button" className="button secondary" onClick={useCurrentLocation}>Use current GPS</button></div></div>
- {locationStatus&&<p className="location-status">{locationStatus}</p>}
- <label>Destination postcode <small>Optional for local roadside assistance.</small><input name="destinationPostcode" autoComplete="postal-code" placeholder="e.g. B1 1AA" /></label>
- <div className="two-column"><label>Vehicle registration<input name="registration" placeholder="e.g. AB12 CDE" /></label><label>Vehicle type<select name="vehicleType" defaultValue=""><option value="" disabled>Select vehicle type</option><option>Car</option><option>Van</option><option>Motorbike</option><option>Other</option></select></label></div>
- <div className="two-column"><label>Vehicle make<input name="make" /></label><label>Vehicle model<input name="model" /></label></div>
- <div className="two-column"><label>Transmission<select name="transmission" defaultValue=""><option value="" disabled>Select</option><option>Automatic</option><option>Manual</option></select></label><label>Running status<select name="runningStatus" defaultValue=""><option value="" disabled>Select</option><option>Running</option><option>Non-running</option></select></label></div>
- <label>Problem / vehicle condition<small>Include locked wheels, damage, accident details or access difficulties if relevant.</small><textarea name="problemDescription" rows={5} placeholder="Tell us what happened and any recovery difficulties." /></label>
- <div className="two-column"><label>Collection timing<select name="timing" defaultValue=""><option value="" disabled>Select timing</option><option>As soon as possible</option><option>Scheduled</option></select></label><label>Preferred collection time<input type="datetime-local" name="preferredCollectionTime" /></label></div>
- <label className="checkbox-row"><input type="checkbox" name="urgent" /><span>Mark this as an urgent recovery request</span></label><div className="form-divider" />
- <div><span className="form-section-title">Your contact details</span><p className="form-help">These details are associated with your authenticated customer account.</p></div>
- <div className="two-column"><label>Your name<input name="customerName" autoComplete="name" /></label><label>Phone<input name="phone" type="tel" autoComplete="tel" /></label></div>
- <label>Email<input name="email" type="email" autoComplete="email" /></label>
- <button type="submit" className="button primary button-large" disabled={busy}>{busy?"Submitting recovery…":"Continue to estimated quote →"}</button>
- </form><div className="estimate-note"><strong>Estimate only.</strong> Final pricing can change after driver assessment and confirmed job details.</div></div></main>;
+  const [step,setStep]=useState(0);
+  const [locationStatus,setLocationStatus]=useState("");
+  const [runningStatus,setRunningStatus]=useState("");
+  const [service,setService]=useState("");
+  const [error,setError]=useState("");
+  const [busy,setBusy]=useState(false);
+  const progress=useMemo(()=>((step+1)/steps.length)*100,[step]);
+
+  function useCurrentLocation(){
+    if(!navigator.geolocation)return setLocationStatus("GPS is not supported on this device.");
+    setLocationStatus("Finding your location…");
+    navigator.geolocation.getCurrentPosition(
+      ({coords})=>setLocationStatus("Location captured: "+coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5)),
+      ()=>setLocationStatus("Location permission was not granted.")
+    );
+  }
+
+  function next(){setError("");setStep(s=>Math.min(3,s+1));window.scrollTo({top:0,behavior:"smooth"});}
+  function back(){setError("");setStep(s=>Math.max(0,s-1));window.scrollTo({top:0,behavior:"smooth"});}
+
+  async function submit(e:FormEvent<HTMLFormElement>){
+    e.preventDefault();setError("");setBusy(true);
+    const supabase=createClient();
+    const {data:{user}}=await supabase.auth.getUser();
+    if(!user){window.location.href="/login?reason=auth&next=/recovery/request";return;}
+    const form=new FormData(e.currentTarget);
+    const payload=Object.fromEntries(form.entries());
+    const res=await fetch("/api/recovery/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,recoveryType:service,runningStatus})});
+    if(!res.ok){const body=await res.json().catch(()=>({}));setError(body.error||"We could not post your recovery request.");setBusy(false);return;}
+    const body=await res.json();window.location.href="/customer?submitted="+body.job.id;
+  }
+
+  return <main className="request-wizard-shell">
+    <header className="request-mini-header"><Link href="/" className="brand"><span className="brand-mark"><span>UK</span><i/></span><span><strong>Recovery</strong><small>Vehicle recovery marketplace</small></span></Link><span className="stitch-pill">Fast recovery request</span></header>
+    <div className="request-wizard">
+      <div className="wizard-progress"><div className="wizard-progress-top"><span>Step {step+1} of 4</span><strong>{steps[step]}</strong></div><div className="wizard-track"><i style={{width:progress+"%"}}/></div></div>
+      <form onSubmit={submit}>
+        {error&&<div className="alert error">{error}</div>}
+
+        {step===0&&<section className="wizard-step">
+          <div className="eyebrow">Step 1 · Location</div><h1>Where is the vehicle?</h1><p>Tell us where to collect it and where it needs to go.</p>
+          <label>Pickup postcode or location<input name="pickupPostcode" autoComplete="postal-code" placeholder="e.g. M1 1AA" required /></label>
+          <button type="button" className="location-button" onClick={useCurrentLocation}>⌖ Use my current location</button>
+          {locationStatus&&<p className="location-status">{locationStatus}</p>}
+          <label>Destination postcode or location<input name="destinationPostcode" autoComplete="postal-code" placeholder="Where should we take it?" required /></label>
+          <button type="button" className="button primary button-large wizard-main" onClick={next}>Continue →</button>
+        </section>}
+
+        {step===1&&<section className="wizard-step">
+          <div className="eyebrow">Step 2 · Vehicle</div><h1>Which vehicle needs help?</h1><p>We only need the basics. Vehicle data can be filled automatically when the vehicle API is connected.</p>
+          <label>Vehicle registration<input name="registration" placeholder="e.g. AB12 CDE" /></label>
+          <label>Vehicle type<select name="vehicleType" defaultValue=""><option value="">Select vehicle type</option><option>Car</option><option>Van</option><option>Motorbike</option><option>Other</option></select></label>
+          <fieldset className="choice-field"><legend>Can the vehicle move under its own power?</legend><div className="choice-grid"><label className={runningStatus==="Running"?"choice active":"choice"}><input type="radio" name="runningChoice" value="Running" onChange={()=>setRunningStatus("Running")}/><strong>Running</strong><span>Vehicle can move</span></label><label className={runningStatus==="Non-running"?"choice active":"choice"}><input type="radio" name="runningChoice" value="Non-running" onChange={()=>setRunningStatus("Non-running")}/><strong>Non-running</strong><span>Vehicle cannot move</span></label></div></fieldset>
+          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="button" className="button primary" onClick={next}>Continue →</button></div>
+        </section>}
+
+        {step===2&&<section className="wizard-step">
+          <div className="eyebrow">Step 3 · Recovery</div><h1>What kind of help do you need?</h1><p>Choose the closest option. We will only ask extra questions when they matter.</p>
+          <div className="service-choice-grid">{services.map(x=><label key={x} className={service===x?"service-choice active":"service-choice"}><input type="radio" name="serviceChoice" value={x} onChange={()=>setService(x)}/><strong>{x}</strong></label>)}</div>
+          {runningStatus==="Non-running"&&<div className="conditional-card"><strong>One quick question</strong><label>Can the vehicle roll freely?<select name="rollingStatus" defaultValue=""><option value="">Select</option><option>Yes</option><option>No / wheels locked</option><option>Not sure</option></select></label></div>}
+          {service==="Accident"&&<div className="conditional-card"><strong>Accident recovery</strong><label>Is the vehicle safely accessible?<select name="accessStatus" defaultValue=""><option value="">Select</option><option>Yes</option><option>No</option><option>Not sure</option></select></label></div>}
+          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="button" className="button primary" onClick={next}>Continue →</button></div>
+        </section>}
+
+        {step===3&&<section className="wizard-step">
+          <div className="eyebrow">Step 4 · Details & estimate</div><h1>Almost done.</h1><p>Add your contact details and anything important the recovery professional should know.</p>
+          <label>Your name<input name="customerName" autoComplete="name" /></label>
+          <label>Mobile number<input name="phone" type="tel" autoComplete="tel" /></label>
+          <label>Email<input name="email" type="email" autoComplete="email" /></label>
+          <label>What happened?<textarea name="problemDescription" rows={4} placeholder="Briefly tell us what the driver should know."/></label>
+          <div className="estimate-card"><span>Estimated recovery price</span><strong>Estimate calculated after route & pricing data</strong><p>Your request goes live after posting. Nearby approved drivers can then send offers for you to compare.</p></div>
+          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="submit" className="button primary button-large" disabled={busy}>{busy?"Posting request…":"Post Recovery Request →"}</button></div>
+        </section>}
+      </form>
+      <div className="wizard-after"><span>Job goes live</span><b>→</b><span>Drivers send offers</span><b>→</b><span>You choose</span></div>
+    </div>
+  </main>;
 }
