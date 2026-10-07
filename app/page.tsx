@@ -27,6 +27,7 @@ const steps = [
 export default function HomePage() {
   return (
     <main className="home">
+      <div className="stitch-install">Install Rescue247 App for instant roadside dispatch</div>
       <header className="site-header">
         <div className="nav-wrap">
           <Link href="/" className="brand" aria-label="UK Recovery home">
@@ -46,14 +47,14 @@ export default function HomePage() {
       <section className="hero">
         <div className="hero-grid container">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-dot" /> UK vehicle recovery marketplace</div>
-            <h1>Recovery help, <span>without the runaround.</span></h1>
-            <p className="hero-lead">Request breakdown recovery, towing or vehicle transport through one clear, professional experience built for UK roads.</p>
+            <div className="stitch-pill"><span className="stitch-dot" /> UK&apos;s trusted recovery marketplace · 24/7</div>
+            <h1>Vehicle Recovery <span>Made Simple</span></h1>
+            <p className="hero-lead">Get matched with vetted recovery professionals for breakdowns, towing and vehicle transport across the UK.</p>
             <div className="hero-actions">
               <Link href="/recovery/request" className="button primary button-large">Get a Recovery Quote <span>→</span></Link>
               <Link href="/driver/register" className="button ghost button-large">Join as a Recovery Driver</Link>
             </div>
-            <div className="hero-trust">
+            <div className="stitch-stats"><div className="stitch-stat"><strong>24/7</strong><span>Roadside dispatch</span></div><div className="stitch-stat"><strong>UK</strong><span>Nationwide coverage</span></div><div className="stitch-stat"><strong>100%</strong><span>Verified drivers</span></div><div className="stitch-stat"><strong>Live</strong><span>Driver offers</span></div></div><div className="hero-trust">
               <span>✓ Start quickly, sign in when submitting</span>
               <span>✓ Estimate shown clearly</span>
               <span>✓ Mobile-ready experience</span>
