@@ -54,7 +54,7 @@ export default function HomePage() {
               <Link href="/driver/register" className="button ghost button-large">Join as a Recovery Driver</Link>
             </div>
             <div className="hero-trust">
-              <span>✓ Request without an account</span>
+              <span>✓ Start quickly, sign in when submitting</span>
               <span>✓ Estimate shown clearly</span>
               <span>✓ Mobile-ready experience</span>
             </div>
@@ -134,7 +134,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="site-footer">
+      <div className="mobile-nav"><Link href="/" className="active">Home</Link><Link href="/recovery/request">Quote</Link><Link href="/login">Sign in</Link></div><footer className="site-footer">
         <div className="container footer-grid">
           <div className="footer-brand"><Link href="/" className="brand"><span className="brand-mark"><span>UK</span><i /></span><span><strong>Recovery</strong><small>Vehicle recovery marketplace</small></span></Link><p>Connecting customers with recovery professionals through a clearer UK recovery marketplace.</p></div>
           <div><strong>Customers</strong><Link href="/recovery/request">Get a recovery quote</Link><a href="#services">Recovery services</a><a href="#how-it-works">How it works</a></div>
