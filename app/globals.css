@@ -100,3 +100,76 @@ input:focus,select:focus,textarea:focus{border-color:#ff6600;box-shadow:0 0 0 4p
 @media(max-width:1240px){.global-public-header .public-main-nav{gap:14px!important}.global-public-header .public-actions{gap:6px}.global-public-header .public-actions .account-link,.global-public-header .public-actions .role-login{font-size:8.5px}.global-public-header .nav-icon{width:15px;height:15px}}
 @media(max-width:1160px){.global-public-header{height:74px}.global-public-header .public-main-nav,.global-public-header .public-actions{display:none!important}.global-public-header .public-mobile-actions{display:flex;align-items:center;gap:9px;margin-left:auto}.global-public-header .public-mobile-actions .header-install{min-height:42px;padding:0 12px;background:#172331;color:#fff;border:1px solid #172331;font-size:9px}.global-public-header .uk-menu{display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #d7d2cb;border-radius:8px;background:#fff;color:#172331;font-size:20px}.global-public-header .public-mobile-menu{background:#f8f7f4;border-top:1px solid #e6e2dc;box-shadow:0 18px 35px rgba(11,28,48,.14)}.global-public-header .public-mobile-menu>a,.global-public-header .mobile-language{color:#172331;border-bottom-color:#e5e0d9;font-size:13px}.global-public-header .public-mobile-menu>a.active{color:#ff6600}.global-public-header .mobile-language{color:#172331}.global-public-header .mobile-account-group a{background:#fff;color:#172331;border-color:#ddd7cf;font-size:11px}.global-public-header .mobile-account-group .role-login{border-color:#ff6600}.global-public-header .mobile-account-group .get-started{background:#ff6600;color:#fff;border-color:#ff6600}}
 @media(max-width:480px){.global-public-header{height:68px}.global-public-header .uk-nav{width:calc(100% - 20px)}.global-public-header .uk-logo span{width:38px;height:38px;font-size:10px}.global-public-header .uk-logo b{font-size:15px}.global-public-header .public-mobile-actions .header-install{min-height:38px;padding:0 9px;font-size:8px}.global-public-header .uk-menu{width:38px;height:38px}.global-public-header .mobile-account-group{grid-template-columns:1fr}}
+
+/* Responsive readability system: visual scale only */
+body{font-size:16px;line-height:1.55}
+button,input,select,textarea{font-size:16px}
+input,select,textarea{min-height:54px;padding:12px 15px}
+textarea{min-height:120px}
+label{font-size:15px}
+.button,.estimate-cta,.install-button,.get-started,.role-login{min-height:50px;font-size:15px}
+.page-card>p,.dashboard-help,.form-help,.auth-card>p{font-size:16px!important}
+.page-card h1,.dashboard-nav h1{font-size:clamp(32px,4vw,40px)}
+.dashboard-card h2{font-size:24px}.dashboard-row strong,.module-card strong{font-size:16px}.dashboard-row small,.module-card p,.empty-state p{font-size:14px}
+.metric-label,.badge,.dashboard-kicker{font-size:13px}.metric-value{font-size:34px}
+.form-grid label{font-size:15px}.form-action>span,.auth-note{font-size:14px!important}
+.uk-section-head p,.marketplace p,.app-copy p,.driver-cta p,.final-cta p,.about-copy p,.about-market>div>p,.about-safety>div>p{font-size:16px}
+.uk-section-head h2,.marketplace h2,.app-copy h2,.driver-cta h2{font-size:clamp(36px,4vw,48px)}
+.uk-kicker,.eyebrow{font-size:13px;letter-spacing:.1em}
+.uk-service span,.uk-feature-grid h3,.uk-steps h3,.review-grid strong{font-size:18px}
+.uk-feature-grid p,.uk-steps p,.review-grid p,.review-grid span,.uk-trust article span{font-size:15px}
+.uk-footer,.uk-footer p,.footer-main a,.footer-main span,.footer-main b{font-size:14px}
+.journey-step h3{font-size:18px}.journey-step p{font-size:15px}
+.about-hero p,.mission-grid p,.audience-grid li,.safety-list span,.about-install p{font-size:16px}
+.stats-grid span,.mission-grid article>b,.compare-chips span,.about-flow article>span{font-size:14px}
+.mission-grid h3{font-size:20px}
+.about-light-btn,.about-text-btn{font-size:15px}
+.request-wizard label,.choice-field legend{font-size:15px}.wizard-step>p,.location-status,.estimate-card p{font-size:16px}.choice span{font-size:14px}.choice strong,.service-choice strong{font-size:17px}
+.request-mini-header,.wizard-progress-top,.wizard-after{font-size:14px}
+
+/* Keep the approved light header readable instead of shrinking text at laptop widths */
+.global-public-header .public-main-nav a{font-size:15px}
+.global-public-header .language-control{font-size:14px}
+.global-public-header .public-actions .account-link,.global-public-header .public-actions .role-login,.global-public-header .public-actions .get-started,.global-public-header .public-actions .header-install{font-size:13px}
+.global-public-header .nav-icon{width:18px;height:18px}
+@media(max-width:1450px){.global-public-header .public-main-nav a{font-size:14px}.global-public-header .language-control{font-size:13px}.global-public-header .public-actions .account-link,.global-public-header .public-actions .role-login,.global-public-header .public-actions .get-started,.global-public-header .public-actions .header-install{font-size:12px}}
+@media(max-width:1320px){.global-public-header .public-main-nav,.global-public-header .public-actions{display:none!important}.global-public-header .public-mobile-actions{display:flex!important;align-items:center;gap:9px;margin-left:auto}.global-public-header .uk-menu{display:grid;place-items:center}}
+.global-public-header .public-mobile-actions .header-install{font-size:13px}
+.global-public-header .public-mobile-menu>a,.global-public-header .mobile-language,.global-public-header .mobile-account-group a{font-size:15px}
+
+/* Homepage hero: full-width replaceable recovery image */
+.uk-hero-photo{--hero-image:none;position:relative;min-height:720px;background-image:var(--hero-image);background-size:cover;background-position:center 48%;color:#fff;overflow:hidden}
+.uk-hero-photo .uk-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,10,16,.88) 0%,rgba(4,10,16,.76) 44%,rgba(4,10,16,.42) 72%,rgba(4,10,16,.55) 100%)}
+.hero-reference-layout{position:relative;z-index:1;width:min(1280px,calc(100% - 48px));min-height:720px;margin:auto;padding:82px 0 64px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.uk-hero-photo .uk-hero-copy{max-width:820px}
+.hero-trust-badge{display:inline-flex;align-items:center;padding:9px 13px;border:1px solid rgba(255,255,255,.26);border-radius:999px;background:rgba(9,18,27,.42);backdrop-filter:blur(7px);color:#fff}
+.uk-hero-photo h1{max-width:800px;margin:20px 0 18px;color:#fff;font-size:clamp(60px,6vw,76px);line-height:.98;letter-spacing:-.045em}
+.uk-hero-photo h1 em{font-style:normal;color:#ff6600}
+.uk-hero-photo .uk-hero-copy>p{max-width:700px;margin:0;color:#f0f3f5;font-size:19px;line-height:1.65}
+.hero-quote-panel{width:min(940px,100%);max-width:none;margin-top:34px;padding:24px;background:rgba(255,255,255,.97);border:1px solid rgba(255,255,255,.8);border-radius:15px;box-shadow:0 24px 60px rgba(0,0,0,.26);color:#172331}
+.hero-quote-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hero-quote-panel label{display:grid;gap:8px;color:#172331;font-size:14px;font-weight:800}
+.hero-input-wrap{position:relative}.hero-input-wrap>b{position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:1;color:#ff6600;font-size:18px}.hero-input-wrap input{height:58px;padding-left:44px;border:1px solid #cfd5da;border-radius:8px;background:#fff;font-size:16px}
+.hero-location{margin:12px 0 4px;color:#172331;font-size:15px;font-weight:800}
+.hero-estimate{width:100%;min-height:56px;margin-top:13px;font-size:16px}
+.hero-secondary{width:100%;min-height:52px;margin-top:9px;display:flex;align-items:center;justify-content:center;border:1.5px solid #172331;border-radius:8px;color:#172331;font-size:15px;font-weight:900}
+.hero-market-note{margin:12px 0 0!important;color:#5d6872!important;font-size:14px!important;line-height:1.5!important}
+.hero-quote-panel .location-copy{font-size:14px;color:#5d6872}
+
+@media(max-width:760px){
+ body{font-size:16px}
+ .uk-section-head h2,.marketplace h2,.app-copy h2,.driver-cta h2{font-size:clamp(28px,9vw,36px)}
+ .uk-hero-photo{min-height:auto;background-position:62% center}
+ .uk-hero-photo .uk-hero-shade{background:linear-gradient(180deg,rgba(4,10,16,.84),rgba(4,10,16,.72) 48%,rgba(4,10,16,.88))}
+ .hero-reference-layout{width:calc(100% - 28px);min-height:auto;padding:58px 0 42px}
+ .uk-hero-photo h1{font-size:clamp(40px,12vw,50px);line-height:1}
+ .uk-hero-photo .uk-hero-copy>p{font-size:17px;line-height:1.55}
+ .hero-trust-badge{font-size:12px}
+ .hero-quote-panel{padding:16px;margin-top:26px}
+ .hero-quote-grid{grid-template-columns:1fr}
+ .hero-input-wrap input{height:58px;font-size:16px}
+ .hero-location{min-height:44px;font-size:15px}
+ .hero-estimate,.hero-secondary{min-height:54px;font-size:15px}
+ .page-card h1,.dashboard-nav h1{font-size:clamp(26px,8vw,32px)}
+ .dashboard-grid,.module-grid,.detail-grid{grid-template-columns:1fr}
+}
