@@ -1,7 +1,7 @@
 "use client";
 import { FormEvent, useMemo, useState } from "react";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import PublicHeader from "../../components/public-header";
 
 const steps=["Location","Vehicle","Recovery","Details"];
 const services=["Breakdown","Accident","Transport","Towing","Other assistance"];
@@ -39,8 +39,7 @@ export default function RecoveryRequestPage(){
     const body=await res.json();window.location.href="/customer?submitted="+body.job.id;
   }
 
-  return <main className="request-wizard-shell">
-    <header className="request-mini-header"><Link href="/" className="brand"><span className="brand-mark"><span>UK</span><i/></span><span><strong>Recovery</strong><small>Vehicle recovery marketplace</small></span></Link><span className="stitch-pill">Fast recovery request</span></header>
+  return <main className="request-wizard-shell">\n    <PublicHeader/>
     <div className="request-wizard">
       <div className="wizard-progress"><div className="wizard-progress-top"><span>Step {step+1} of 4</span><strong>{steps[step]}</strong></div><div className="wizard-track"><i style={{width:progress+"%"}}/></div></div>
       <form onSubmit={submit}>
