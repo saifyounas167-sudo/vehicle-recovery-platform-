@@ -58,3 +58,16 @@ test("server-only price and secure offer checks stay required",()=>{
  assert.match(offer,/driver_memberships/);
  assert.match(offer,/approval_status/);
 });
+
+test("safe stage-specific estimate diagnostics, no secrets or customer data in logs",()=>{
+ const source=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
+ for(const stage of ["postcode","routing","pricing_query","pricing_config","holiday","calculation"])assert.ok(source.includes(stage));
+ assert.match(source,/console\.warn\("\[recovery-estimate\]"/);
+ assert.match(source,/diagnosticStage:stage/);
+ assert.doesNotMatch(source,/console\.(?:log|warn|error)\([^\n]*(?:pickup|destination|request\.headers|ORS_API_KEY)/);
+});
+test("zero bank-holiday surcharge removes external calendar dependency",()=>{
+ const source=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
+ assert.match(source,/cfg\.bankHolidaySurcharge>0\?await ukHoliday\(day,pickup\):false/);
+ assert.match(source,/return unavailable\(stage,route\)/);
+});
