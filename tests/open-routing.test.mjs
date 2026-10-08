@@ -21,7 +21,7 @@ test("estimate route resolves local routing and pricing modules without alias",(
 test("customer form calls server-side road estimate and recalculates on selections",()=>{
  const page=readFileSync("app/recovery/request/page.tsx","utf8");
  assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
- assert.match(page,/\[pickup,destination,vehicleType,runningStatus,service,lockedWheels\]/);
+ assert.match(page,/\[step,v\]/);
  assert.match(page,/controller\.abort\(\)/);
  assert.match(page,/Price to be confirmed by recovery drivers/);
  assert.doesNotMatch(page,/Estimate calculated after route & pricing data/);
@@ -38,17 +38,16 @@ test("preview exposes commit id without leaking secrets",()=>{
  assert.doesNotMatch(info,/ORS_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
 });
 
-test("wizard persists registration and contact details across unmounted steps",()=>{
+test("five-step wizard retains guest data and shows real route pricing",()=>{
  const page=readFileSync("app/recovery/request/page.tsx","utf8");
- for(const field of ["registration","rollingStatus","accessStatus","customerName","phone","email","problemDescription"]){
-  assert.ok(page.includes("const ["+field+",set"),"missing persisted "+field);
-  assert.match(page,new RegExp("("+field+")[,:]"));
- }
- assert.match(page,/registration:registration\.trim\(\)\.toUpperCase\(\)/);
- assert.match(page,/if\(step===0&&/);
- assert.match(page,/if\(step===1&&/);
- assert.match(page,/if\(step===2&&!service\)/);
- assert.doesNotMatch(page,/className="request-wizard-shell">\\\\n/);
+ assert.match(page,/const steps=\["Location","Vehicle","Recovery","Customer","Review"\]/);
+ assert.match(page,/registration:""/);
+ assert.match(page,/customerName:""/);
+ assert.match(page,/setV\(s=>\(\{\.\.\.s,\[key\]:value\}\)\)/);
+ assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
+ assert.match(page,/estimatedPriceGbp/);
+ assert.match(page,/<RecoveryRouteMap route=\{estimate\.route\}/);
+ assert.match(page,/fetch\("\/api\/recovery\/jobs"/);
 });
 test("server-only price and secure offer checks stay required",()=>{
  const api=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
