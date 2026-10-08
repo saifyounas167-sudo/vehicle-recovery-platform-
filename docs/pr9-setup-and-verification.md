@@ -10,6 +10,7 @@ Apply existing migrations in sequence using the Supabase CLI or SQL editor:
 - supabase/migrations/0004_private_recovery_photos.sql
 - supabase/migrations/0005_offer_acceptance_guard.sql
 - supabase/migrations/0006_guest_rate_limit.sql
+- supabase/migrations/0007_driver_offer_eta.sql (NEW: do not assume applied; review then apply only this migration to the test project)
 
 Review the schema first. Do not run initial migration twice against an existing production database. Take a backup before migrating.
 
@@ -72,3 +73,17 @@ The recovery-vehicle-photos bucket is private. The upload endpoint validates a j
 - Current photo upload token is deterministic for the job and upload is limited to 30 minutes after creation. Add one-time token rotation if business policy requires stronger revocation.
 - The DB rate limiter caps five requests/hour per trusted forwarded-IP hash, but CDN/WAF bot protection is still recommended. Test header provenance in the deployed environment.
 - Driver notification delivery, membership gating and eligible-job coverage radius are not end-to-end verified.
+
+## October 2026 no-Google-Maps preview configuration
+The test project vehicle-recovery-test reportedly already has migrations 0001–0006 applied manually. **Do not reapply or reset those migrations.** Review and apply only migration 0007 for driver ETA if needed. The Preview environment reportedly has NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, and GUEST_REQUEST_HASH_SECRET. Never paste their values into chat.
+
+The new /api/recovery/postcode endpoint uses Postcodes.io for free UK postcode lookup and nearest-postcode GPS reverse lookup. These are approximate postcode centroids, not exact property addresses. The form requires manually confirmed pickup street/landmark and optionally destination address. It still accepts manual postcodes if Postcodes.io fails.
+
+Google Maps billing is not required to post a recovery request. The server-side estimate will return unavailable for transport if no verified routing provider is configured; UI shows **Price to be confirmed by recovery drivers**. Do not use straight-line mileage or public routing demo servers as a replacement. DVLA is optional and manual make/model remains available.
+
+### Critical remaining gates
+- Existing database credentials cannot be inspected or used through this repository connector; real test Supabase inserts, private contacts, RLS, photos and offer acceptance are NOT yet verified.
+- No active driver membership entitlement model exists. Driver offer submission is intentionally **disabled (HTTP 503)** until membership can be verified securely. This prevents unauthorized marketplace offers but blocks the complete driver-offer journey.
+- Existing guest capability is not durable or expiring; user loses offer access after page refresh. Must be resolved before production.
+- Preview browser/mobile navigation and Vercel deployment remain unverified if Vercel scope is forbidden.
+- CI npm test/typecheck/build is not a substitute for database or browser end-to-end tests.
