@@ -80,3 +80,11 @@ test("integrated guest acceptance locks job and checks live membership",()=>{
  assert.match(sql,/revoke all on function public\.accept_guest_recovery_offer\(uuid,uuid\) from public,anon,authenticated/);
  assert.match(sql,/grant execute on function public\.accept_guest_recovery_offer\(uuid,uuid\) to service_role/);
 });
+
+test("legacy estimate endpoint uses the same ORS pricing source of truth",()=>{
+ const legacy=readFileSync("app/api/recovery/estimate/route.ts","utf8");
+ assert.match(legacy,/POST as calculateOpenEstimate/);
+ assert.match(legacy,/await calculateOpenEstimate\(original\)/);
+ assert.match(legacy,/estimateGbp:data\.estimatedPriceGbp/);
+ assert.doesNotMatch(legacy,/calculateEstimate\(/);
+});
