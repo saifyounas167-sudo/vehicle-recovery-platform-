@@ -37,3 +37,12 @@ test("guest requests remain possible when optional Supabase session lookup throw
  assert.match(route,/Optional guest session lookup unavailable; continuing with server-side guest validation/);
  assert.match(route,/const \{data:permitted,error:limitError\}=await admin\.rpc/);
 });
+
+test("guest 503 responses identify safe stage without weakening anti-abuse",()=>{
+ assert.match(route,/diagnosticStage\?:string/);
+ for(const stage of ["db_configuration","guest_secret","allow_recovery_request","job_insert","private_contact_insert","unhandled"])
+  assert.ok(route.includes('"'+stage+'"'));
+ assert.match(route,/\.rpc\("allow_recovery_request",\{p_client_hash:ipHash\}\)/);
+ assert.match(route,/if\(permitted===false\)return bad\("Too many recovery requests/);
+ assert.doesNotMatch(route,/console\.error\([^\n]*\b(?:phone|email|ipHash|secret)\b/);
+});
