@@ -88,3 +88,10 @@ test("legacy estimate endpoint uses the same ORS pricing source of truth",()=>{
  assert.match(legacy,/estimateGbp:data\.estimatedPriceGbp/);
  assert.doesNotMatch(legacy,/calculateEstimate\(/);
 });
+
+test("temporary Preview-only rule cannot be used for production GBP quotes",()=>{
+ const api=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
+ assert.match(api,/VERCEL_ENV==="production"/);
+ assert.match(api,/temporary_rates_prohibited_in_production/);
+ assert.match(api,/select\("name,rule_config"\)/);
+});
