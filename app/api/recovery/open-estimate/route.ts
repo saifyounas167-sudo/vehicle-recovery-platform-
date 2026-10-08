@@ -26,7 +26,7 @@ export async function POST(request:Request){
   const {data:rules,error}=await db.from("pricing_rules").select("name,rule_config").eq("active",true).limit(2);
   if(error){report(stage,error.code||"query_failed");return unavailable(stage,route);}
   stage="pricing_config";
-  if(process.env.VERCEL_ENV==="production"&&rules?.some(r=>typeof r.name==="string"&&/^TEMP(?:\\s|$)/i.test(r.name))){report(stage,"temporary_rates_prohibited_in_production");return unavailable(stage,route);}
+  if(process.env.VERCEL_ENV==="production"&&rules?.some(r=>typeof r.name==="string"&&(/^(TEMP|TEST)(?:\s|$)/i.test(r.name.trim())))){report(stage,"temporary_rates_prohibited_in_production");return unavailable(stage,route);}
   if(!rules||rules.length!==1){report(stage,!rules?"missing_rules":rules.length===0?"no_active_rule":"multiple_active_rules");return unavailable(stage,route);}
   if(!validPricingConfig(rules[0].rule_config)){
    const cfg=rules[0].rule_config as Record<string,unknown>|null;
