@@ -17,3 +17,17 @@ test("estimate route resolves local routing and pricing modules without alias",(
  assert.match(fs,/from "\.\.\/\.\.\/\.\.\/\.\.\/src\/lib\/recovery-pricing"/);
  assert.ok(readFileSync("src/lib/open-routing.ts","utf8").includes("previewDrivingRoute"));
 });
+
+test("customer form calls server-side road estimate and recalculates on selections",()=>{
+ const page=readFileSync("app/recovery/request/page.tsx","utf8");
+ assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
+ assert.match(page,/\[pickup,destination,vehicleType,runningStatus,service,lockedWheels\]/);
+ assert.match(page,/controller\.abort\(\)/);
+ assert.match(page,/Price to be confirmed by recovery drivers/);
+ assert.doesNotMatch(page,/Estimate calculated after route & pricing data/);
+});
+test("customer estimate endpoint requires a real road route and approved pricing",()=>{
+ assert.match(api,/previewDrivingRoute\(origin,end\)/);
+ assert.match(api,/validPricingConfig\(rules\[0\]\.rule_config\)/);
+ assert.match(api,/calculateRecoveryPrice/);
+});
