@@ -36,6 +36,11 @@ export async function POST(request:Request){
   try{const client=await createClient();const {data:{user}}=await client.auth.getUser();if(user){const {data:profile}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();if(profile?.role!=="customer")return bad("Customer role required",403);userId=user.id;}}catch{return bad("Authentication service unavailable",503);}
   const secret=process.env.GUEST_REQUEST_HASH_SECRET;
   if(!secret||secret.length<32)return bad("Guest request protection is not configured",503);
+  const clientIp=request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()||request.headers.get("cf-connecting-ip")||"unknown";
+  const ipHash=createHash("sha256").update(secret+"|ip|"+clientIp).digest("hex");
+  const {data:permitted,error:limitError}=await admin.rpc("allow_recovery_request",{p_client_hash:ipHash});
+  if(limitError)return bad("Submission protection unavailable",503);
+  if(!permitted)return bad("Too many recovery requests. Please try later.",429);
   const fingerprint=createHash("sha256").update(secret+"|"+email+"|"+phone+"|"+pickup+"|"+service+"|"+text(b.registration,20)+"|"+Math.floor(Date.now()/300000)).digest("hex");
   const reference="UKR-"+randomBytes(7).toString("hex").toUpperCase();
   const row={customer_id:userId,guest_reference:reference,request_fingerprint:fingerprint,recovery_type:service,pickup_postcode:pickup,destination_postcode:mode==="transport"?destination:null,nearest_garage_requested:mode==="Nearest Garage",roadside_assistance_requested:mode==="Roadside Assistance Without Transport",vehicle_registration:text(b.registration,20)||null,vehicle_make:text(b.make,100),vehicle_model:text(b.model,100),vehicle_type:b.vehicleType,transmission:b.transmission,running_status:b.runningStatus,rolling_status:b.runningStatus==="Non-running"?b.rollingStatus:null,wheel_condition:b.runningStatus==="Non-running"?"Locked: "+b.lockedWheels+"; damaged: "+b.damagedWheels:null,accident_status:b.accident,problem_description:text(b.problemDescription,3000),is_urgent:b.timing==="urgent",preferred_collection_time:b.timing==="Scheduled"?new Date(b.preferredCollectionTime).toISOString():null,customer_contact_preference:b.contactPreference,status:"submitted" as const};
