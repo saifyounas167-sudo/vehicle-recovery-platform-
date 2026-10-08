@@ -70,3 +70,13 @@ test("zero bank-holiday surcharge removes external calendar dependency",()=>{
  assert.match(source,/cfg\.bankHolidaySurcharge>0\?await ukHoliday\(day,pickup\):false/);
  assert.match(source,/return unavailable\(stage,route\)/);
 });
+
+test("integrated guest acceptance locks job and checks live membership",()=>{
+ const sql=readFileSync("supabase/migrations/0010_integrated_guest_offer_acceptance.sql","utf8");
+ assert.match(sql,/accept_guest_recovery_offer\(p_job_id uuid,p_offer_id uuid\)/);
+ assert.match(sql,/where id=p_job_id for update/);
+ assert.match(sql,/dm\.valid_until>now\(\)/);
+ assert.match(sql,/dp\.approval_status='approved'/);
+ assert.match(sql,/revoke all on function public\.accept_guest_recovery_offer\(uuid,uuid\) from public,anon,authenticated/);
+ assert.match(sql,/grant execute on function public\.accept_guest_recovery_offer\(uuid,uuid\) to service_role/);
+});
