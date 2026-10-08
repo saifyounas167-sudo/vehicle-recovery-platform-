@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import {guestProof} from "@/src/lib/guest-access";
 
 const services = new Set(["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"]);
 const postcode=/^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}))$/i;
@@ -43,6 +44,6 @@ export async function POST(request:Request){
   const {error:contactError}=await admin.from("recovery_job_private_contacts").insert({job_id:job.id,full_name:name,phone,email});
   if(contactError){await admin.from("recovery_jobs").delete().eq("id",job.id);console.error("Private contact save failed",contactError.code);return bad("Could not securely save contact details",503);}
   const photoToken=createHmac("sha256",secret).update("photo|"+job.id+"|"+job.guest_reference).digest("hex");
-  return NextResponse.json({photoUpload:{jobId:job.id,reference:job.guest_reference,token:photoToken},job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
+  return NextResponse.json({guestAccess:{jobId:job.id,reference:job.guest_reference,proof:guestProof(job.id,job.guest_reference)},photoUpload:{jobId:job.id,reference:job.guest_reference,token:photoToken},job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
  }catch(e){console.error("Recovery request failed",e);return bad("Unable to process recovery request",400);}
 }
