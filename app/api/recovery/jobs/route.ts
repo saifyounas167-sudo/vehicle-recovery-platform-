@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 
 const services = new Set(["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"]);
@@ -42,6 +42,7 @@ export async function POST(request:Request){
   if(insertError){if(insertError.code==="23505")return bad("A similar request was submitted recently. Please wait before trying again.",429);console.error("Recovery job insert failed",insertError.code);return bad("Could not create recovery request",503);}
   const {error:contactError}=await admin.from("recovery_job_private_contacts").insert({job_id:job.id,full_name:name,phone,email});
   if(contactError){await admin.from("recovery_jobs").delete().eq("id",job.id);console.error("Private contact save failed",contactError.code);return bad("Could not securely save contact details",503);}
-  return NextResponse.json({job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
+  const photoToken=createHmac("sha256",secret).update("photo|"+job.id+"|"+job.guest_reference).digest("hex");
+  return NextResponse.json({photoUpload:{jobId:job.id,reference:job.guest_reference,token:photoToken},job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
  }catch(e){console.error("Recovery request failed",e);return bad("Unable to process recovery request",400);}
 }
