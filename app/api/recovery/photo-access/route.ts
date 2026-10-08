@@ -17,7 +17,7 @@ export async function POST(req:Request){
      if(profile?.role==="admin")allowed=true;
      else if(profile?.role==="driver"){
       const {data:driver}=await auth.from("driver_profiles").select("approval_status").eq("id",user.id).maybeSingle();
-      allowed=driver?.approval_status==="approved"&&(job.assigned_driver_id===user.id||["submitted","matching","offered"].includes(job.status));
+      allowed=driver?.approval_status==="approved"&&(job.assigned_driver_id===user.id);
      }
     }
    }
