@@ -26,7 +26,7 @@ export async function POST(req:Request){
   let miles=0;
   if(b.destinationMode==="transport"){
    try{const route=await getRouteEstimate(String(b.pickupPostcode),String(b.destinationPostcode));miles=route.distanceMiles;if(!valid(miles))return unavailable("Driving distance unavailable");}
-   catch{return unavailable("Driving distance unavailable; routing provider is not configured or could not find a route");}
+   catch{return unavailable("Price to be confirmed by recovery drivers: verified driving mileage is unavailable");}
   }
   const extras=[rules.vehicleSurcharges?.[String(b.vehicleType)],rules.serviceSurcharges?.[String(b.recoveryType)],b.runningStatus==="Non-running"?rules.nonRunningSurcharge:0,b.lockedWheels==="Yes"?rules.lockedWheelSurcharge:0,b.damagedWheels==="Yes"?rules.damagedWheelSurcharge:0,b.accident==="Yes"?rules.accidentSurcharge:0,b.timing==="urgent"?rules.urgentSurcharge:0,b.equipment?rules.equipmentSurcharge:0,b.difficulty?rules.difficultySurcharge:0];
   const time=b.timing==="Scheduled"&&b.preferredCollectionTime?new Date(b.preferredCollectionTime):new Date();
@@ -52,6 +52,7 @@ export async function POST(req:Request){
   }
   if(extras.some(x=>x!==undefined&&!valid(x)))return unavailable("Invalid pricing configuration");
   const fee=extras.reduce<number>((sum,x)=>sum+(typeof x==="number"?x:0),0);
+  if(b.destinationMode!=="transport")return unavailable("Price to be confirmed by recovery drivers: transport mileage does not apply to this service and no verified call-out pricing model is configured");
   const result=calculateEstimate({baseFee:rules.minimumCallout,distanceMiles:miles,distanceRate:rules.pricePerMile,equipmentFee:fee});
   return NextResponse.json({available:true,estimateGbp:result.estimateGbp,distanceMiles:b.destinationMode==="transport"?miles:null,bankHolidayPricing:"UK region calendar selected from pickup postcode"},{headers:{"Cache-Control":"no-store"}});
  }catch{return unavailable("Estimate currently unavailable");}
