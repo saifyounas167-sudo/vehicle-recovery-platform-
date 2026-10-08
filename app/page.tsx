@@ -11,7 +11,7 @@ const steps=[["01","REQUEST RECOVERY","Enter pickup, destination and vehicle det
 export default function HomePage(){
  const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [locationText,setLocationText]=useState("");
  function quote(e:FormEvent){e.preventDefault();const q=new URLSearchParams();if(pickup)q.set("pickup",pickup);if(destination)q.set("destination",destination);window.location.href="/recovery/request?"+q.toString()}
- function locate(){if(!navigator.geolocation){setLocationText("Location is not available on this device.");return}setLocationText("Finding your location…");navigator.geolocation.getCurrentPosition(({coords})=>{const v=coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5);setPickup(v);setLocationText("Current location captured.")},()=>setLocationText("Location permission was not granted."))}
+ function locate(){if(!navigator.geolocation){setLocationText("Location is not available on this device.");return}setLocationText("Finding your location…");navigator.geolocation.getCurrentPosition(({coords})=>{const v=coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5);fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude).then(r=>r.json()).then(data=>{if(!data.postcode)throw new Error();setPickup(data.postcode);setLocationText("Pickup postcode detected.");}).catch(()=>setLocationText("Could not find a postcode. Enter one manually."))},()=>setLocationText("Location permission was not granted."))}
  return <main className="uk-home">
   <PublicHeader/>
   <section className="uk-hero uk-hero-photo" style={{"--hero-image":`url("${HERO_BACKGROUND_IMAGE}")`} as CSSProperties}><div className="uk-hero-shade"/><div className="uk-hero-inner hero-reference-layout">
@@ -23,7 +23,7 @@ export default function HomePage(){
     </div>
     <button type="button" className="use-location hero-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
     <button className="estimate-cta hero-estimate">GET RECOVERY ESTIMATE <span>→</span></button>
-    <Link href="/recovery/request" className="hero-secondary">START RECOVERY REQUEST</Link>
+    <button type="submit" className="hero-secondary">START RECOVERY REQUEST</button>
     <p className="hero-market-note">Estimate first → post your request → compare nearby driver offers → choose your preferred recovery professional.</p>
    </form>
   </div></section>
