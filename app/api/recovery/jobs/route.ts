@@ -34,7 +34,7 @@ export async function POST(request:Request){
   if(!url||!key)return bad("Guest requests are temporarily unavailable",503);
   const admin=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{"X-Client-Info":"recovery-preview-guest-submission"}}});
   let userId:string|null=null;
-  try{const client=await createClient();const {data:{user}}=await client.auth.getUser();if(user){const {data:profile}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();if(profile?.role!=="customer")return bad("Customer role required",403);userId=user.id;}}catch{return bad("Authentication service unavailable",503);}
+  try{const client=await createClient();const {data:{user}}=await client.auth.getUser();if(user){const {data:profile}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();if(profile?.role!=="customer")return bad("Customer role required",403);userId=user.id;}}catch{console.warn("Optional guest session lookup unavailable; continuing with server-side guest validation");}
   const secret=process.env.GUEST_REQUEST_HASH_SECRET;
   if(!secret||secret.length<32)return bad("Guest request protection is not configured",503);
   const clientIp=request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()||request.headers.get("cf-connecting-ip")||"unknown";
