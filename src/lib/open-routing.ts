@@ -15,6 +15,19 @@ export async function resolvePostcode(postcode:string):Promise<Point>{
  return {latitude,longitude};
 }
 export async function previewDrivingRoute(pickup:Point,destination:Point):Promise<RoadRoute>{
+ if(process.env.ROUTING_PROVIDER==="ors"){
+  const key=process.env.ORS_API_KEY;
+  if(!key)throw Error("OpenRouteService key not configured");
+  const response=await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson",{
+   method:"POST",cache:"no-store",signal:AbortSignal.timeout(9000),
+   headers:{"Authorization":key,"Content-Type":"application/json"},
+   body:JSON.stringify({coordinates:[[pickup.longitude,pickup.latitude],[destination.longitude,destination.latitude]]})
+  });
+  if(!response.ok)throw Error("OpenRouteService unavailable");
+  const result=await response.json(),feature=result.features?.[0],summary=feature?.properties?.summary;
+  if(!summary||!Array.isArray(feature.geometry?.coordinates))throw Error("Invalid ORS route");
+  return parseOsrmRoute({code:"Ok",routes:[{distance:summary.distance,duration:summary.duration,geometry:feature.geometry}]},pickup,destination);
+ }
  const configured=process.env.ROUTING_PROVIDER_URL;
  if(!configured)throw Error("Routing provider not configured");
  const base=new URL(configured);
