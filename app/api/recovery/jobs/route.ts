@@ -40,7 +40,11 @@ export async function POST(request:Request){
   const clientIp=request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()||request.headers.get("cf-connecting-ip")||"unknown";
   const ipHash=createHash("sha256").update(secret+"|ip|"+clientIp).digest("hex");
   const {data:permitted,error:limitError}=await admin.rpc("allow_recovery_request",{p_client_hash:ipHash});
-  if(limitError)return bad("Submission protection unavailable",503);
+  if(limitError){
+   const safeCode=typeof limitError.code==="string"&&/^[A-Z0-9_]{2,12}$/i.test(limitError.code)?limitError.code:"UNKNOWN";
+   console.error("Guest rate-limit RPC failed",{code:safeCode,stage:"allow_recovery_request",hint:"Check 0008 grants, function signature and PostgREST schema cache"});
+   return bad("Submission protection unavailable",503);
+  }
   if(!permitted)return bad("Too many recovery requests. Please try later.",429);
   const fingerprint=createHash("sha256").update(secret+"|"+email+"|"+phone+"|"+pickup+"|"+service+"|"+text(b.registration,20)+"|"+Math.floor(Date.now()/300000)).digest("hex");
   const reference="UKR-"+randomBytes(7).toString("hex").toUpperCase();
