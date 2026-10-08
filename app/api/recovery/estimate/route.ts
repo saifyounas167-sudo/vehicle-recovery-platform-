@@ -35,10 +35,20 @@ export async function POST(req:Request){
   const weekday=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",weekday:"short"}).format(time);
   if(hour<7||hour>=19)extras.push(rules.nightSurcharge);
   if(weekday==="Sat"||weekday==="Sun")extras.push(rules.weekendSurcharge);
-  // Bank holiday calendars require an authoritative configured provider; never assume a date is a bank holiday.
+  if(typeof rules.bankHolidaySurcharge==="number"&&rules.bankHolidaySurcharge>0){
+   try{
+    const response=await fetch("https://www.gov.uk/bank-holidays.json",{next:{revalidate:86400},signal:AbortSignal.timeout(5000)});
+    if(!response.ok)throw new Error("Calendar unavailable");
+    const calendar=await response.json();
+    const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).format(time);
+    const region=calendar["england-and-wales"];
+    if(!Array.isArray(region?.events))throw new Error("Calendar invalid");
+    if(region.events.some((event:{date:string})=>event.date===date))extras.push(rules.bankHolidaySurcharge);
+   }catch{return unavailable("Bank holiday calendar unavailable");}
+  }
   if(extras.some(x=>x!==undefined&&!valid(x)))return unavailable("Invalid pricing configuration");
   const fee=extras.reduce<number>((sum,x)=>sum+(typeof x==="number"?x:0),0);
   const result=calculateEstimate({baseFee:rules.minimumCallout,distanceMiles:miles,distanceRate:rules.pricePerMile,equipmentFee:fee});
-  return NextResponse.json({available:true,estimateGbp:result.estimateGbp,distanceMiles:b.destinationMode==="transport"?miles:null,bankHolidayPricing:"not configured"},{headers:{"Cache-Control":"no-store"}});
+  return NextResponse.json({available:true,estimateGbp:result.estimateGbp,distanceMiles:b.destinationMode==="transport"?miles:null,bankHolidayPricing:"England and Wales calendar"},{headers:{"Cache-Control":"no-store"}});
  }catch{return unavailable("Estimate currently unavailable");}
 }
