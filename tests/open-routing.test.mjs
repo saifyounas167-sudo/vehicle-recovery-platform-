@@ -37,3 +37,24 @@ test("preview exposes commit id without leaking secrets",()=>{
  assert.match(info,/VERCEL_GIT_COMMIT_SHA/);
  assert.doesNotMatch(info,/ORS_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
 });
+
+test("wizard persists registration and contact details across unmounted steps",()=>{
+ const page=readFileSync("app/recovery/request/page.tsx","utf8");
+ for(const field of ["registration","rollingStatus","accessStatus","customerName","phone","email","problemDescription"]){
+  assert.match(page,new RegExp("const \\[\\["+field+",set[A-Z]"));
+  assert.match(page,new RegExp("("+field+")[,:]"));
+ }
+ assert.match(page,/registration:registration\.trim\(\)\.toUpperCase\(\)/);
+ assert.match(page,/if\(step===0&&/);
+ assert.match(page,/if\(step===1&&/);
+ assert.match(page,/if\(step===2&&!service\)/);
+ assert.doesNotMatch(page,/className="request-wizard-shell">\\\\n/);
+});
+test("server-only price and secure offer checks stay required",()=>{
+ const api=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
+ const offer=readFileSync("app/api/driver/offers/route.ts","utf8");
+ assert.match(api,/SUPABASE_SERVICE_ROLE_KEY/);
+ assert.match(api,/validPricingConfig/);
+ assert.match(offer,/driver_memberships/);
+ assert.match(offer,/approval_status/);
+});
