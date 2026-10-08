@@ -10,8 +10,7 @@ revoke all on public.driver_memberships from anon;
 create policy "driver reads own membership" on public.driver_memberships for select to authenticated using (driver_id=auth.uid() or public.current_user_role()='admin');
 create policy "admin manages membership" on public.driver_memberships for all to authenticated using (public.current_user_role()='admin') with check (public.current_user_role()='admin');
 alter table public.driver_job_offers add column if not exists eta_minutes integer check (eta_minutes between 1 and 1440);
-alter table public.driver_job_offers alter column offer_amount_gbp set not null;
-alter table public.driver_job_offers add constraint offer_price_positive check (offer_amount_gbp>0);
+alter table public.driver_job_offers add constraint offer_price_positive check (offer_amount_gbp is not null and offer_amount_gbp>0) not valid;
 drop policy if exists "approved driver create offer" on public.driver_job_offers;
 create policy "verified active member creates offer" on public.driver_job_offers for insert to authenticated
 with check (driver_id=auth.uid() and public.current_user_role()='driver'
@@ -51,3 +50,25 @@ begin
 end $$;
 drop trigger if exists guard_new_driver_offer_trigger on public.driver_job_offers;
 create trigger guard_new_driver_offer_trigger before insert on public.driver_job_offers for each row execute function public.guard_new_driver_offer();
+
+-- Existing self-update RLS must not let drivers self-approve or users elevate their own roles.
+create or replace function public.guard_profile_privileges()
+returns trigger language plpgsql set search_path=public as $$
+begin
+ if auth.uid() is not null and new.role is distinct from old.role then
+  raise exception 'Role changes require privileged administration';
+ end if;
+ return new;
+end $$;
+drop trigger if exists guard_profile_privileges_trigger on public.profiles;
+create trigger guard_profile_privileges_trigger before update on public.profiles for each row execute function public.guard_profile_privileges();
+create or replace function public.guard_driver_approval()
+returns trigger language plpgsql set search_path=public as $$
+begin
+ if auth.uid() is not null and public.current_user_role() <> 'admin' and new.approval_status is distinct from old.approval_status then
+  raise exception 'Driver verification requires administrator';
+ end if;
+ return new;
+end $$;
+drop trigger if exists guard_driver_approval_trigger on public.driver_profiles;
+create trigger guard_driver_approval_trigger before update on public.driver_profiles for each row execute function public.guard_driver_approval();
