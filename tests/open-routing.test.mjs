@@ -13,8 +13,8 @@ test("membership verified by RLS and offer acceptance atomic",()=>{assert.match(
 
 test("estimate route resolves local routing and pricing modules without alias",()=>{
  const fs=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
- assert.match(fs,/from "\.\.\/\.\.\/\.\.\/\.\.\/src\/lib\/open-routing"/);
- assert.match(fs,/from "\.\.\/\.\.\/\.\.\/\.\.\/src\/lib\/recovery-pricing"/);
+ assert.match(fs,/from "(?:@\/src\/lib|\.\.\/\.\.\/\.\.\/\.\.\/src\/lib)\/open-routing"/);
+ assert.match(fs,/from "(?:@\/src\/lib|\.\.\/\.\.\/\.\.\/\.\.\/src\/lib)\/recovery-pricing"/);
  assert.ok(readFileSync("src/lib/open-routing.ts","utf8").includes("previewDrivingRoute"));
 });
 
