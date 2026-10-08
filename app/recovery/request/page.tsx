@@ -19,17 +19,19 @@ export default function RecoveryRequestPage(){
   const [lockedWheels,setLockedWheels]=useState(false);
   const [estimate,setEstimate]=useState<{available:boolean;estimatedPriceGbp?:number;route?:{distanceMiles:number};message?:string}|null>(null);
   const [estimateLoading,setEstimateLoading]=useState(false);
+  const [estimateRequested,setEstimateRequested]=useState(false);
   useEffect(()=>{
     const query=new URLSearchParams(window.location.search);
     setPickup(query.get("pickup")||query.get("pickupPostcode")||"");
     setDestination(query.get("destination")||query.get("destinationPostcode")||"");
   },[]);
   useEffect(()=>{
-    if(!pickup.trim()||!destination.trim()||!vehicleType||!runningStatus||!service){setEstimate(null);return;}
+    if(!pickup.trim()||!destination.trim()||!vehicleType||!runningStatus||!service){setEstimate(null);setEstimateRequested(false);setEstimateLoading(false);return;}
     setEstimate(null);
+    setEstimateRequested(true);
+    setEstimateLoading(true);
     const controller=new AbortController();
     const timeout=window.setTimeout(async()=>{
-      setEstimateLoading(true);
       try{
         const response=await fetch("/api/recovery/open-estimate",{
           method:"POST",headers:{"Content-Type":"application/json"},
