@@ -64,7 +64,7 @@ export default function RecoveryRequestPage(){
   }
 
   function next(){
-    if(step===0&&(!/^(GIR\\s?0AA|[A-Z]{1,2}\\d[A-Z\\d]?\\s?\\d[A-Z]{2})$/i.test(pickup.trim())||!/^(GIR\\s?0AA|[A-Z]{1,2}\\d[A-Z\\d]?\\s?\\d[A-Z]{2})$/i.test(destination.trim()))){setError("Enter valid UK pickup and destination postcodes.");return;}
+    if(step===0&&(!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(pickup.trim())||!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(destination.trim()))){setError("Enter valid UK pickup and destination postcodes.");return;}
     if(step===1&&(!vehicleType||!runningStatus)){setError("Select a vehicle type and running condition.");return;}
     if(step===2&&!service){setError("Select a recovery service.");return;}
     setError("");setStep(s=>Math.min(3,s+1));window.scrollTo({top:0,behavior:"smooth"});
@@ -89,7 +89,8 @@ export default function RecoveryRequestPage(){
     }catch(e){setError(e instanceof Error?e.message:"We could not post your recovery request.");setBusy(false);}
   }
 
-  return <main className="request-wizard-shell">\n    <PublicHeader/>
+  return <main className="request-wizard-shell">
+    <PublicHeader/>
     <div className="request-wizard">
       <div className="wizard-progress"><div className="wizard-progress-top"><span>Step {step+1} of 4</span><strong>{steps[step]}</strong></div><div className="wizard-track"><i style={{width:progress+"%"}}/></div></div>
       <form onSubmit={submit}>
