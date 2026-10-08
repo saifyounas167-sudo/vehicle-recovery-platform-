@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 const routing=readFileSync("src/lib/open-routing.ts","utf8");
 const api=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
 const pricing=readFileSync("src/lib/recovery-pricing.ts","utf8");
-const migration=readFileSync("supabase/migrations/0003_driver_membership_offers.sql","utf8");
+const migration=readFileSync("supabase/migrations/0009_driver_membership_offers.sql","utf8");
 test("road metres are converted to miles",()=>{assert.match(routing,/metres\/1609\.344/);assert.match(routing,/route\.distance/);assert.doesNotMatch(routing,/haversine/i)});
 test("demo hosts prohibited; routing must be configured",()=>{assert.match(routing,/router\\\.project-osrm/);assert.match(routing,/ROUTING_PROVIDER_URL/)});
 test("routing or pricing failure never invents GBP",()=>{assert.match(api,/Price to be confirmed by recovery drivers/);assert.match(api,/rules\.length!==1/);assert.match(api,/validPricingConfig/)});
