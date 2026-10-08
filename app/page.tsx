@@ -19,7 +19,7 @@ export default function HomePage(){
    <form className="quote-panel hero-quote-panel" onSubmit={quote}>
     <div className="hero-quote-grid">
      <label><span>Pickup postcode</span><div className="hero-input-wrap"><b>⌖</b><input value={pickup} onChange={e=>setPickup(e.target.value)} placeholder="Enter pickup postcode" required/></div></label>
-     <label><span>Drop-off postcode</span><div className="hero-input-wrap"><b>●</b><input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Enter destination postcode" required/></div></label>
+     <label><span>Drop-off postcode</span><div className="hero-input-wrap"><b>●</b><input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Enter destination postcode (if known)"/></div></label>
     </div>
     <button type="button" className="use-location hero-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
     <button className="estimate-cta hero-estimate">GET RECOVERY ESTIMATE <span>→</span></button>
