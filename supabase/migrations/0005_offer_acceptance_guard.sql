@@ -24,3 +24,11 @@ begin
 end $$;
 revoke all on function public.accept_guest_recovery_offer(uuid,uuid) from public,anon,authenticated;
 grant execute on function public.accept_guest_recovery_offer(uuid,uuid) to service_role;
+
+-- Do not allow drivers to modify an offer after assignment.
+drop policy if exists "driver update own offer" on public.driver_job_offers;
+create policy "driver update own offer" on public.driver_job_offers for update
+using (driver_id=auth.uid() and status='pending'
+ and exists(select 1 from public.recovery_jobs j where j.id=job_id and j.assigned_driver_id is null and j.status in ('submitted','matching','offered')))
+with check (driver_id=auth.uid() and status='pending'
+ and exists(select 1 from public.recovery_jobs j where j.id=job_id and j.assigned_driver_id is null and j.status in ('submitted','matching','offered')));
