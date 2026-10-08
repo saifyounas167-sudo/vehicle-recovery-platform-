@@ -8,6 +8,7 @@ Apply existing migrations in sequence using the Supabase CLI or SQL editor:
 - all existing intermediate auth/RLS migrations
 - supabase/migrations/0003_guest_recovery_jobs.sql
 - supabase/migrations/0004_private_recovery_photos.sql
+- supabase/migrations/0005_offer_acceptance_guard.sql
 
 Review the schema first. Do not run initial migration twice against an existing production database. Take a backup before migrating.
 
@@ -46,3 +47,11 @@ The recovery-vehicle-photos bucket is private. The upload endpoint validates a j
 6. Confirm a different guest/driver cannot download photo or read private contacts.
 7. Test full wizard at 375px, 430px, tablet and desktop with actual browser automation.
 8. Verify preview deployment after Vercel access is restored.
+
+## PR #9 current integration boundaries
+- Guest offers: /api/recovery/guest-offers accepts a signed guest proof returned after submission; /api/recovery/accept-offer uses migration 0005 to atomically assign a chosen driver. The guest proof is currently not recoverable after a browser refresh and is not time-limited. Before production, implement durable, revocable, expiring guest sessions and verified recovery flow.
+- Pricing: GET /api/recovery/estimate is actually POST. It requires active pricing_rules.rule_config and Google Routes for transport. The bank holiday calendar uses postcode region heuristics; manually verify edge cases (cross-border postcode areas).
+- Photos: upload is private and job-token scoped, but authorised photo viewing is not implemented. Driver/customer retrieval must verify assigned/approved role and use short-lived signed URLs, not public URLs.
+- Driver membership eligibility and notifications are not verified. Existing marketplace rules must be audited before launch.
+- Security: the honeypot and duplicate fingerprint are not a sufficient production rate limiter. Add edge/WAF throttling plus a durable server-side limiter before public rollout.
+- This repository's CI verifies code/tests but does not have a test Supabase database, Maps API credentials, DVLA credentials or browser E2E environment. Do not interpret CI success as live integration success.
