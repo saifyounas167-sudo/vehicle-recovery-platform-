@@ -41,7 +41,7 @@ test("preview exposes commit id without leaking secrets",()=>{
 test("wizard persists registration and contact details across unmounted steps",()=>{
  const page=readFileSync("app/recovery/request/page.tsx","utf8");
  for(const field of ["registration","rollingStatus","accessStatus","customerName","phone","email","problemDescription"]){
-  assert.match(page,new RegExp("const \\[\\["+field+",set[A-Z]"));
+  assert.ok(page.includes("const ["+field+",set"),"missing persisted "+field);
   assert.match(page,new RegExp("("+field+")[,:]"));
  }
  assert.match(page,/registration:registration\.trim\(\)\.toUpperCase\(\)/);
