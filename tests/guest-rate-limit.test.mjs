@@ -26,3 +26,9 @@ test("failure remains fail-closed and sanitized",()=>{
  assert.match(route,/return bad\("Submission protection unavailable",503\)/);
  assert.doesNotMatch(route,/console\.error\([^\n]*limitError\)/);
 });
+
+test("false RPC result is rate limited; null/unknown fails closed",()=>{
+ assert.match(route,/if\(permitted===false\)return bad\("Too many recovery requests\. Please try later\.",429\)/);
+ assert.match(route,/resultType:typeof permitted/);
+ assert.match(route,/return bad\("Submission protection unavailable",503\)/);
+});
