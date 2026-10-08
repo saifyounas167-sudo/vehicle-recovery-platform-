@@ -32,7 +32,7 @@ export async function POST(request:Request){
   if(!name||!mobile.test(phone)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!["Phone","SMS","Email"].includes(b.contactPreference))return bad("Valid contact details required");
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!url||!key)return bad("Guest requests are temporarily unavailable",503);
-  const admin=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false}});
+  const admin=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{"X-Client-Info":"recovery-preview-guest-submission"}}});
   let userId:string|null=null;
   try{const client=await createClient();const {data:{user}}=await client.auth.getUser();if(user){const {data:profile}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();if(profile?.role!=="customer")return bad("Customer role required",403);userId=user.id;}}catch{return bad("Authentication service unavailable",503);}
   const secret=process.env.GUEST_REQUEST_HASH_SECRET;
@@ -42,10 +42,15 @@ export async function POST(request:Request){
   const {data:permitted,error:limitError}=await admin.rpc("allow_recovery_request",{p_client_hash:ipHash});
   if(limitError){
    const safeCode=typeof limitError.code==="string"&&/^[A-Z0-9_]{2,12}$/i.test(limitError.code)?limitError.code:"UNKNOWN";
-   console.error("Guest rate-limit RPC failed",{code:safeCode,stage:"allow_recovery_request",hint:"Check 0008 grants, function signature and PostgREST schema cache"});
+   const safeHttpStatus=typeof limitError.code==="string"&&limitError.code==="PGRST202"?"schema_cache":safeCode==="42501"?"permission":safeCode.startsWith("PGRST")?"postgrest":"database";
+   console.error("Guest rate-limit RPC failed",{code:safeCode,category:safeHttpStatus,stage:"allow_recovery_request"});
    return bad("Submission protection unavailable",503);
   }
-  if(!permitted)return bad("Too many recovery requests. Please try later.",429);
+  if(permitted!==true){
+   if(permitted===false)return bad("Too many recovery requests. Please try later.",429);
+   console.error("Guest rate-limit RPC returned unexpected response",{stage:"allow_recovery_request",resultType:typeof permitted});
+   return bad("Submission protection unavailable",503);
+  }
   const fingerprint=createHash("sha256").update(secret+"|"+email+"|"+phone+"|"+pickup+"|"+service+"|"+text(b.registration,20)+"|"+Math.floor(Date.now()/300000)).digest("hex");
   const reference="UKR-"+randomBytes(7).toString("hex").toUpperCase();
   const row={customer_id:userId,guest_reference:reference,request_fingerprint:fingerprint,recovery_type:service,pickup_postcode:pickup,pickup_address:text(b.pickupAddress,250)||null,destination_address:mode==="transport"?text(b.destinationAddress,250)||null:null,destination_postcode:mode==="transport"?destination:null,nearest_garage_requested:mode==="Nearest Garage",roadside_assistance_requested:mode==="Roadside Assistance Without Transport",vehicle_registration:text(b.registration,20)||null,vehicle_make:text(b.make,100),vehicle_model:text(b.model,100),vehicle_type:b.vehicleType,transmission:b.transmission,running_status:b.runningStatus,rolling_status:b.runningStatus==="Non-running"?b.rollingStatus:null,wheel_condition:b.runningStatus==="Non-running"?"Locked: "+b.lockedWheels+"; damaged: "+b.damagedWheels:null,accident_status:b.accident,problem_description:text(b.problemDescription,3000),is_urgent:b.timing==="urgent",preferred_collection_time:b.timing==="Scheduled"?new Date(b.preferredCollectionTime).toISOString():null,customer_contact_preference:b.contactPreference,status:"submitted" as const};
@@ -55,5 +60,5 @@ export async function POST(request:Request){
   if(contactError){await admin.from("recovery_jobs").delete().eq("id",job.id);console.error("Private contact save failed",contactError.code);return bad("Could not securely save contact details",503);}
   const photoToken=createHmac("sha256",secret).update("photo|"+job.id+"|"+job.guest_reference).digest("hex");
   return NextResponse.json({guestAccess:{jobId:job.id,reference:job.guest_reference,proof:guestProof(job.id,job.guest_reference)},photoUpload:{jobId:job.id,reference:job.guest_reference,token:photoToken},job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
- }catch(e){console.error("Recovery request failed",e);return bad("Unable to process recovery request",400);}
+ }catch{console.error("Recovery request failed",{stage:"unhandled"});return bad("Unable to process recovery request",503);}
 }
