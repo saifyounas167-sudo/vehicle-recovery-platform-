@@ -26,6 +26,7 @@ export default function RecoveryRequestPage(){
   },[]);
   useEffect(()=>{
     if(!pickup.trim()||!destination.trim()||!vehicleType||!runningStatus||!service){setEstimate(null);return;}
+    setEstimate(null);
     const controller=new AbortController();
     const timeout=window.setTimeout(async()=>{
       setEstimateLoading(true);
@@ -106,7 +107,7 @@ export default function RecoveryRequestPage(){
           <label>Mobile number<input name="phone" type="tel" autoComplete="tel" /></label>
           <label>Email<input name="email" type="email" autoComplete="email" /></label>
           <label>What happened?<textarea name="problemDescription" rows={4} placeholder="Briefly tell us what the driver should know."/></label>
-          <div className="estimate-card"><span>Estimated recovery price</span><strong aria-live="polite">{estimateLoading?"Calculating estimated price…":estimate?.available&&typeof estimate.estimatedPriceGbp==="number"?"£"+estimate.estimatedPriceGbp.toFixed(2):"Price to be confirmed by recovery drivers"}</strong>{estimate?.route&&<p>{estimate.route.distanceMiles.toFixed(2)} verified road miles (postcode-centre approximation)</p>}<p>Your request goes live after posting. Nearby approved drivers can then send offers for you to compare.</p></div>
+          <div className="estimate-card"><span>Estimated recovery price</span><strong aria-live="polite">{estimateLoading?"Calculating estimated price…":estimate?.available&&typeof estimate.estimatedPriceGbp==="number"?"£"+estimate.estimatedPriceGbp.toFixed(2):"Price to be confirmed by recovery drivers"}</strong>{estimate?.route&&<p>{estimate.route.distanceMiles.toFixed(2)} road miles (postcode-centre route)</p>}<p>Your request goes live after posting. Nearby approved drivers can then send offers for you to compare.</p></div>
           <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="submit" className="button primary button-large" disabled={busy}>{busy?"Posting request…":"Post Recovery Request →"}</button></div>
         </section>}
       </form>
