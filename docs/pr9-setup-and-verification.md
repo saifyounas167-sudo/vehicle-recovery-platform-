@@ -7,6 +7,7 @@ Apply existing migrations in sequence using the Supabase CLI or SQL editor:
 - supabase/migrations/0001_initial.sql
 - all existing intermediate auth/RLS migrations
 - supabase/migrations/0003_guest_recovery_jobs.sql
+- supabase/migrations/0004_private_recovery_photos.sql
 
 Review the schema first. Do not run initial migration twice against an existing production database. Take a backup before migrating.
 
@@ -32,3 +33,16 @@ Admin pricing values must be supplied by the business through /admin/pricing. No
 - Secure photo upload is NOT yet implemented. Do not expose public photo buckets or put photo contents in JSON.
 - Full integration tests, responsive browser tests and production deployment verification are still pending.
 - Do not merge this draft until all critical tests pass.
+
+## Photo upload security
+The recovery-vehicle-photos bucket is private. The upload endpoint validates a job-scoped HMAC, checks magic bytes, limits uploads to 5 MB each, and links objects in recovery_job_photo_access. Do not create public storage policies. A separate authorized photo retrieval API has not yet been implemented, so photos are not currently visible to drivers. Do not treat this as a completed photo-access feature.
+
+## Required integration checks (not yet executed)
+1. Create a disposable Supabase project; apply migrations in numeric order, verify bucket remains private.
+2. With anonymous credentials, confirm SELECT from recovery_job_private_contacts and recovery_job_photo_access is denied.
+3. Submit a guest job using valid UK contact/vehicle data, verify exactly one recovery_jobs row and one private contact row via trusted service role.
+4. Retry identical payload within five minutes: expect HTTP 429 and no extra row.
+5. Upload JPG/PNG/WebP with the issued job token: verify private storage and linked row. Reject invalid token, spoofed file header, >5MB, and fourth photo.
+6. Confirm a different guest/driver cannot download photo or read private contacts.
+7. Test full wizard at 375px, 430px, tablet and desktop with actual browser automation.
+8. Verify preview deployment after Vercel access is restored.
