@@ -31,3 +31,9 @@ test("customer estimate endpoint requires a real road route and approved pricing
  assert.match(api,/validPricingConfig\(rules\[0\]\.rule_config\)/);
  assert.match(api,/calculateRecoveryPrice/);
 });
+
+test("preview exposes commit id without leaking secrets",()=>{
+ const info=readFileSync("app/api/build-info/route.ts","utf8");
+ assert.match(info,/VERCEL_GIT_COMMIT_SHA/);
+ assert.doesNotMatch(info,/ORS_API_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+});
