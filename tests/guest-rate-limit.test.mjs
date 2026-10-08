@@ -32,3 +32,8 @@ test("false RPC result is rate limited; null/unknown fails closed",()=>{
  assert.match(route,/resultType:typeof permitted/);
  assert.match(route,/return bad\("Submission protection unavailable",503\)/);
 });
+
+test("guest requests remain possible when optional Supabase session lookup throws",()=>{
+ assert.match(route,/Optional guest session lookup unavailable; continuing with server-side guest validation/);
+ assert.match(route,/const \{data:permitted,error:limitError\}=await admin\.rpc/);
+});
