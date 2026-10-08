@@ -87,3 +87,21 @@ Google Maps billing is not required to post a recovery request. The server-side 
 - Existing guest capability is not durable or expiring; user loses offer access after page refresh. Must be resolved before production.
 - Preview browser/mobile navigation and Vercel deployment remain unverified if Vercel scope is forbidden.
 - CI npm test/typecheck/build is not a substitute for database or browser end-to-end tests.
+
+## Guest submission RPC error — 0008 repair
+If Step 5 returns "Submission protection unavailable", the fail-closed server RPC `public.allow_recovery_request(p_client_hash text)` returned an error. Migration 0006 uses SECURITY INVOKER and inserts into `public.recovery_request_rate_limits` (identity ID), so the service-role caller needs table INSERT/SELECT and identity-sequence USAGE privileges in addition to EXECUTE on the function. The exact runtime cause cannot be confirmed without sanitized Vercel logs or test database inspection.
+
+**Apply to the separate vehicle-recovery-test Supabase project only:** SQL Editor → review/run `supabase/migrations/0008_guest_rate_limit_rpc_grants.sql` once. Do not edit or rerun 0006. Migration 0008 grants service_role the required privileges, revokes anon/authenticated access, keeps RLS enabled and requests PostgREST schema reload. It does not disable rate limiting. Confirm project identity in Supabase before applying.
+
+**Verification queries (test project SQL Editor, no secrets):**
+```sql
+select to_regclass('public.recovery_request_rate_limits') as limiter_table,
+       to_regprocedure('public.allow_recovery_request(text)') as limiter_function;
+select has_function_privilege('service_role','public.allow_recovery_request(text)','EXECUTE') as can_execute,
+       has_table_privilege('service_role','public.recovery_request_rate_limits','SELECT,INSERT') as can_read_insert,
+       has_sequence_privilege('service_role','public.recovery_request_rate_limits_id_seq','USAGE') as can_use_sequence;
+select relrowsecurity from pg_class where oid='public.recovery_request_rate_limits'::regclass;
+```
+Expected: function and table exist, all three privileges true, RLS true. Then redeploy **Preview only** and submit one test recovery request. Inspect sanitized server logs for `Guest rate-limit RPC failed` and error `code` only (e.g. PGRST202 = function/schema cache, 42501 = permission denied). Do not paste tokens, IPs, customer PII or secret values.
+
+Preview environment must point to the **test** Supabase project. Check that `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GUEST_REQUEST_HASH_SECRET` are assigned to Preview; confirm they belong to the same test project without displaying values. Vercel project/runtime log access currently returns 403 and cannot be verified from the repository connector. If error persists after 0008, share only the sanitized error code and stage; no bypass or production changes.
