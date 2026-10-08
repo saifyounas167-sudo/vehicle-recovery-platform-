@@ -9,6 +9,7 @@ Apply existing migrations in sequence using the Supabase CLI or SQL editor:
 - supabase/migrations/0003_guest_recovery_jobs.sql
 - supabase/migrations/0004_private_recovery_photos.sql
 - supabase/migrations/0005_offer_acceptance_guard.sql
+- supabase/migrations/0006_guest_rate_limit.sql
 
 Review the schema first. Do not run initial migration twice against an existing production database. Take a backup before migrating.
 
@@ -55,3 +56,19 @@ The recovery-vehicle-photos bucket is private. The upload endpoint validates a j
 - Driver membership eligibility and notifications are not verified. Existing marketplace rules must be audited before launch.
 - Security: the honeypot and duplicate fingerprint are not a sufficient production rate limiter. Add edge/WAF throttling plus a durable server-side limiter before public rollout.
 - This repository's CI verifies code/tests but does not have a test Supabase database, Maps API credentials, DVLA credentials or browser E2E environment. Do not interpret CI success as live integration success.
+
+## Owner action checklist
+1. In Supabase, create a new disposable **test** project and apply migrations 0001–0006 in order. Do not apply to production until SQL has been reviewed and a backup taken.
+2. In Vercel project Settings → Environment Variables, configure the six documented keys for **Preview** only, using the test Supabase credentials. Do not paste secret values in GitHub issues, pull requests or chat.
+3. Enable Google Routes API and Geocoding API for the server key, and configure DVLA Vehicle Enquiry API key if available. For missing providers, manual entry and unavailable-estimate states remain.
+4. In test Supabase, sign in as an admin and save business-approved pricing through /admin/pricing. Do not use invented rates.
+5. Submit one guest recovery job, inspect recovery_jobs and recovery_job_private_contacts separately using privileged SQL, and confirm anonymous/driver reads of private contact table fail. Verify photo bucket public=false, upload and 60-second signed URL expiration.
+6. Test rejected unauthorised photo/offer requests, approved-driver visibility, membership eligibility, and duplicate submission throttle. Test actual five-step wizard on 375px and desktop browsers.
+7. Reconnect the Vercel integration to the vehicle-recovery-platform team/project scope. The existing Vercel connector returns HTTP 403, so Preview cannot be verified with present access.
+8. Keep PR #9 Draft until these checks pass and the current head SHA CI is green.
+
+## Security follow-ups before production
+- Guest offer capability currently persists only in page state; refresh loses access. Implement secure recovery of guest access and time-limited/revocable credentials before production.
+- Current photo upload token is deterministic for the job and upload is limited to 30 minutes after creation. Add one-time token rotation if business policy requires stronger revocation.
+- The DB rate limiter caps five requests/hour per trusted forwarded-IP hash, but CDN/WAF bot protection is still recommended. Test header provenance in the deployed environment.
+- Driver notification delivery, membership gating and eligible-job coverage radius are not end-to-end verified.
