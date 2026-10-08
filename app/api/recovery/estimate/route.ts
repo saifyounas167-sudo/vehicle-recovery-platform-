@@ -41,7 +41,11 @@ export async function POST(req:Request){
     if(!response.ok)throw new Error("Calendar unavailable");
     const calendar=await response.json();
     const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).format(time);
-    const region=calendar["england-and-wales"];
+    const normalized=String(b.pickupPostcode).replace(/\s/g,"").toUpperCase();
+    const outward=normalized.replace(/\d[A-Z]{2}$/,"");
+    const scotland=/^(AB|DD|DG|EH|FK|G|HS|IV|KA|KW|KY|ML|PA|PH|TD|ZE)/.test(outward);
+    const northernIreland=/^BT/.test(outward);
+    const region=calendar[northernIreland?"northern-ireland":scotland?"scotland":"england-and-wales"];
     if(!Array.isArray(region?.events))throw new Error("Calendar invalid");
     if(region.events.some((event:{date:string})=>event.date===date))extras.push(rules.bankHolidaySurcharge);
    }catch{return unavailable("Bank holiday calendar unavailable");}
@@ -49,6 +53,6 @@ export async function POST(req:Request){
   if(extras.some(x=>x!==undefined&&!valid(x)))return unavailable("Invalid pricing configuration");
   const fee=extras.reduce<number>((sum,x)=>sum+(typeof x==="number"?x:0),0);
   const result=calculateEstimate({baseFee:rules.minimumCallout,distanceMiles:miles,distanceRate:rules.pricePerMile,equipmentFee:fee});
-  return NextResponse.json({available:true,estimateGbp:result.estimateGbp,distanceMiles:b.destinationMode==="transport"?miles:null,bankHolidayPricing:"England and Wales calendar"},{headers:{"Cache-Control":"no-store"}});
+  return NextResponse.json({available:true,estimateGbp:result.estimateGbp,distanceMiles:b.destinationMode==="transport"?miles:null,bankHolidayPricing:"UK region calendar selected from pickup postcode"},{headers:{"Cache-Control":"no-store"}});
  }catch{return unavailable("Estimate currently unavailable");}
 }
