@@ -15,3 +15,9 @@
 @keyframes quote-reveal{from{opacity:.4;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:900px){.uk-home .hero-action-panel{justify-self:stretch;max-width:600px}}@media(max-width:640px){.uk-home .hero-action-panel{max-width:none;padding:20px}.uk-home .hero-action-buttons a,.uk-home .hero-action-buttons button{min-height:62px;font-size:12px;padding:13px}.uk-home .hero-action-title{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.uk-home .hero-action-buttons a,.uk-home .hero-action-buttons button{transition:none}.uk-home .expanded-quote{animation:none}}
+
+/* Local recovery photograph, responsive focal point and legible content. */
+.uk-home .uk-hero-photo{background-color:#10151a;background-size:cover;background-repeat:no-repeat;background-position:center 46%}
+.uk-home .uk-hero-photo .uk-hero-shade{background:linear-gradient(90deg,rgba(5,9,13,.86) 0%,rgba(5,9,13,.72) 40%,rgba(5,9,13,.43) 72%,rgba(5,9,13,.48) 100%)}
+@media(max-width:900px){.uk-home .uk-hero-photo{background-position:56% center}.uk-home .uk-hero-photo .uk-hero-shade{background:linear-gradient(180deg,rgba(5,9,13,.8),rgba(5,9,13,.54) 50%,rgba(5,9,13,.85))}}
+@media(max-width:640px){.uk-home .uk-hero-photo{background-position:60% center;background-size:cover}.uk-home .uk-hero-photo .uk-hero-shade{background:linear-gradient(180deg,rgba(5,9,13,.86) 0%,rgba(5,9,13,.58) 43%,rgba(5,9,13,.9) 100%)}}
