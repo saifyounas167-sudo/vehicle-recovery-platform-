@@ -49,7 +49,7 @@ export async function POST(request:Request){
   if(permitted!==true){
    if(permitted===false)return bad("Too many recovery requests. Please try later.",429);
    console.error("Guest rate-limit RPC returned unexpected response",{stage:"allow_recovery_request",resultType:typeof permitted});
-   return bad("Submission protection unavailable",503);
+   return bad("Submission protection unavailable",503,"allow_recovery_request");
   }
   const fingerprint=createHash("sha256").update(secret+"|"+email+"|"+phone+"|"+pickup+"|"+service+"|"+text(b.registration,20)+"|"+Math.floor(Date.now()/300000)).digest("hex");
   const reference="UKR-"+randomBytes(7).toString("hex").toUpperCase();
