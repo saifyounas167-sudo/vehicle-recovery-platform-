@@ -21,7 +21,7 @@ test("business model is accurate: customer chooses, direct payment, no guarantee
  "GPS","pricing rules"
  ])assert.ok(page.toLowerCase().includes(phrase.toLowerCase()),phrase);
  assert.match(page,/online subscription payment integration is planned/);
- assert.match(page,/Client demo only/);
+ assert.match(page,/Real bookings, driver offers and subscription payments are not yet available/);
  assert.doesNotMatch(page,/guaranteed arrival|instant booking|auto-assign|automatic cheapest/i);
 });
 test("all CTA routes exist in app and anchors have targets",()=>{
