@@ -1,0 +1,112 @@
+# PR #9 deployment and verification
+
+This feature remains a draft until tested against a disposable Supabase project.
+
+## Required migrations
+Apply existing migrations in sequence using the Supabase CLI or SQL editor:
+- supabase/migrations/0001_initial.sql
+- all existing intermediate auth/RLS migrations
+- supabase/migrations/0003_guest_recovery_jobs.sql
+- supabase/migrations/0004_private_recovery_photos.sql
+- supabase/migrations/0005_offer_acceptance_guard.sql
+- supabase/migrations/0006_guest_rate_limit.sql
+- supabase/migrations/0007_driver_offer_eta.sql (NEW: do not assume applied; review then apply only this migration to the test project)
+
+Review the schema first. Do not run initial migration twice against an existing production database. Take a backup before migrating.
+
+## Environment variables (configure in Vercel, never commit values)
+- NEXT_PUBLIC_SUPABASE_URL: Supabase project URL
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY: browser public key
+- SUPABASE_SERVICE_ROLE_KEY: server only, used by guest submission/pricing
+- GUEST_REQUEST_HASH_SECRET: random secret of at least 32 characters, server only
+- GOOGLE_MAPS_SERVER_API_KEY: Google Routes and Geocoding server key, enable both APIs and restrict credentials appropriately
+- DVLA_VEHICLE_API_KEY: DVLA Vehicle Enquiry API key, server only
+
+Admin pricing values must be supplied by the business through /admin/pricing. No rates are seeded. Bank holiday lookup currently uses England and Wales calendar only; expand to region-specific holiday logic before relying on Scottish or Northern Irish surcharges.
+
+## Known blockers and security review
+- Guest submission has NOT been verified against a live test database.
+- The guest endpoint currently uses service role and a time-bucket duplicate fingerprint plus honeypot; deploy behind managed rate limiting and bot protection before exposing publicly.
+- Guest private contact table has RLS enabled and no anon/authenticated grants; verify policies in test database, including any existing broad grants.
+- Verify that driver-facing RLS policies never expose guest contact information.
+- Pricing rules are stored in rule_config JSON. Existing pricing API supports configured fees and driving mileage; missing required configuration should show unavailable, not a fabricated estimate.
+- Nearest Garage mode does not select a garage automatically.
+- GPS postcode requires Google Geocoding. Manual postcode remains available.
+- DVLA response typically does not include model; manual model entry remains required.
+- Secure photo upload is NOT yet implemented. Do not expose public photo buckets or put photo contents in JSON.
+- Full integration tests, responsive browser tests and production deployment verification are still pending.
+- Do not merge this draft until all critical tests pass.
+
+## Photo upload security
+The recovery-vehicle-photos bucket is private. The upload endpoint validates a job-scoped HMAC, checks magic bytes, limits uploads to 5 MB each, and links objects in recovery_job_photo_access. Do not create public storage policies. A separate authorized photo retrieval API has not yet been implemented, so photos are not currently visible to drivers. Do not treat this as a completed photo-access feature.
+
+## Required integration checks (not yet executed)
+1. Create a disposable Supabase project; apply migrations in numeric order, verify bucket remains private.
+2. With anonymous credentials, confirm SELECT from recovery_job_private_contacts and recovery_job_photo_access is denied.
+3. Submit a guest job using valid UK contact/vehicle data, verify exactly one recovery_jobs row and one private contact row via trusted service role.
+4. Retry identical payload within five minutes: expect HTTP 429 and no extra row.
+5. Upload JPG/PNG/WebP with the issued job token: verify private storage and linked row. Reject invalid token, spoofed file header, >5MB, and fourth photo.
+6. Confirm a different guest/driver cannot download photo or read private contacts.
+7. Test full wizard at 375px, 430px, tablet and desktop with actual browser automation.
+8. Verify preview deployment after Vercel access is restored.
+
+## PR #9 current integration boundaries
+- Guest offers: /api/recovery/guest-offers accepts a signed guest proof returned after submission; /api/recovery/accept-offer uses migration 0005 to atomically assign a chosen driver. The guest proof is currently not recoverable after a browser refresh and is not time-limited. Before production, implement durable, revocable, expiring guest sessions and verified recovery flow.
+- Pricing: GET /api/recovery/estimate is actually POST. It requires active pricing_rules.rule_config and Google Routes for transport. The bank holiday calendar uses postcode region heuristics; manually verify edge cases (cross-border postcode areas).
+- Photos: upload is private and job-token scoped, but authorised photo viewing is not implemented. Driver/customer retrieval must verify assigned/approved role and use short-lived signed URLs, not public URLs.
+- Driver membership eligibility and notifications are not verified. Existing marketplace rules must be audited before launch.
+- Security: the honeypot and duplicate fingerprint are not a sufficient production rate limiter. Add edge/WAF throttling plus a durable server-side limiter before public rollout.
+- This repository's CI verifies code/tests but does not have a test Supabase database, Maps API credentials, DVLA credentials or browser E2E environment. Do not interpret CI success as live integration success.
+
+## Owner action checklist
+1. In Supabase, create a new disposable **test** project and apply migrations 0001–0006 in order. Do not apply to production until SQL has been reviewed and a backup taken.
+2. In Vercel project Settings → Environment Variables, configure the six documented keys for **Preview** only, using the test Supabase credentials. Do not paste secret values in GitHub issues, pull requests or chat.
+3. Enable Google Routes API and Geocoding API for the server key, and configure DVLA Vehicle Enquiry API key if available. For missing providers, manual entry and unavailable-estimate states remain.
+4. In test Supabase, sign in as an admin and save business-approved pricing through /admin/pricing. Do not use invented rates.
+5. Submit one guest recovery job, inspect recovery_jobs and recovery_job_private_contacts separately using privileged SQL, and confirm anonymous/driver reads of private contact table fail. Verify photo bucket public=false, upload and 60-second signed URL expiration.
+6. Test rejected unauthorised photo/offer requests, approved-driver visibility, membership eligibility, and duplicate submission throttle. Test actual five-step wizard on 375px and desktop browsers.
+7. Reconnect the Vercel integration to the vehicle-recovery-platform team/project scope. The existing Vercel connector returns HTTP 403, so Preview cannot be verified with present access.
+8. Keep PR #9 Draft until these checks pass and the current head SHA CI is green.
+
+## Security follow-ups before production
+- Guest offer capability currently persists only in page state; refresh loses access. Implement secure recovery of guest access and time-limited/revocable credentials before production.
+- Current photo upload token is deterministic for the job and upload is limited to 30 minutes after creation. Add one-time token rotation if business policy requires stronger revocation.
+- The DB rate limiter caps five requests/hour per trusted forwarded-IP hash, but CDN/WAF bot protection is still recommended. Test header provenance in the deployed environment.
+- Driver notification delivery, membership gating and eligible-job coverage radius are not end-to-end verified.
+
+## October 2026 no-Google-Maps preview configuration
+The test project vehicle-recovery-test reportedly already has migrations 0001–0006 applied manually. **Do not reapply or reset those migrations.** Review and apply only migration 0007 for driver ETA if needed. The Preview environment reportedly has NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, and GUEST_REQUEST_HASH_SECRET. Never paste their values into chat.
+
+The new /api/recovery/postcode endpoint uses Postcodes.io for free UK postcode lookup and nearest-postcode GPS reverse lookup. These are approximate postcode centroids, not exact property addresses. The form requires manually confirmed pickup street/landmark and optionally destination address. It still accepts manual postcodes if Postcodes.io fails.
+
+Google Maps billing is not required to post a recovery request. The server-side estimate will return unavailable for transport if no verified routing provider is configured; UI shows **Price to be confirmed by recovery drivers**. Do not use straight-line mileage or public routing demo servers as a replacement. DVLA is optional and manual make/model remains available.
+
+### Critical remaining gates
+- Existing database credentials cannot be inspected or used through this repository connector; real test Supabase inserts, private contacts, RLS, photos and offer acceptance are NOT yet verified.
+- No active driver membership entitlement model exists. Driver offer submission is intentionally **disabled (HTTP 503)** until membership can be verified securely. This prevents unauthorized marketplace offers but blocks the complete driver-offer journey.
+- Existing guest capability is not durable or expiring; user loses offer access after page refresh. Must be resolved before production.
+- Preview browser/mobile navigation and Vercel deployment remain unverified if Vercel scope is forbidden.
+- CI npm test/typecheck/build is not a substitute for database or browser end-to-end tests.
+
+## Guest submission RPC error — 0008 repair
+If Step 5 returns "Submission protection unavailable", the fail-closed server RPC `public.allow_recovery_request(p_client_hash text)` returned an error. Migration 0006 uses SECURITY INVOKER and inserts into `public.recovery_request_rate_limits` (identity ID), so the service-role caller needs table INSERT/SELECT and identity-sequence USAGE privileges in addition to EXECUTE on the function. The exact runtime cause cannot be confirmed without sanitized Vercel logs or test database inspection.
+
+**Apply to the separate vehicle-recovery-test Supabase project only:** SQL Editor → review/run `supabase/migrations/0008_guest_rate_limit_rpc_grants.sql` once. Do not edit or rerun 0006. Migration 0008 grants service_role the required privileges, revokes anon/authenticated access, keeps RLS enabled and requests PostgREST schema reload. It does not disable rate limiting. Confirm project identity in Supabase before applying.
+
+**Verification queries (test project SQL Editor, no secrets):**
+```sql
+select to_regclass('public.recovery_request_rate_limits') as limiter_table,
+       to_regprocedure('public.allow_recovery_request(text)') as limiter_function;
+select has_function_privilege('service_role','public.allow_recovery_request(text)','EXECUTE') as can_execute,
+       has_table_privilege('service_role','public.recovery_request_rate_limits','SELECT,INSERT') as can_read_insert,
+       has_sequence_privilege('service_role','public.recovery_request_rate_limits_id_seq','USAGE') as can_use_sequence;
+select relrowsecurity from pg_class where oid='public.recovery_request_rate_limits'::regclass;
+```
+Expected: function and table exist, all three privileges true, RLS true. Then redeploy **Preview only** and submit one test recovery request. Inspect sanitized server logs for `Guest rate-limit RPC failed` and error `code` only (e.g. PGRST202 = function/schema cache, 42501 = permission denied). Do not paste tokens, IPs, customer PII or secret values.
+
+Preview environment must point to the **test** Supabase project. Check that `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GUEST_REQUEST_HASH_SECRET` are assigned to Preview; confirm they belong to the same test project without displaying values. Vercel project/runtime log access currently returns 403 and cannot be verified from the repository connector. If error persists after 0008, share only the sanitized error code and stage; no bypass or production changes.
+
+## October 2026: 503 RPC troubleshooting update
+The direct SQL RPC test returning `false` confirms that the function can execute in the SQL Editor context, **not** that the Vercel service-role PostgREST call succeeds. A false RPC result is a legitimate rate-limit denial and must return HTTP 429. HTTP 503 `Submission protection unavailable` is generated when PostgREST returns an error or an unexpected result. The latest jobs route logs only a sanitized RPC error code/category and no customer data, token, IP or SQL error message. A null/unexpected result also fails closed.
+
+Vercel runtime logs and environment metadata both return **403 for the vehicle-recovery-platform scope** to this integration. The actual PostgREST error code and project linkage cannot be verified here. Vercel account owner must re-authenticate the integration for the correct project/team. In Vercel → Project → Settings → Environment Variables, verify (without exposing values) that the Preview URL/public key and server service-role key belong to the **same** `vehicle-recovery-test` project and are scoped to the PR #9 Preview deployment. After the current branch deploys, submit once and inspect the `Guest rate-limit RPC failed` log code. `PGRST202` indicates schema cache/signature; `42501` indicates permissions; a different code requires a code-specific investigation. Do not disable rate limiting or modify production.

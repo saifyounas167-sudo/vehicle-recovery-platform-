@@ -1,86 +1,57 @@
 "use client";
-import { FormEvent, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import {useEffect,useState} from "react";
 import PublicHeader from "../../components/public-header";
+import RecoveryRouteMap from "../../components/recovery-route-map";
 
-const steps=["Location","Vehicle","Recovery","Details"];
-const services=["Breakdown","Accident","Transport","Towing","Other assistance"];
-
+const steps=["Location","Vehicle","Recovery","Customer","Review"];
+const services=["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"];
+const postcode=/^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}))$/i;
+const phone=/^(?:\+44\s?7\d{3}|07\d{3})\s?\d{3}\s?\d{3}$/;
+type Values=Record<string,string>;
+const initial:Values={pickupPostcode:"",destinationPostcode:"",destinationMode:"transport",pickupAddress:"",destinationAddress:"",registration:"",make:"",model:"",vehicleType:"",transmission:"",runningStatus:"",rollingStatus:"",lockedWheels:"",damagedWheels:"",accident:"",recoveryType:"",problemDescription:"",timing:"urgent",preferredCollectionTime:"",equipment:"",difficulty:"",customerName:"",phone:"",email:"",contactPreference:"Phone"};
 export default function RecoveryRequestPage(){
-  const [step,setStep]=useState(0);
-  const [locationStatus,setLocationStatus]=useState("");
-  const [runningStatus,setRunningStatus]=useState("");
-  const [service,setService]=useState("");
-  const [error,setError]=useState("");
-  const [busy,setBusy]=useState(false);
-  const progress=useMemo(()=>((step+1)/steps.length)*100,[step]);
-
-  function useCurrentLocation(){
-    if(!navigator.geolocation)return setLocationStatus("GPS is not supported on this device.");
-    setLocationStatus("Finding your location…");
-    navigator.geolocation.getCurrentPosition(
-      ({coords})=>setLocationStatus("Location captured: "+coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5)),
-      ()=>setLocationStatus("Location permission was not granted.")
-    );
+ const clientReview=true; // review release hard-stops customer submissions
+ const [postcodeStatus,setPostcodeStatus]=useState(""),[guestAccess,setGuestAccess]=useState<{jobId:string;reference:string;proof:string}|null>(null),[offers,setOffers]=useState<{id:string;offer_amount_gbp:number;message:string;status:string}[]>([]),[offersMessage,setOffersMessage]=useState(""),[photos,setPhotos]=useState<File[]>([]),[uploadStatus,setUploadStatus]=useState(""),[lookupStatus,setLookupStatus]=useState(""),[estimate,setEstimate]=useState<{available:boolean;estimateGbp?:number;distanceMiles?:number|null;reason?:string;route?:{coordinates:[number,number][];pickup:{latitude:number;longitude:number};destination:{latitude:number;longitude:number}}|null}|null>(null),[estimating,setEstimating]=useState(false),[step,setStep]=useState(0),[v,setV]=useState<Values>(initial),[website,setWebsite]=useState(""),[error,setError]=useState(""),[gps,setGps]=useState(""),[busy,setBusy]=useState(false),[done,setDone]=useState<{id:string,status:string}|null>(null);
+ useEffect(()=>{
+  if(step!==4)return;
+  const controller=new AbortController();
+  setEstimating(true);setEstimate(null);
+  if(v.destinationMode!=="transport"){
+   setEstimate({available:false,reason:"Price to be confirmed by recovery drivers"});
+   setEstimating(false);return ()=>controller.abort();
   }
-
-  function next(){setError("");setStep(s=>Math.min(3,s+1));window.scrollTo({top:0,behavior:"smooth"});}
-  function back(){setError("");setStep(s=>Math.max(0,s-1));window.scrollTo({top:0,behavior:"smooth"});}
-
-  async function submit(e:FormEvent<HTMLFormElement>){
-    e.preventDefault();setError("");setBusy(true);
-    const supabase=createClient();
-    const {data:{user}}=await supabase.auth.getUser();
-    if(!user){window.location.href="/login?reason=auth&next=/recovery/request";return;}
-    const form=new FormData(e.currentTarget);
-    const payload=Object.fromEntries(form.entries());
-    const res=await fetch("/api/recovery/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,recoveryType:service,runningStatus})});
-    if(!res.ok){const body=await res.json().catch(()=>({}));setError(body.error||"We could not post your recovery request.");setBusy(false);return;}
-    const body=await res.json();window.location.href="/customer?submitted="+body.job.id;
-  }
-
-  return <main className="request-wizard-shell">\n    <PublicHeader/>
-    <div className="request-wizard">
-      <div className="wizard-progress"><div className="wizard-progress-top"><span>Step {step+1} of 4</span><strong>{steps[step]}</strong></div><div className="wizard-track"><i style={{width:progress+"%"}}/></div></div>
-      <form onSubmit={submit}>
-        {error&&<div className="alert error">{error}</div>}
-
-        {step===0&&<section className="wizard-step">
-          <div className="eyebrow">Step 1 · Location</div><h1>Where is the vehicle?</h1><p>Tell us where to collect it and where it needs to go.</p>
-          <label>Pickup postcode or location<input name="pickupPostcode" autoComplete="postal-code" placeholder="e.g. M1 1AA" required /></label>
-          <button type="button" className="location-button" onClick={useCurrentLocation}>⌖ Use my current location</button>
-          {locationStatus&&<p className="location-status">{locationStatus}</p>}
-          <label>Destination postcode or location<input name="destinationPostcode" autoComplete="postal-code" placeholder="Where should we take it?" required /></label>
-          <button type="button" className="button primary button-large wizard-main" onClick={next}>Continue →</button>
-        </section>}
-
-        {step===1&&<section className="wizard-step">
-          <div className="eyebrow">Step 2 · Vehicle</div><h1>Which vehicle needs help?</h1><p>We only need the basics. Vehicle data can be filled automatically when the vehicle API is connected.</p>
-          <label>Vehicle registration<input name="registration" placeholder="e.g. AB12 CDE" /></label>
-          <label>Vehicle type<select name="vehicleType" defaultValue=""><option value="">Select vehicle type</option><option>Car</option><option>Van</option><option>Motorbike</option><option>Other</option></select></label>
-          <fieldset className="choice-field"><legend>Can the vehicle move under its own power?</legend><div className="choice-grid"><label className={runningStatus==="Running"?"choice active":"choice"}><input type="radio" name="runningChoice" value="Running" onChange={()=>setRunningStatus("Running")}/><strong>Running</strong><span>Vehicle can move</span></label><label className={runningStatus==="Non-running"?"choice active":"choice"}><input type="radio" name="runningChoice" value="Non-running" onChange={()=>setRunningStatus("Non-running")}/><strong>Non-running</strong><span>Vehicle cannot move</span></label></div></fieldset>
-          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="button" className="button primary" onClick={next}>Continue →</button></div>
-        </section>}
-
-        {step===2&&<section className="wizard-step">
-          <div className="eyebrow">Step 3 · Recovery</div><h1>What kind of help do you need?</h1><p>Choose the closest option. We will only ask extra questions when they matter.</p>
-          <div className="service-choice-grid">{services.map(x=><label key={x} className={service===x?"service-choice active":"service-choice"}><input type="radio" name="serviceChoice" value={x} onChange={()=>setService(x)}/><strong>{x}</strong></label>)}</div>
-          {runningStatus==="Non-running"&&<div className="conditional-card"><strong>One quick question</strong><label>Can the vehicle roll freely?<select name="rollingStatus" defaultValue=""><option value="">Select</option><option>Yes</option><option>No / wheels locked</option><option>Not sure</option></select></label></div>}
-          {service==="Accident"&&<div className="conditional-card"><strong>Accident recovery</strong><label>Is the vehicle safely accessible?<select name="accessStatus" defaultValue=""><option value="">Select</option><option>Yes</option><option>No</option><option>Not sure</option></select></label></div>}
-          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="button" className="button primary" onClick={next}>Continue →</button></div>
-        </section>}
-
-        {step===3&&<section className="wizard-step">
-          <div className="eyebrow">Step 4 · Details & estimate</div><h1>Almost done.</h1><p>Add your contact details and anything important the recovery professional should know.</p>
-          <label>Your name<input name="customerName" autoComplete="name" /></label>
-          <label>Mobile number<input name="phone" type="tel" autoComplete="tel" /></label>
-          <label>Email<input name="email" type="email" autoComplete="email" /></label>
-          <label>What happened?<textarea name="problemDescription" rows={4} placeholder="Briefly tell us what the driver should know."/></label>
-          <div className="estimate-card"><span>Estimated recovery price</span><strong>Estimate calculated after route & pricing data</strong><p>Your request goes live after posting. Nearby approved drivers can then send offers for you to compare.</p></div>
-          <div className="wizard-actions"><button type="button" className="button secondary" onClick={back}>← Back</button><button type="submit" className="button primary button-large" disabled={busy}>{busy?"Posting request…":"Post Recovery Request →"}</button></div>
-        </section>}
-      </form>
-      <div className="wizard-after"><span>Job goes live</span><b>→</b><span>Drivers send offers</span><b>→</b><span>You choose</span></div>
-    </div>
-  </main>;
+  const payload={
+   pickupPostcode:v.pickupPostcode,destinationPostcode:v.destinationPostcode,
+   vehicleType:v.vehicleType,runningStatus:v.runningStatus,
+   lockedWheels:v.lockedWheels==="Yes",accident:v.accident==="Yes",
+   urgent:v.timing==="urgent",specialEquipment:Boolean(v.equipment),
+   loadingDifficulty:Boolean(v.difficulty),
+   ...(v.timing==="Scheduled"&&v.preferredCollectionTime?{scheduledAt:new Date(v.preferredCollectionTime).toISOString()}: {})
+  };
+  fetch("/api/recovery/open-estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),signal:controller.signal})
+   .then(async r=>{const data=await r.json();if(!r.ok)throw Error("Estimate unavailable");return data;})
+   .then(data=>{if(!controller.signal.aborted)setEstimate({available:data.available===true,estimateGbp:data.estimatedPriceGbp,distanceMiles:data.route?.distanceMiles??null,route:data.route??null,reason:data.message||data.disclaimer||"Price to be confirmed by recovery drivers"});})
+   .catch(()=>{if(!controller.signal.aborted)setEstimate({available:false,reason:"Price to be confirmed by recovery drivers"});})
+   .finally(()=>{if(!controller.signal.aborted)setEstimating(false);});
+  return ()=>controller.abort();
+ },[step,v]);
+ useEffect(()=>{const q=new URLSearchParams(window.location.search);setV(s=>({...s,pickupPostcode:q.get("pickup")||s.pickupPostcode,destinationPostcode:q.get("destination")||s.destinationPostcode,destinationMode:q.get("destination")?"transport":s.destinationMode}));},[]);
+ const set=(key:string,value:string)=>setV(s=>({...s,[key]:value}));
+ const field=(key:string,label:string,required=false,type="text",placeholder="")=><label className="recovery-field"><span>{label}{required?" *":""}</span><input type={type} value={v[key]||""} onChange={e=>set(key,e.target.value)} placeholder={placeholder}/></label>;
+ const select=(key:string,label:string,options:string[],required=false)=><label className="recovery-field"><span>{label}{required?" *":""}</span><select value={v[key]||""} onChange={e=>set(key,e.target.value)}><option value="">Select an option</option>{options.map(x=><option key={x}>{x}</option>)}</select></label>;
+ const choices=(key:string,options:string[])=><div className="recovery-choices">{options.map(x=><button key={x} type="button" className={v[key]===x?"selected":""} onClick={()=>set(key,x)}>{x}</button>)}</div>;
+ const transport=v.destinationMode==="transport";
+ async function checkPostcode(value:string,kind:"pickup"|"destination"){if(!postcode.test(value.trim()))return;try{const response=await fetch("/api/recovery/postcode?postcode="+encodeURIComponent(value));const data=await response.json();setPostcodeStatus(data.valid===true?kind+" postcode confirmed. Please verify your street address.":data.valid===false?"Postcode not found. Check the postcode or confirm address manually.":"Postcode service unavailable. Manual address confirmation is available.");}catch{setPostcodeStatus("Postcode lookup unavailable. Confirm your address manually.");}}
+ function validate(i:number){if(i===0){if(!postcode.test(v.pickupPostcode.trim()))return "Enter a valid UK pickup postcode.";if(!v.pickupAddress.trim())return "Confirm the pickup street/address or nearest landmark.";if(transport&&!postcode.test(v.destinationPostcode.trim()))return "Enter a valid UK destination postcode.";}if(i===1){if(!v.make.trim()||!v.model.trim()||!v.vehicleType||!v.transmission||!v.runningStatus)return "Complete the required vehicle information.";if(v.runningStatus==="Non-running"&&(!v.rollingStatus||!v.lockedWheels||!v.damagedWheels))return "Please confirm the vehicle's wheel and rolling condition.";if(!v.accident)return "Confirm whether the vehicle was involved in an accident.";}if(i===2){if(!v.recoveryType||!v.problemDescription.trim())return "Choose a recovery service and describe the problem.";if(v.timing==="Scheduled"&&!v.preferredCollectionTime)return "Choose your preferred collection date and time.";}if(i===3){if(!v.customerName.trim()||!phone.test(v.phone.replace(/[\s-]/g,""))||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))return "Enter your full name, a valid UK mobile number and email.";}return "";}
+ function next(){const message=validate(step);if(message){setError(message);return;}setError("");setStep(s=>Math.min(4,s+1));window.scrollTo(0,0);}
+ function back(){setError("");setStep(s=>Math.max(0,s-1));}
+ function locate(){if(!navigator.geolocation){setGps("GPS unavailable. Enter a postcode manually.");return;}setGps("Finding your location…");navigator.geolocation.getCurrentPosition(async ({coords})=>{try{const response=await fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude);const data=await response.json();if(!response.ok)throw new Error();set("pickupPostcode",data.postcode);setGps("Nearest postcode found: "+data.postcode+". Please confirm your exact pickup address.");}catch{setGps("GPS postcode lookup unavailable. Enter postcode manually.");}},()=>setGps("Location permission unavailable. Enter postcode manually."));}
+ async function submit(){setError("");setBusy(true);try{const res=await fetch("/api/recovery/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...v,website,urgent:v.timing==="urgent"})});const result=await res.json();if(!res.ok)throw new Error(result.error||"Request could not be posted.");setDone(result.job);if(result.guestAccess)setGuestAccess(result.guestAccess);if(photos.length&&result.photoUpload){let count=0;for(const photo of photos){if(photo.size>5242880)continue;const form=new FormData();form.set("jobId",result.photoUpload.jobId);form.set("reference",result.photoUpload.reference);form.set("token",result.photoUpload.token);form.set("photo",photo);const response=await fetch("/api/recovery/photos",{method:"POST",body:form});if(response.ok)count++;}setUploadStatus(count+" of "+photos.length+" photos uploaded.");}}catch(e){setError(e instanceof Error?e.message:"Unable to post request.");}finally{setBusy(false);}}
+ return <><PublicHeader/><main className="recovery-v2"><div className="recovery-shell">{done?<section className="recovery-card"><h1>Recovery request received</h1><p>Reference: <strong>{done.id}</strong></p><p>Status: {done.status}</p>{uploadStatus&&<p>{uploadStatus}</p>}<p>Recovery companies may send offers for you to compare. No driver has been automatically selected.</p>{guestAccess&&<><button type="button" className="recovery-next" onClick={async()=>{try{const response=await fetch("/api/recovery/guest-offers",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(guestAccess)});if(!response.ok)throw new Error();const data=await response.json();setOffers(data.offers||[]);setOffersMessage(data.offers?.length?"Compare offers below.":"No offers yet. Please check again later.");}catch{setOffersMessage("Unable to load offers right now.");}}}>Refresh driver offers</button><p role="status">{offersMessage}</p>{offers.map(offer=><article key={offer.id} className="recovery-estimate"><strong>£{offer.offer_amount_gbp}</strong><p>{offer.message}</p><p>Status: {offer.status}</p>{offer.status==="pending"&&<button type="button" className="recovery-next" onClick={async()=>{const response=await fetch("/api/recovery/accept-offer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...guestAccess,offerId:offer.id})});setOffersMessage(response.ok?"Offer accepted. Other offers are closed.":"Unable to accept this offer.");}}>Accept this offer</button>}</article>)}</>}</section>:<><div className="recovery-heading"><span>UK RECOVERY · CUSTOMER REQUEST</span><h1>Request vehicle recovery</h1><p>Five simple steps to connect with independent recovery professionals.</p></div><ol className="recovery-progress">{steps.map((name,i)=><li key={name} className={i===step?"current":i<step?"complete":""}><b>{i+1}</b><span>{name}</span></li>)}</ol><section className="recovery-card"><div style={{position:"absolute",left:"-9999px"}} aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></label></div><div className="recovery-step-label">STEP {step+1} OF 5</div>
+ {step===0&&<><h2>Where do you need help?</h2>{field("pickupPostcode","Pickup postcode",true,"text","e.g. SW1A 1AA")}<button type="button" className="recovery-text-button" onClick={()=>checkPostcode(v.pickupPostcode,"pickup")}>Check pickup postcode</button>{field("pickupAddress","Pickup street/address or landmark (confirm manually)",true)}<button type="button" className="recovery-text-button" onClick={locate}>⌖ Use My Current Location</button>{gps&&<p role="status">{gps}</p>}<h3>Where should we take your vehicle?</h3>{choices("destinationMode",["transport","Nearest Garage","Roadside Assistance Without Transport"])}{transport&&<>{field("destinationPostcode","Destination postcode",true,"text","e.g. M1 1AA")}<button type="button" className="recovery-text-button" onClick={()=>checkPostcode(v.destinationPostcode,"destination")}>Check destination postcode</button>{field("destinationAddress","Destination street/address or landmark (confirm manually)")}</>}{postcodeStatus&&<p role="status">{postcodeStatus}</p>}{v.destinationMode==="Nearest Garage"&&<p>A garage cannot be selected automatically until a location provider is configured. You can enter a destination postcode instead.</p>}</>}
+ {step===1&&<><h2>Tell us about your vehicle</h2>{field("registration","Vehicle registration (optional)",false,"text","AB12 CDE")}<button type="button" className="recovery-text-button" onClick={async()=>{setLookupStatus("Checking registration…");try{const response=await fetch("/api/recovery/vehicle?registration="+encodeURIComponent(v.registration));const data=await response.json();if(!response.ok)throw new Error(data.error||"Lookup unavailable");setV(s=>({...s,make:data.make||s.make,model:data.model||s.model}));setLookupStatus("Vehicle details retrieved. Please verify.");}catch{setLookupStatus("Lookup unavailable. Enter vehicle details manually.");}}}>Look up registration</button><p role="status">{lookupStatus||"You can always enter vehicle details manually."}</p><div className="recovery-grid">{field("make","Vehicle make",true)}{field("model","Vehicle model",true)}{select("vehicleType","Vehicle type",["Car","Van","Motorbike","4x4","Other"],true)}{select("transmission","Transmission",["Automatic","Manual"],true)}</div><h3>Vehicle condition</h3>{select("runningStatus","Is the vehicle running?",["Running","Non-running"],true)}{v.runningStatus==="Non-running"&&<div className="recovery-grid">{select("rollingStatus","Can it roll freely?",["Yes","No","Not sure"],true)}{select("lockedWheels","Locked wheels?",["Yes","No","Not sure"],true)}{select("damagedWheels","Damaged wheels?",["Yes","No","Not sure"],true)}</div>}{select("accident","Involved in an accident?",["Yes","No"],true)}</>}
+ {step===2&&<><h2>What recovery service do you need?</h2><div className="recovery-service-grid">{services.map(x=><button key={x} type="button" className={v.recoveryType===x?"selected":""} onClick={()=>set("recoveryType",x)}>{x}</button>)}</div><label className="recovery-field"><span>Describe the problem *</span><textarea value={v.problemDescription} onChange={e=>set("problemDescription",e.target.value)} rows={4} placeholder="What should the recovery driver know?"/></label><h3>When do you need recovery?</h3>{choices("timing",["urgent","Scheduled"])}{v.timing==="Scheduled"&&field("preferredCollectionTime","Preferred collection date/time",true,"datetime-local")}{(v.runningStatus==="Non-running"||v.accident==="Yes"||v.recoveryType==="Accident Recovery")&&<div className="recovery-grid">{field("equipment","Special equipment needed (if known)")}{field("difficulty","Loading or recovery difficulty")}</div>}<label className="recovery-field">Optional photos (maximum 3, 5MB each)<input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>setPhotos(Array.from(e.target.files||[]).slice(0,3))}/></label></>}
+ {step===3&&<><h2>How can drivers contact you?</h2>{field("customerName","Full name",true)}{field("phone","UK mobile number",true,"tel","07...")}{field("email","Email address",true,"email")}{select("contactPreference","Preferred contact method",["Phone","SMS","Email"],true)}<p>Your contact details must remain private from public driver listings.</p></>}
+ {step===4&&<><h2>Review your recovery request</h2><div className="recovery-summary">{[["Pickup",v.pickupPostcode+" · "+v.pickupAddress],["Destination",transport?v.destinationPostcode+" · "+v.destinationAddress:v.destinationMode],["Vehicle",[v.make,v.model,v.vehicleType,v.transmission].filter(Boolean).join(" · ")],["Vehicle condition",[v.runningStatus,v.rollingStatus,v.lockedWheels&&"Locked wheels: "+v.lockedWheels,v.damagedWheels&&"Damaged wheels: "+v.damagedWheels].filter(Boolean).join(" · ")],["Service",v.recoveryType],["Timing",v.timing==="Scheduled"?v.preferredCollectionTime:"Urgent"],["Customer",v.customerName+" · "+v.phone+" · "+v.email]].map(([k,val])=><div key={k}><strong>{k}</strong><span>{val}</span></div>)}</div><div className="recovery-estimate"><span>ESTIMATED RECOVERY PRICE</span><strong>{estimating?"Calculating driving-distance estimate…":estimate?.available?`£${estimate.estimateGbp?.toFixed(2)}`:"Price to be confirmed by recovery drivers"}</strong>{estimate?.distanceMiles!=null&&<p>Driving distance: {estimate.distanceMiles.toFixed(2)} road miles (postcode-centre route)</p>}<p>{estimate?.available?"Independent driver offers may differ from this estimate.":estimate?.reason||"Distance and admin pricing rules must be configured before a reliable amount can be calculated."}</p><RecoveryRouteMap route={estimate?.route??null}/></div><p>This is an estimated recovery cost. Independent recovery companies may submit their own prices and arrival times.</p><p>No online customer payment is required here.</p></>}
+ {error&&<p className="recovery-error" role="alert">{error}</p>}<div className="recovery-buttons">{step>0&&<button type="button" className="recovery-back" onClick={back}>← Back</button>}{step<4?<button type="button" className="recovery-next" onClick={next}>Continue →</button>:clientReview?<><p role="status" className="recovery-error">Client demo only — live submissions and driver offers are paused until verified.</p><button type="button" className="recovery-next" disabled>REQUEST SUBMISSION PAUSED</button></>:<button type="button" className="recovery-next" onClick={submit} disabled={busy}>{busy?"Posting…":"POST RECOVERY REQUEST →"}</button>}</div></section><p className="recovery-bottom">One request → driver offers → you choose your recovery professional.</p></>}</div></main></>;
 }
