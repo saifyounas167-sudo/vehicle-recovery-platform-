@@ -46,7 +46,7 @@ test("five-step wizard retains guest data and shows real route pricing",()=>{
  assert.match(page,/setV\(s=>\(\{\.\.\.s,\[key\]:value\}\)\)/);
  assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
  assert.match(page,/estimatedPriceGbp/);
- assert.match(page,/<RecoveryRouteMap route=\{estimate\.route\}/);
+ assert.match(page,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\}/);
  assert.match(page,/fetch\("\/api\/recovery\/jobs"/);
 });
 test("server-only price and secure offer checks stay required",()=>{
