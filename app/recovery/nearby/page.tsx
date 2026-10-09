@@ -41,7 +41,7 @@ export default function NearbyRecoveryPage(){
  const href="/recovery/request"+(postcode?"?pickup="+encodeURIComponent(postcode):"");
  return <><PublicHeader/><main className="nearby-page"><div className="nearby-wrap">
   <Link href="/" className="nearby-back">← Back to homepage</Link>
-  <span className="nearby-kicker">UK RECOVERY · CLIENT DEMO</span>
+  <span className="nearby-kicker">UK RECOVERY · FIND NEARBY</span>
   <h1>Find Recovery <em>Near Me</em></h1>
   <p className="nearby-lead">Search a UK postcode to explore an area. This is a discovery preview, not direct driver booking or real-time availability.</p>
   <form className="nearby-form" onSubmit={submit}>
@@ -52,7 +52,7 @@ export default function NearbyRecoveryPage(){
   <p className="nearby-status" role="status" aria-live="polite">{status}</p>
   {point&&<div className="nearby-map"><RecoveryRouteMap route={null} pickup={point}/></div>}
   <section className="nearby-results" aria-labelledby="nearby-results-title"><h2 id="nearby-results-title">Recovery Companies</h2>
-   <div className="nearby-empty"><b>Verified company listings are not available in this demo yet.</b><p>Our existing database does not currently provide a secure public coverage-location directory for approved recovery companies. We will not show unverified, fictional or private driver locations. A searched postcode pin represents the search area only.</p><p>When company discovery is ready, approved businesses may receive requests and send independent price and ETA offers. The customer will still choose the preferred driver.</p><Link className="nearby-request" href={href}>Explore Recovery Request →</Link><small>Read-only demo: no live booking, offer submission or payment.</small></div>
+   <div className="nearby-empty"><b>Verified company listings are not available yet.</b><p>Our existing database does not currently provide a secure public coverage-location directory for approved recovery companies. We will not show unverified, fictional or private driver locations. A searched postcode pin represents the search area only.</p><p>When company discovery is ready, approved businesses may receive requests and send independent price and ETA offers. The customer will still choose the preferred driver.</p><Link className="nearby-request" href={href}>Explore Recovery Request →</Link><small>Live booking, offer submission and payment are not yet available.</small></div>
   </section>
  </div></main></>;
 }
