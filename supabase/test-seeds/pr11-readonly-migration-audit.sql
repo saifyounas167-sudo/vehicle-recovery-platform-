@@ -13,11 +13,11 @@ WITH checks AS (
   to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)') IS NOT NULL AS guest_accept_rpc,
   coalesce((SELECT pg_get_functiondef(to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)')) LIKE '%dm.valid_until>now()%' ),false) AS guest_membership_guard,
   coalesce((SELECT pg_get_functiondef(to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)')) LIKE '%where id=p_job_id for update%' ),false) AS guest_job_lock,
-  has_function_privilege('service_role','public.accept_guest_recovery_offer(uuid,uuid)','EXECUTE') AS service_guest_accept_grant,
-  NOT has_function_privilege('anon','public.accept_guest_recovery_offer(uuid,uuid)','EXECUTE') AS anon_guest_accept_denied,
-  NOT has_function_privilege('authenticated','public.accept_guest_recovery_offer(uuid,uuid)','EXECUTE') AS authenticated_guest_accept_denied,
+  coalesce(has_function_privilege('service_role',to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)'),'EXECUTE'),false) AS service_guest_accept_grant,
+  NOT coalesce(has_function_privilege('anon',to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)'),'EXECUTE'),false) AS anon_guest_accept_denied,
+  NOT coalesce(has_function_privilege('authenticated',to_regprocedure('public.accept_guest_recovery_offer(uuid,uuid)'),'EXECUTE'),false) AS authenticated_guest_accept_denied,
   to_regprocedure('public.allow_recovery_request(text)') IS NOT NULL AS guest_rate_limit_rpc,
-  has_function_privilege('service_role','public.allow_recovery_request(text)','EXECUTE') AS service_rate_limit_grant
+  coalesce(has_function_privilege('service_role',to_regprocedure('public.allow_recovery_request(text)'),'EXECUTE'),false) AS service_rate_limit_grant
 )
 SELECT *, (
  membership_table AND membership_rls AND offer_eta_column AND membership_insert_policy
