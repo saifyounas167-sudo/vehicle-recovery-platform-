@@ -5,7 +5,7 @@ import "./how-it-works.css";
 
 export const metadata:Metadata={
  title:"How UK Recovery Works | Customer & Recovery Driver Guide",
- description:"Explore how customers request vehicle recovery, compare independent recovery driver offers and choose who to work with. See our recovery company journey and client-demo status.",
+ description:"Explore how customers request vehicle recovery, compare independent recovery driver offers and choose who to work with. See our recovery company journey and current availability.",
  openGraph:{
   title:"How It Works | UK Recovery",
   description:"A clearer way to request vehicle recovery and choose your recovery professional. Discover the customer and driver journeys."
@@ -24,7 +24,7 @@ const customerSteps=[
   note:"If unavailable, the price remains to be confirmed",tag:"Estimate"},
  {n:"04",icon:"message",title:"Receive independent driver offers",
   text:"In the planned live marketplace, suitable nearby approved recovery professionals can offer their own price, arrival estimate and optional message.",
-  note:"Offers are not guaranteed in the current demo",tag:"Driver offers"},
+  note:"Offers are not guaranteed",tag:"Driver offers"},
  {n:"05",icon:"compare",title:"Compare. Decide. Choose.",
   text:"Review the available offers and choose your preferred company based on price, ETA and verification details. Your choice is never automatically decided by the cheapest offer.",
   note:"You select the company yourself",tag:"Your decision"},
@@ -50,14 +50,14 @@ const benefits=[
 ] as const;
 
 const questions=[
- {q:"Can I book a recovery on this website right now?",a:"Not yet. This is a client-review demo. You can explore the five-step request form and available route preview, but real requests and driver offers are temporarily disabled while testing is completed."},
- {q:"Will the estimated price be the final amount?",a:"No. An estimate can be shown when verified road mileage and approved pricing rules are available. A recovery professional may quote a different price, and the customer chooses whether to accept their offer. During this demo, unapproved prices are not displayed."},
+ {q:"Can I book a recovery on this website right now?",a:"Not yet. You can explore the five-step request form and available route preview, but real requests and driver offers are temporarily disabled while testing is completed."},
+ {q:"Will the estimated price be the final amount?",a:"No. An estimate can be shown when verified road mileage and approved pricing rules are available. A recovery professional may quote a different price, and the customer chooses whether to accept their offer. Unapproved prices are not displayed."},
  {q:"How does the website calculate road distance?",a:"The planned pricing flow checks UK postcodes and uses a road-routing provider such as OpenRouteService to calculate driving miles. If route data is unavailable, the website does not invent distance or a price."},
  {q:"Does the website automatically choose the cheapest driver?",a:"No. Suitable approved recovery companies may submit offers with price and ETA. The customer reviews the available offers and manually chooses their preferred company."},
  {q:"How do customers pay for recovery?",a:"In Phase 1, customers pay the selected recovery driver or company directly. Online customer recovery payments are not enabled on the website."},
- {q:"Can any driver send an offer?",a:"No. Live offer eligibility requires driver approval, appropriate services and coverage, and an active membership. These checks remain part of the integrated system; live offers are paused during client review."},
+ {q:"Can any driver send an offer?",a:"No. Live offer eligibility requires driver approval, appropriate services and coverage, and an active membership. These checks remain part of the integrated system; live offers are not yet available."},
  {q:"Is the driver subscription payment system live?",a:"No. Driver memberships form part of the intended business model, but the online subscription payment integration is planned and will not be advertised as live until verified."},
- {q:"Is live tracking, SMS or instant arrival guaranteed?",a:"No. Live GPS tracking, SMS and other operational notifications are not being presented as active or guaranteed features during this client-review demo."}
+ {q:"Is live tracking, SMS or instant arrival guaranteed?",a:"No. Live GPS tracking, SMS and other operational notifications are not being presented as active or guaranteed features at this time."}
 ] as const;
 
 type GlyphName="pin"|"car"|"route"|"message"|"compare"|"truck"|"user"|"clipboard"|"shield"|"radar"|"send"|"chart"|"wallet"|"arrow"|"check"|"spark"|"clock";
@@ -114,7 +114,7 @@ export default function HowItWorksPage(){
     <div className="hiw-hero-overlay" aria-hidden="true"/>
     <div className="hiw-wrap hiw-hero-grid">
      <div className="hiw-hero-content">
-      <span className="hiw-hero-status"><span className="hiw-status-dot"/> UK RECOVERY · CLIENT REVIEW DEMO</span>
+      <span className="hiw-hero-status"><span className="hiw-status-dot"/> UK RECOVERY · HOW IT WORKS</span>
       <h1 id="hiw-title">Recovery, with <em>clarity</em> at every turn.</h1>
       <p>One clear journey from your first postcode to choosing the recovery professional that works for you. Built around transparent offers, not automatic decisions.</p>
       <div className="hiw-hero-actions">
@@ -165,7 +165,7 @@ export default function HowItWorksPage(){
        {i===5&&<span className="hiw-step-finish" aria-label="Final step">THE RECOVERY JOURNEY</span>}
       </article>)}
      </div>
-     <div className="hiw-process-note"><span className="hiw-note-symbol"><Glyph name="shield" size={24}/></span><p><strong>Currently a client-review demo.</strong> You can explore our real five-step form design and route interface. Live submissions, driver offers and recovery transactions remain paused until verified.</p><Link href="/recovery/request">View the form <Glyph name="arrow" size={16}/></Link></div>
+     <div className="hiw-process-note"><span className="hiw-note-symbol"><Glyph name="shield" size={24}/></span><p><strong>Live requests are not yet available.</strong> You can explore our real five-step form design and route interface. Live submissions, driver offers and recovery transactions remain paused until verified.</p><Link href="/recovery/request">View the form <Glyph name="arrow" size={16}/></Link></div>
     </div>
    </section>
 
@@ -224,7 +224,7 @@ export default function HowItWorksPage(){
 
    <section className="hiw-section hiw-faq" id="common-questions" aria-labelledby="faq-title">
     <div className="hiw-wrap hiw-faq-grid">
-     <div className="hiw-faq-lead"><SectionEyebrow>GOOD QUESTIONS, CLEAR ANSWERS</SectionEyebrow><h2 id="faq-title">Everything you need to <span>know before you start.</span></h2><p>Understand what the UK Recovery marketplace is designed to do—and what is currently available in the client demo.</p><div className="hiw-faq-lead-mark"><Glyph name="message" size={29}/><span>Clarity at every step</span></div></div>
+     <div className="hiw-faq-lead"><SectionEyebrow>GOOD QUESTIONS, CLEAR ANSWERS</SectionEyebrow><h2 id="faq-title">Everything you need to <span>know before you start.</span></h2><p>Understand what the UK Recovery marketplace is designed to do—and what is currently available on the website.</p><div className="hiw-faq-lead-mark"><Glyph name="message" size={29}/><span>Clarity at every step</span></div></div>
      <div className="hiw-faq-list">
       {questions.map((item,i)=><details key={item.q} className="hiw-faq-item" open={i===0?true:undefined}><summary><span>{item.q}</span><span className="hiw-faq-toggle" aria-hidden="true">+</span></summary><div className="hiw-faq-answer"><p>{item.a}</p></div></details>)}
      </div>
@@ -233,11 +233,11 @@ export default function HowItWorksPage(){
 
    <section className="hiw-final" aria-labelledby="final-title">
     <div className="hiw-wrap hiw-final-inner"><span className="hiw-final-orbit" aria-hidden="true"/>
-     <div><SectionEyebrow light>THE NEXT STEP IS YOURS</SectionEyebrow><h2 id="final-title">Wherever the journey starts, <em>make it a clearer one.</em></h2><p>Explore the customer request experience or see how recovery companies will take part in the marketplace.</p><small>Client demo only. Real bookings, driver offers and subscription payments are currently paused.</small></div>
+     <div><SectionEyebrow light>THE NEXT STEP IS YOURS</SectionEyebrow><h2 id="final-title">Wherever the journey starts, <em>make it a clearer one.</em></h2><p>Explore the customer request experience or see how recovery companies will take part in the marketplace.</p><small>Real bookings, driver offers and subscription payments are not yet available.</small></div>
      <div className="hiw-final-actions"><Link href="/recovery/request" className="hiw-btn hiw-btn--orange">Get a Recovery Quote <Glyph name="arrow" size={20}/></Link><Link href="/driver/register" className="hiw-btn hiw-btn--light">Join as a Recovery Driver <Glyph name="arrow" size={19}/></Link></div>
     </div>
    </section>
-   <footer className="hiw-footer"><div className="hiw-wrap"><span><strong>UK</strong> RECOVERY</span><p>Independent recovery professionals. Customer choice. Client-review demo.</p><Link href="/">Back to home <Glyph name="arrow" size={15}/></Link></div></footer>
+   <footer className="hiw-footer"><div className="hiw-wrap"><span><strong>UK</strong> RECOVERY</span><p>Independent recovery professionals. Customer choice. Recovery made clear.</p><Link href="/">Back to home <Glyph name="arrow" size={15}/></Link></div></footer>
   </main>
  </>;
 }
