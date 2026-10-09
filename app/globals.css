@@ -181,7 +181,6 @@ label{font-size:15px}
 .recovery-map-shell{position:relative;isolation:isolate;z-index:0;width:100%;max-width:100%;overflow:hidden;margin:16px 0 10px;border-radius:14px}
 .recovery-leaflet-map{height:clamp(250px,38vw,420px);min-height:250px;width:100%;max-width:100%;position:relative;z-index:0;border:1px solid #dbe1e7;border-radius:12px;background:#dceaf0;overflow:hidden}
 .recovery-map-shell .leaflet-container{z-index:0}
-.recovery-map-shell .leaflet-pane,.recovery-map-shell .leaflet-control-container{z-index:auto}
 .global-public-header,.site-header{position:sticky;top:0;z-index:2000}
 .recovery-map-shell p{font-size:13px;line-height:1.5;margin:8px 2px}
 .recovery-map-attribution{color:#566473}
