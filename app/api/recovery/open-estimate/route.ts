@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+import {isClientReviewDemo} from "@/src/lib/client-review";
 import {createClient as createAdminClient} from "@supabase/supabase-js";
 import {resolvePostcode,previewDrivingRoute} from "@/src/lib/open-routing";
 import {calculateRecoveryPrice,validPricingConfig,ukHoliday,pricingKeys} from "@/src/lib/recovery-pricing";
@@ -19,6 +20,7 @@ export async function POST(request:Request){
   stage="routing";
   route=await previewDrivingRoute(origin,end);
   stage="pricing_config";
+  if(isClientReviewDemo())return unavailable(stage,route);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!url||!key){report(stage,"missing_configuration");return unavailable(stage,route);}
   const db=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false}});
