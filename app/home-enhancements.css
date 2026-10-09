@@ -51,3 +51,13 @@
 @media(max-width:920px){.uk-home .app-section{grid-template-columns:1fr;gap:48px}.uk-home .pwa-phone{height:525px;width:260px}.uk-home .pwa-phone-screen{padding-top:48px}.uk-home .app-copy{max-width:620px;margin:auto}}
 @media(max-width:540px){.uk-home .app-section{padding:66px 19px;gap:32px}.uk-home .pwa-phone{width:242px;height:490px}.uk-home .pwa-phone-screen{padding:44px 15px 18px}.uk-home .pwa-preview-label{margin-top:34px}.uk-home .pwa-benefits,.uk-home .install-guides{grid-template-columns:1fr}.uk-home .app-copy h2{font-size:38px}.pwa-dialog{padding:26px 20px;max-height:92dvh}}
 @media(prefers-reduced-motion:reduce){.uk-home .pwa-phone{transition:none}}
+
+/* iPhone installation quick guide; no other homepage styling changed. */
+.pwa-ios-steps{list-style:none;padding:0!important;margin:18px 0!important;display:grid;gap:12px;counter-reset:ios-step}
+.pwa-ios-steps li{display:flex;align-items:center;gap:15px;padding:13px 14px;border:1px solid #e8eaed;border-radius:13px;margin:0!important;background:#fafbfc;color:#19222b!important}
+.pwa-ios-steps li>span:last-child{flex:1}.pwa-ios-steps li small{display:block;color:#66717b;line-height:1.5;margin-top:3px}
+.pwa-share-icon,.pwa-step-icon{flex:0 0 43px;width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#fff0e5;color:#ff6600;font-size:28px;font-weight:800}
+.pwa-browser-warning{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:10px 0 20px;padding:13px!important}
+.pwa-browser-warning>strong,.pwa-browser-warning p,.pwa-browser-warning small{width:100%}.pwa-browser-warning p{margin:0}.pwa-browser-warning small{font-size:11px;color:#724b2c}
+.pwa-safari-link,.pwa-copy-link{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border:1px solid #e7a679;border-radius:9px;background:white;color:#7c390a;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+@media(max-width:420px){.pwa-ios-steps li{padding:11px;gap:10px}.pwa-share-icon,.pwa-step-icon{width:36px;height:36px;flex-basis:36px}.pwa-ios-steps li{font-size:13px}}
