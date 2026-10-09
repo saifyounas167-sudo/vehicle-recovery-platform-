@@ -47,13 +47,13 @@ export default function HomePage(){
      {title:"Suitable Drivers",description:"Eligible recovery professionals can receive suitable opportunities.",icon:"drivers"},
      {title:"Individual Offers",description:"Drivers can submit their own price and ETA.",icon:"offers"},
      {title:"Your Choice",description:"Compare offers and manually select your preferred driver.",icon:"choice"}
-    ].map((step,i)=><li className="market-step" key={step.title}>
+    ].map((step)=><li className="market-step" key={step.title}>
      <div className="market-step-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {step.icon==="request"&&<><path d="M9 4h11l5 5v19H9zM20 4v6h5M13 15h8M13 20h8M13 25h5"/><path d="M4 11v17h4"/></>}
       {step.icon==="drivers"&&<><circle cx="11" cy="11" r="4"/><circle cx="23" cy="12" r="3"/><path d="M3 26v-3a8 8 0 0 1 16 0v3H3zM21 20c4 0 7 2 8 6h-8"/></>}
       {step.icon==="offers"&&<><path d="M4 10V5h12l12 12-11 11L4 15z"/><circle cx="11" cy="11" r="2"/><path d="m16 19 3 3 5-6"/></>}
       {step.icon==="choice"&&<><circle cx="16" cy="16" r="12"/><path d="m10 16 4 4 8-9"/></>}
-     </svg></div><span className="market-step-number">{i+1}</span><h3>{step.title}</h3><p>{step.description}</p></li>)}
+     </svg></div><h3>{step.title}</h3><p>{step.description}</p></li>)}
    </ol>
   </section>
 
