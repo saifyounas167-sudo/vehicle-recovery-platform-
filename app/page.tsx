@@ -39,7 +39,23 @@ export default function HomePage(){
 
   <section className="uk-section uk-why"><div className="uk-section-head"><span className="uk-kicker">WHY UK RECOVERY</span><h2>Built Around Trust and Customer Choice</h2></div><div className="uk-feature-grid">{[["✓","VERIFIED PROFESSIONALS","Drivers and recovery companies must meet profile, document and admin approval requirements before participating."],["★","CUSTOMER CHOICE","Compare any available offers by price, ETA and verification details, then make your own choice."],["£","TRANSPARENT OFFERS","Indicative estimates and independently submitted offers help you understand possible costs."],["⌖","UK-WIDE NETWORK","A marketplace concept for connecting UK customers with independent recovery operators."]].map(([i,t,d])=><article key={t}><b>{i}</b><h3>{t}</h3><p>{d}</p></article>)}</div></section>
 
-  <section className="marketplace"><div><span className="uk-kicker">A REAL MARKETPLACE</span><h2>Your Recovery. <em>Your Choice.</em></h2><p>In the planned marketplace, suitable approved drivers can submit their own offers. You compare options and choose — no automatic cheapest-price assignment.</p></div><div className="market-flow">{["Your Request","Suitable Drivers","Individual Offers","Your Choice"].map((x,i)=><span key={x}><b>{i+1}</b>{x}{i<3&&<em>→</em>}</span>)}</div></section>
+  <section className="marketplace" aria-labelledby="marketplace-title">
+   <div className="marketplace-intro"><span className="uk-kicker">A REAL MARKETPLACE</span><h2 id="marketplace-title">Your Recovery.<br/><em>Your Choice.</em></h2><p>Our marketplace is designed to connect customers with suitable approved recovery professionals. Compare independent price and ETA offers, then choose your preferred driver. No automatic cheapest-price assignment.</p></div>
+   <ol className="market-flow" aria-label="How recovery offers work">
+    {[
+     {title:"Your Request",description:"Provide your recovery details.",icon:"request"},
+     {title:"Suitable Drivers",description:"Eligible recovery professionals can receive suitable opportunities.",icon:"drivers"},
+     {title:"Individual Offers",description:"Drivers can submit their own price and ETA.",icon:"offers"},
+     {title:"Your Choice",description:"Compare offers and manually select your preferred driver.",icon:"choice"}
+    ].map((step,i)=><li className="market-step" key={step.title}>
+     <div className="market-step-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {step.icon==="request"&&<><path d="M9 4h11l5 5v19H9zM20 4v6h5M13 15h8M13 20h8M13 25h5"/><path d="M4 11v17h4"/></>}
+      {step.icon==="drivers"&&<><circle cx="11" cy="11" r="4"/><circle cx="23" cy="12" r="3"/><path d="M3 26v-3a8 8 0 0 1 16 0v3H3zM21 20c4 0 7 2 8 6h-8"/></>}
+      {step.icon==="offers"&&<><path d="M4 10V5h12l12 12-11 11L4 15z"/><circle cx="11" cy="11" r="2"/><path d="m16 19 3 3 5-6"/></>}
+      {step.icon==="choice"&&<><circle cx="16" cy="16" r="12"/><path d="m10 16 4 4 8-9"/></>}
+     </svg></div><span className="market-step-number">{i+1}</span><h3>{step.title}</h3><p>{step.description}</p></li>)}
+   </ol>
+  </section>
 
   <section className="app-section" id="install-app"><div className="phone-mock"><div className="phone-screen"><span>UK Recovery</span><b>Need recovery?</b><small>Start a request in seconds.</small><i>GET RECOVERY ESTIMATE</i></div></div><div className="app-copy"><span className="uk-kicker">INSTALLABLE WEB APP</span><h2>Recovery Help in Your Pocket</h2><p>Add this demo website to your phone’s home screen for convenient access. Live job updates and push notifications are not available in this demo.</p><ul><li>Faster access when you need recovery</li><li>Explore the demonstration journey</li><li>View information about our marketplace</li><li>Easy access from your home screen</li></ul><InstallAppButton/><strong>No app store required.</strong><div className="install-guides"><span><b>iPhone</b>Open in Safari → Share → Add to Home Screen</span><span><b>Android</b>Open in Chrome → Install App</span></div></div></section>
 
