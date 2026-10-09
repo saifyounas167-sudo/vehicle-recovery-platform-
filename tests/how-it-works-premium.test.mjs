@@ -16,7 +16,7 @@ test("customer and driver journeys contain exactly six ordered steps each",()=>{
 test("business model is accurate: customer chooses, direct payment, no guaranteed booking",()=>{
  for(const phrase of [
  "the customer chooses","pay the driver or company directly",
- "not through this website","not automatically",
+ "not through this website","never automatically",
  "approved","membership","price, ETA","optional message",
  "GPS","pricing rules"
  ])assert.ok(page.toLowerCase().includes(phrase.toLowerCase()),phrase);
