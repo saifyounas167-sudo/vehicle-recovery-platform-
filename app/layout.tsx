@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "UK Vehicle Recovery",
   description: "Vehicle recovery and transport marketplace across the UK.",
   manifest: "/manifest.webmanifest",
+  icons: {apple:[{url:"/apple-touch-icon.png",sizes:"180x180",type:"image/png"}],icon:[{url:"/icons/icon-192.svg",type:"image/svg+xml"}]},
   appleWebApp: {
     capable: true,
     title: "UK Recovery",
