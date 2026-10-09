@@ -112,13 +112,14 @@ returns boolean language plpgsql security definer set search_path=public as $fn$
 declare
  selected public.driver_job_offers%rowtype;
  current_job public.recovery_jobs%rowtype;
+ target_job_id uuid;
 begin
- select job_id into selected.job_id
+ select job_id into target_job_id
  from public.driver_job_offers where id=p_offer_id;
  if not found then return false; end if;
 
  select * into current_job from public.recovery_jobs
- where id=selected.job_id for update;
+ where id=target_job_id for update;
  if not found or current_job.customer_id is distinct from auth.uid()
     or auth.uid() is null
     or current_job.status not in ('submitted','matching','offered')
