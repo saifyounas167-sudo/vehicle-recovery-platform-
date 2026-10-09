@@ -14,7 +14,7 @@ test("client demo cannot send any live request, offer, upload or admin mutation"
 });
 test("safe demo quote never reads Supabase or publishes test prices",()=>{
  const p=file("app/api/recovery/open-estimate/route.ts");
- assert.match(p,/if\(isClientReviewDemo\(\)\)return unavailable\(stage,route\)/);
+ assert.match(p,/if\(isClientReviewDemo\(\)\)return unavailable\(stage,route,locations\)/);
  assert.ok(p.indexOf("if(isClientReviewDemo())")<p.indexOf("createAdminClient(url,key"));
  assert.match(p,/Price to be confirmed by recovery drivers/);
 });
@@ -24,12 +24,12 @@ test("five-step form and ten services preserved with visible map",()=>{
  const services=p.match(/const services=\[([^\]]+)\]/);
  assert.equal([...services[1].matchAll(/"([^"]+)"/g)].length,10);
  assert.match(p,/fetch\("\/api\/recovery\/open-estimate"/);
- assert.match(p,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\}\/>/);
+ assert.match(p,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\} pickup=/);
  assert.match(p,/REQUEST SUBMISSION PAUSED/);
  assert.match(p,/clientReview\?<\>/);
  const map=file("app/components/recovery-route-map.tsx");
  assert.match(map,/tile\.openstreetmap\.org/);
- assert.match(map,/map\.setView\(\[54,-3\],6\)/);
+ assert.match(map,/map\.setView\(\[54\.5,-3\],6\)/);
 });
 test("client can inspect dashboard design without auth and without real records",()=>{
  for(const path of ["app/demo/page.tsx","app/demo/driver/page.tsx","app/demo/admin/page.tsx","app/demo/customer/page.tsx"])

@@ -46,7 +46,7 @@ test("five-step wizard retains guest data and shows real route pricing",()=>{
  assert.match(page,/setV\(s=>\(\{\.\.\.s,\[key\]:value\}\)\)/);
  assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
  assert.match(page,/estimatedPriceGbp/);
- assert.match(page,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\}/);
+ assert.match(page,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\} pickup=/);
  assert.match(page,/fetch\("\/api\/recovery\/jobs"/);
 });
 test("server-only price and secure offer checks stay required",()=>{
@@ -68,7 +68,7 @@ test("safe stage-specific estimate diagnostics, no secrets or customer data in l
 test("zero bank-holiday surcharge removes external calendar dependency",()=>{
  const source=readFileSync("app/api/recovery/open-estimate/route.ts","utf8");
  assert.match(source,/cfg\.bankHolidaySurcharge>0\?await ukHoliday\(day,pickup\):false/);
- assert.match(source,/return unavailable\(stage,route\)/);
+ assert.match(source,/return unavailable\(stage,route,locations\)/);
 });
 
 test("integrated guest acceptance locks job and checks live membership",()=>{
