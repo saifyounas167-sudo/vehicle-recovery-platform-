@@ -185,3 +185,7 @@ label{font-size:15px}
 .recovery-map-shell p{font-size:13px;line-height:1.5;margin:8px 2px}
 .recovery-map-attribution{color:#566473}
 @media(max-width:600px){.recovery-leaflet-map{height:290px;min-height:260px}.recovery-map-shell{margin:12px 0}}
+
+/* Mobile header only: compact recovery request action, desktop untouched. */
+@media(max-width:1100px){.global-public-header .public-mobile-actions .mobile-recovery-start{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-height:38px;max-width:125px;padding:0 14px;background:#ff6600;color:#fff;border:1px solid #ff6600;border-radius:9px;text-decoration:none;white-space:nowrap;font-size:12px;line-height:1;font-weight:850;letter-spacing:.005em;box-shadow:0 3px 10px rgba(255,102,0,.18)}.global-public-header .public-mobile-actions .mobile-recovery-start:focus-visible{outline:3px solid #ff6600;outline-offset:3px}}
+@media(max-width:390px){.global-public-header .public-mobile-actions .mobile-recovery-start{min-height:36px;padding:0 10px;font-size:11px}.global-public-header .public-mobile-actions{gap:5px}}
