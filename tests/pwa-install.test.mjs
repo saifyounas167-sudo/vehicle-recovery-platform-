@@ -29,3 +29,9 @@ test("homepage keeps app section scope with non-interactive phone preview",()=>{
  assert.ok(css.includes(".uk-home .app-section"));assert.ok(css.includes(".pwa-dialog-backdrop"));
  assert.ok(c.includes('HERO_BACKGROUND_IMAGE="/recovery-hero.webp"'));
 });
+
+test("iPhone quick guidance includes actual Share icon and Safari fallback",()=>{
+ const c=file("app/install-app-button.tsx");
+ for(const t of ["pwa-share-icon","Add to Home Screen","Open as Web App","Copy website link","navigator.clipboard.writeText","Open website in browser","FBAN","Instagram"])assert.ok(c.includes(t),t);
+ assert.ok(c.includes('event.prompt()'));assert.ok(c.includes("display-mode: standalone"));
+});
