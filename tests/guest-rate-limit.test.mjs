@@ -23,14 +23,14 @@ test("anonymous access remains revoked and RLS enabled",()=>{
 test("failure remains fail-closed and sanitized",()=>{
  assert.match(route,/if\(limitError\)\{/);
  assert.match(route,/console\.error\("Guest rate-limit RPC failed",\{code:safeCode/);
- assert.match(route,/return bad\("Submission protection unavailable",503\)/);
+ assert.match(route,/return bad\("Submission protection unavailable",503,"allow_recovery_request"\)/);
  assert.doesNotMatch(route,/console\.error\([^\n]*limitError\)/);
 });
 
 test("false RPC result is rate limited; null/unknown fails closed",()=>{
  assert.match(route,/if\(permitted===false\)return bad\("Too many recovery requests\. Please try later\.",429\)/);
  assert.match(route,/resultType:typeof permitted/);
- assert.match(route,/return bad\("Submission protection unavailable",503\)/);
+ assert.match(route,/return bad\("Submission protection unavailable",503,"allow_recovery_request"\)/);
 });
 
 test("guest requests remain possible when optional Supabase session lookup throws",()=>{
