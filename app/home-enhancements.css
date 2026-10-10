@@ -97,3 +97,39 @@
 /* Quote is inside a narrow action panel even on desktop: stack autocomplete fields. */
 .uk-home .hero-action-panel .hero-quote-grid{grid-template-columns:minmax(0,1fr);gap:16px}
 .uk-home .hero-action-panel .uk-location-menu{width:100%}
+
+/* One visual input border; global hero focus styles must not add a second box. */
+.uk-home .hero-action-panel .uk-location-input-wrap input,
+.uk-home .hero-action-panel .uk-location-input-wrap input:focus,
+.uk-home .hero-action-panel .uk-location-input-wrap input:focus-visible{
+  border:0 !important;
+  outline:0 !important;
+  outline-offset:0;
+  box-shadow:none !important;
+  background:transparent;
+  min-width:0;
+  width:100%;
+  padding:12px;
+}
+.uk-home .hero-action-panel .uk-location-input-wrap{
+  border:1.5px solid #cbd4db;
+  box-shadow:none;
+  overflow:hidden;
+}
+.uk-home .hero-action-panel .uk-location-input-wrap:focus-within{
+  border-color:#ff6600;
+  box-shadow:0 0 0 2px rgba(255,102,0,.14);
+}
+.uk-location-loading{
+  flex:0 0 16px;width:16px;height:16px;
+  border:2px solid #ffd3b6;border-top-color:#ff6600;
+  border-radius:50%;margin-right:13px;
+  animation:uk-location-spin .75s linear infinite;
+}
+@keyframes uk-location-spin{to{transform:rotate(360deg)}}
+.uk-location-inline-status{
+  padding:9px 11px;margin:0;
+  color:#5c6774;font-size:12px;line-height:1.45;
+  background:#f6f7f8;border-radius:8px;
+}
+@media(prefers-reduced-motion:reduce){.uk-location-loading{animation:none}}
