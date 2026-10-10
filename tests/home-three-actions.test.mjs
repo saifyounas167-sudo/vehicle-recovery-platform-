@@ -6,7 +6,8 @@ const nearby=readFileSync("app/recovery/nearby/page.tsx","utf8");
 const form=readFileSync("app/recovery/request/page.tsx","utf8");
 test("three homepage choices and expandable quote",()=>{
  for(const text of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","aria-expanded={quoteOpen}","quoteOpen&&<form","pickupRef.current?.focus()","/driver/register","/recovery/nearby"])assert.ok(home.includes(text),text);
- assert.ok(home.includes('q.set("pickup",pickup)'));assert.ok(home.includes('q.set("destination",destination)'));
+ assert.ok(home.includes('q.set("pickup",pickupCode||pickup.trim())'));assert.ok(home.includes('q.set("destination",destinationCode||destination.trim())'));
+ assert.ok(home.includes('q.set("pickupLocation",pickup.trim())'));assert.ok(home.includes('q.set("destinationLocation",destination.trim())'));
 });
 test("nearby postcode/GPS search reuses existing map and makes no private DB query",()=>{
  for(const text of ["RecoveryRouteMap","/api/recovery/postcode?postcode=","/api/recovery/postcode?lat=","navigator.geolocation.getCurrentPosition","data.valid!==true","Verified company listings are not available","encodeURIComponent(postcode)","/recovery/request"])assert.ok(nearby.includes(text),text);

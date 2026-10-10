@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import InstallAppButton from "./install-app-button";
 import PublicHeader from "./components/public-header";
+import UkLocationSearch, {type UkLocationSuggestion} from "./components/uk-location-search";
 import "./home-enhancements.css";
 
 const services=[["⚡","Breakdown Recovery"],["⚠","Accident Recovery"],["↔","Vehicle Transport"],["↗","Car Towing"],["＋","Jump Start / Flat Battery Assistance"],["◉","Flat Tyre Assistance"],["◇","Motorbike Recovery"],["▰","Van Recovery"],["▤","Auction Vehicle Collection"],["⌁","Non-Running Vehicle Transport"]];
@@ -10,20 +11,32 @@ const services=[["⚡","Breakdown Recovery"],["⚠","Accident Recovery"],["↔",
 const HERO_BACKGROUND_IMAGE="/recovery-hero.webp";
 const steps=[["01","REQUEST RECOVERY","Enter your pickup, destination and vehicle details."],["02","GET AN ESTIMATE","Review an indicative price, subject to the request details."],["03","RECEIVE DRIVER OFFERS","Suitable approved drivers may propose a price and ETA."],["04","COMPARE & CHOOSE","Compare independent offers and select your preferred driver."],["05","RECOVERY COMPLETED","Your chosen professional carries out the recovery."],["06","PAY DRIVER DIRECTLY","Pay the selected driver or company directly, outside the platform."]];
 export default function HomePage(){
- const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
+ const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [pickupCode,setPickupCode]=useState("");const [destinationCode,setDestinationCode]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
  useEffect(()=>{if(quoteOpen)pickupRef.current?.focus();},[quoteOpen]);
- function quote(e:FormEvent){e.preventDefault();const q=new URLSearchParams();if(pickup)q.set("pickup",pickup);if(destination)q.set("destination",destination);window.location.href="/recovery/request?"+q.toString()}
- function locate(){if(!navigator.geolocation){setLocationText("Location is not available on this device.");return}setLocationText("Finding your location…");navigator.geolocation.getCurrentPosition(({coords})=>{const v=coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5);fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude).then(r=>r.json()).then(data=>{if(!data.postcode)throw new Error();setPickup(data.postcode);setLocationText("Pickup postcode detected.");}).catch(()=>setLocationText("Could not find a postcode. Enter one manually."))},()=>setLocationText("Location permission was not granted."))}
+ function quote(e:FormEvent){
+  e.preventDefault();
+  const q=new URLSearchParams();
+  const pc=/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
+  if(pickupCode||pc.test(pickup.trim()))q.set("pickup",pickupCode||pickup.trim());
+  else if(pickup.trim())q.set("pickupLocation",pickup.trim());
+  if(destinationCode||pc.test(destination.trim()))q.set("destination",destinationCode||destination.trim());
+  else if(destination.trim())q.set("destinationLocation",destination.trim());
+  window.location.href="/recovery/request?"+q.toString();
+ }
+ function selectLocation(kind:"pickup"|"destination",item:UkLocationSuggestion){
+  if(kind==="pickup"){setPickup(item.label);setPickupCode(item.postcode||"");}
+  else{setDestination(item.label);setDestinationCode(item.postcode||"");}
+ }
+ function locate(){if(!navigator.geolocation){setLocationText("Location is not available on this device.");return}setLocationText("Finding your location…");navigator.geolocation.getCurrentPosition(({coords})=>{const v=coords.latitude.toFixed(5)+", "+coords.longitude.toFixed(5);fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude).then(r=>r.json()).then(data=>{if(!data.postcode)throw new Error();setPickup(data.postcode);setPickupCode(data.postcode);setLocationText("Pickup postcode detected.");}).catch(()=>setLocationText("Could not find a postcode. Enter one manually."))},()=>setLocationText("Location permission was not granted."))}
  return <main className="uk-home">
   <PublicHeader/>
   <section className="uk-hero uk-hero-photo" style={{"--hero-image":`url("${HERO_BACKGROUND_IMAGE}")`} as CSSProperties}><div className="uk-hero-shade"/><div className="uk-hero-inner hero-reference-layout">
    <div className="uk-hero-copy"><span className="uk-kicker hero-trust-badge">UK VEHICLE RECOVERY MARKETPLACE</span><h1>Vehicle Recovery<br/><em>Made Easy.</em></h1><p>Need vehicle recovery? Compare offers from trusted local recovery professionals and choose the right driver for you.</p></div>
    <div className="hero-action-panel"><p className="hero-action-title">How can we help?</p><p className="hero-action-intro">Choose one option to explore our recovery marketplace.</p><div className="hero-action-buttons"><button ref={quoteToggleRef} type="button" className="hero-action-primary" aria-expanded={quoteOpen} aria-controls="homepage-quick-quote" onClick={()=>setQuoteOpen(v=>!v)}><span aria-hidden="true">↗</span> Get Recovery Quote <span aria-hidden="true">→</span></button><Link href="/recovery/nearby" className="hero-action-secondary"><span aria-hidden="true">⌖</span> Find Recovery Near Me <span aria-hidden="true">→</span></Link><Link href="/driver/register" className="hero-action-secondary"><span aria-hidden="true">▰</span> Join as a Recovery Driver <span aria-hidden="true">→</span></Link></div><p className="hero-action-notice">Live bookings and payments are not yet available.</p>
    {quoteOpen&&<form id="homepage-quick-quote" className="quote-panel hero-quote-panel expanded-quote" onSubmit={quote}>
-   <button type="button" className="close-quote" onClick={()=>{setQuoteOpen(false);quoteToggleRef.current?.focus()}}>Close quote form ×</button>
     <div className="hero-quote-grid">
-     <label><span>Pickup postcode</span><div className="hero-input-wrap"><b>⌖</b><input ref={pickupRef} value={pickup} onChange={e=>setPickup(e.target.value)} placeholder="Enter pickup postcode" autoComplete="postal-code" required/></div></label>
-     <label><span>Drop-off postcode</span><div className="hero-input-wrap"><b>●</b><input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Enter destination postcode (if known)"/></div></label>
+     <UkLocationSearch label="Pickup Location" required value={pickup} inputRef={pickupRef} placeholder="Enter UK postcode, city or address" onChange={v=>{setPickup(v);setPickupCode("");}} onSelect={item=>selectLocation("pickup",item)}/>
+     <UkLocationSearch label="Drop-off Location (optional)" value={destination} placeholder="Enter postcode, city or destination" onChange={v=>{setDestination(v);setDestinationCode("");}} onSelect={item=>selectLocation("destination",item)}/>
     </div>
     <button type="button" className="use-location hero-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
     <button type="submit" className="estimate-cta hero-estimate">EXPLORE YOUR RECOVERY ESTIMATE <span aria-hidden="true">→</span></button>
