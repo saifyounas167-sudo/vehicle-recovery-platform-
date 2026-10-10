@@ -37,3 +37,11 @@ test("UK-only geocoder does not pretend city has a precise postcode",()=>{
   assert.match(endpoint,/api\.postcodes\.io/);
   assert.doesNotMatch(endpoint,/api\.geoapify\.com.*apiKey=[^"]/);
 });
+
+test("demo security proxy permits only read-only location suggestions without changing write restrictions",()=>{
+ const proxy=readFileSync("proxy.ts","utf8");
+ assert.match(proxy,/method==="GET"/);
+ assert.match(proxy,/\/api\/recovery\/location-suggest/);
+ assert.match(proxy,/if\(!allowedGet&&!allowedEstimate\)/);
+ assert.match(proxy,/status:503/);
+});
