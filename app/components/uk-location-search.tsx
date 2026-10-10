@@ -23,6 +23,7 @@ export default function UkLocationSearch({
   label, value, onChange, onSelect, placeholder = "Postcode, town or address", required = false, inputRef,
 }: Props) {
   const [suggestions, setSuggestions] = useState<UkLocationSuggestion[]>([]);
+  const [resultsFor, setResultsFor] = useState("");
   const [focused, setFocused] = useState(false);
   const [selected, setSelected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,50 +31,90 @@ export default function UkLocationSearch({
   const [active, setActive] = useState(-1);
   const id = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const query = value.trim();
+
+  // Invalidate old results immediately (not only after the next effect runs).
+  // This prevents London from displaying locations returned for an older search.
+  const matchesCurrentQuery = resultsFor === query;
+  const visibleSuggestions = !loading && matchesCurrentQuery ? suggestions : [];
 
   useEffect(() => {
-    if (selected || !focused || value.trim().length < 2) {
+    if (selected || !focused || query.length < 2) {
+      abortRef.current?.abort();
       setSuggestions([]);
+      setResultsFor("");
       setLoading(false);
       return;
     }
     const controller = new AbortController();
-    const t = setTimeout(async () => {
-      setLoading(true);
-      setMessage("");
+    abortRef.current = controller;
+    const requestNumber = ++requestRef.current;
+    setLoading(true);
+    setSuggestions([]);
+    setResultsFor("");
+    setMessage("");
+
+    const timer = setTimeout(async () => {
       try {
-        const response = await fetch("/api/recovery/location-suggest?q=" + encodeURIComponent(value.trim()), {
+        const response = await fetch("/api/recovery/location-suggest?q=" + encodeURIComponent(query), {
           signal: controller.signal, cache: "no-store",
         });
-        if (!response.ok) throw new Error("Search unavailable");
+        if (!response.ok) throw new Error("Location search unavailable");
         const data = await response.json();
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && requestRef.current === requestNumber) {
           setSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
+          setResultsFor(query);
           setMessage(data.message || "");
           setActive(-1);
         }
       } catch {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && requestRef.current === requestNumber) {
           setSuggestions([]);
-          setMessage("Suggestions unavailable. Enter a full UK postcode manually.");
+          setResultsFor(query);
+          setMessage("Location search is temporarily unavailable. Enter a full UK postcode manually.");
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted && requestRef.current === requestNumber) setLoading(false);
       }
     }, 280);
-    return () => { clearTimeout(t); controller.abort(); };
-  }, [focused, selected, value]);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      if (abortRef.current === controller) abortRef.current = null;
+    };
+  }, [focused, selected, query]);
 
   function choose(suggestion: UkLocationSuggestion) {
+    requestRef.current += 1;
+    abortRef.current?.abort();
     setSelected(true);
     setFocused(false);
     setSuggestions([]);
+    setResultsFor("");
+    setLoading(false);
     setActive(-1);
     setMessage("");
     onSelect(suggestion);
   }
 
-  const show = focused && !selected && value.trim().length >= 2;
+  function change(next: string) {
+    requestRef.current += 1;
+    abortRef.current?.abort();
+    setSuggestions([]);
+    setResultsFor("");
+    setMessage("");
+    setActive(-1);
+    setLoading(next.trim().length >= 2);
+    setSelected(false);
+    onChange(next);
+  }
+
+  const show = focused && !selected && query.length >= 2;
+  const showResults = show && visibleSuggestions.length > 0;
+  const showStatus = show && !loading && !visibleSuggestions.length && matchesCurrentQuery;
 
   return (
     <div className="uk-location-field" ref={containerRef}>
@@ -82,28 +123,29 @@ export default function UkLocationSearch({
         <span aria-hidden="true" className="uk-location-pin">⌖</span>
         <input id={id} ref={inputRef} type="text" role="combobox" autoComplete="off" autoCorrect="off"
           spellCheck={false} required={required} placeholder={placeholder} value={value}
-          aria-autocomplete="list" aria-expanded={show && suggestions.length > 0}
+          aria-autocomplete="list" aria-expanded={showResults}
           aria-controls={id + "-suggestions"}
-          aria-activedescendant={show && active >= 0 ? id + "-item-" + active : undefined}
-          onFocus={() => { setFocused(true); setSelected(false); }}
-          onBlur={(e) => {
+          aria-activedescendant={showResults && active >= 0 ? id + "-item-" + active : undefined}
+          aria-busy={loading}
+          onFocus={() => setFocused(true)}
+          onBlur={e => {
             if (!containerRef.current?.contains(e.relatedTarget as Node)) setFocused(false);
           }}
-          onChange={(e) => { onChange(e.target.value); setSelected(false); setActive(-1); }}
-          onKeyDown={(e) => {
+          onChange={e => change(e.target.value)}
+          onKeyDown={e => {
             if (e.key === "Escape") { setFocused(false); setActive(-1); }
-            if (!show || !suggestions.length) return;
-            if (e.key === "ArrowDown") { e.preventDefault(); setActive(x => (x + 1) % suggestions.length); }
-            if (e.key === "ArrowUp") { e.preventDefault(); setActive(x => (x <= 0 ? suggestions.length - 1 : x - 1)); }
-            if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(suggestions[active]); }
+            if (!showResults) return;
+            if (e.key === "ArrowDown") { e.preventDefault(); setActive(x => (x + 1) % visibleSuggestions.length); }
+            if (e.key === "ArrowUp") { e.preventDefault(); setActive(x => (x <= 0 ? visibleSuggestions.length - 1 : x - 1)); }
+            if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(visibleSuggestions[active]); }
           }}
         />
+        {loading && show && <span className="uk-location-loading" aria-label="Searching UK locations" role="status" />}
       </div>
-      {show && (
+      {showResults && (
         <div className="uk-location-menu" id={id + "-suggestions"} role="listbox"
           aria-label={label + " location suggestions"}>
-          {loading && <p className="uk-location-help" role="status">Searching UK locations…</p>}
-          {!loading && suggestions.map((s, i) => (
+          {visibleSuggestions.map((s, i) => (
             <button type="button" role="option" aria-selected={i === active}
               id={id + "-item-" + i} className={"uk-location-option" + (i === active ? " active" : "")}
               key={s.id} onMouseDown={e => e.preventDefault()} onClick={() => choose(s)}>
@@ -111,10 +153,12 @@ export default function UkLocationSearch({
               <span><strong>{s.label}</strong><small>{s.detail}{s.postcode ? " · Confirmed postcode" : " · Exact postcode required later"}</small></span>
             </button>
           ))}
-          {!loading && !suggestions.length && <p className="uk-location-help" role="status">
-            {message || "No matching suggestions. Try another spelling or a complete UK postcode."}
-          </p>}
         </div>
+      )}
+      {showStatus && (
+        <p className="uk-location-inline-status" role="status">
+          {message || "No matching UK locations. Try another spelling or a complete postcode."}
+        </p>
       )}
     </div>
   );
