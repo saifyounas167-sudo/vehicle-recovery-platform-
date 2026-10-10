@@ -93,3 +93,7 @@
 .uk-home .expanded-quote .uk-location-field{gap:8px}
 .uk-home .expanded-quote .uk-location-input-wrap input{font-size:16px}
 @media(max-width:640px){.uk-home .expanded-quote{padding:16px}.uk-home .expanded-quote .hero-quote-grid{grid-template-columns:1fr;gap:18px}.uk-location-menu{max-height:235px}}
+
+/* Quote is inside a narrow action panel even on desktop: stack autocomplete fields. */
+.uk-home .hero-action-panel .hero-quote-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+.uk-home .hero-action-panel .uk-location-menu{width:100%}
