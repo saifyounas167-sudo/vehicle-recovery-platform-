@@ -45,3 +45,14 @@ test("demo security proxy permits only read-only location suggestions without ch
  assert.match(proxy,/if\(!allowedGet&&!allowedEstimate\)/);
  assert.match(proxy,/status:503/);
 });
+
+test("one-field mobile search does not render separate loading card or stale results",()=>{
+  const css=readFileSync("app/home-enhancements.css","utf8");
+  assert.match(component,/requestRef\.current === requestNumber/);
+  assert.match(component,/resultsFor === query/);
+  assert.match(component,/setSuggestions\(\[\]\)/);
+  assert.match(component,/uk-location-loading/);
+  assert.doesNotMatch(component,/className="uk-location-help"/);
+  assert.match(css,/hero-action-panel \.uk-location-input-wrap input:focus-visible/);
+  assert.match(css,/border:0 !important/);
+});
