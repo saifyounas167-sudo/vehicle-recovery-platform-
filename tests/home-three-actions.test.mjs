@@ -9,7 +9,7 @@ test("three homepage choices and expandable quote",()=>{
  for(const text of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","aria-expanded={quoteOpen}","quoteOpen&&","/driver/register","/recovery/nearby"])assert.ok(hero.includes(text),text);
  assert.ok(home.includes("pickupRef.current?.focus()"));assert.ok(home.includes("<UkRecoveryHero "));assert.ok(home.includes("UkLocationSearch"));
  assert.ok(home.includes("setPreviewNotice(true)"));
- assert.doesNotMatch(home,/window\\.location\\.href=\\"\\/recovery\\/request/);
+ assert.ok(!home.includes('window.location.href="/recovery/request'));
 });
 test("nearby postcode/GPS search reuses existing map and makes no private DB query",()=>{
  for(const text of ["RecoveryRouteMap","/api/recovery/postcode?postcode=","/api/recovery/postcode?lat=","navigator.geolocation.getCurrentPosition","data.valid!==true","Verified company listings are not available","encodeURIComponent(postcode)","/recovery/request"])assert.ok(nearby.includes(text),text);
