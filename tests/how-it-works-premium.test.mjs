@@ -52,5 +52,5 @@ test("existing customer wizard remains five-step and real booking disabled",()=>
  const proxy=readFileSync("proxy.ts","utf8");
  assert.match(wizard,/const steps=\["Location","Vehicle","Recovery","Customer","Review"\]/);
  assert.match(wizard,/REQUEST SUBMISSION PAUSED/);
- assert.match(proxy,/isClientReviewDemo\(\)/);
+ assert.match(proxy,/const pages=new Set/);
 });
