@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import InstallAppButton from "./install-app-button";
 import RecoveryServicesSection from "./components/recovery-services-section";
 import InstallableWebAppSection from "./components/installable-web-app-section";
 import PublicHeader from "./components/public-header";
