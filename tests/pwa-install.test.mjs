@@ -27,7 +27,8 @@ test("homepage keeps app section scope with non-interactive phone preview",()=>{
  const sec=c.slice(c.indexOf('<section className="app-section"'),c.indexOf('<section className="driver-cta"'));
  assert.ok(sec.includes("pwa-phone-screen"));assert.ok(sec.includes("Not interactive"));assert.ok(sec.includes("<InstallAppButton/>"));
  assert.ok(css.includes(".uk-home .app-section"));assert.ok(css.includes(".pwa-dialog-backdrop"));
- assert.ok(c.includes("<UkRecoveryHero "));\n assert.doesNotMatch(file("app/components/uk-recovery-hero.css"),/url\\s*\\(/);
+ assert.ok(c.includes("<UkRecoveryHero "));
+ assert.doesNotMatch(file("app/components/uk-recovery-hero.css"),/url\s*\(/);
 });
 
 test("iPhone quick guidance includes actual Share icon and Safari fallback",()=>{
