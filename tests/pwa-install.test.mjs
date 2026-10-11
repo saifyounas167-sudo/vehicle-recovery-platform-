@@ -28,7 +28,7 @@ test("homepage keeps app section scope with non-interactive phone preview",()=>{
  assert.ok(sec.includes("pwa-phone-screen"));assert.ok(sec.includes("Not interactive"));assert.ok(sec.includes("<InstallAppButton/>"));
  assert.ok(css.includes(".uk-home .app-section"));assert.ok(css.includes(".pwa-dialog-backdrop"));
  assert.ok(c.includes("<UkRecoveryHero "));
- assert.doesNotMatch(file("app/components/uk-recovery-hero.css"),/url\s*\(/);
+ assert.ok(file("app/components/uk-recovery-hero.css").includes("/WhatsApp%20Image%202026-10-11%20at%2012.50.07%20AM.jpeg"));
 });
 
 test("iPhone quick guidance includes actual Share icon and Safari fallback",()=>{
