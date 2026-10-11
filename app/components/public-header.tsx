@@ -24,14 +24,14 @@ export default function PublicHeader(){
    <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
    <InstallAppButton className="header-install"/>
   </div>
-  <div className="public-mobile-actions"><Link href="/recovery/request" className="mobile-recovery-start">Get Started</Link><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
+  <div className="public-mobile-actions"><InstallAppButton className="header-install"/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
  </div>
  <div id="public-mobile-menu" className={"public-mobile-menu "+(open?"open":"")}>
   {nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""} onClick={close}>{label}</Link>)}
   <button className="mobile-language" type="button"><Icon type="globe"/>English <span>⌄</span></button>
   <div className="mobile-account-group">
    <Link href="/login?role=customer" onClick={close}><Icon type="user"/>Customer Login</Link>
-   <Link href="/login?mode=signup&role=customer" className="get-started" onClick={close}>GET STARTED</Link>
+   <Link href="/recovery/request" className="get-started" onClick={close}>GET STARTED</Link>
    <Link href="/login?role=business" className="role-login" onClick={close}><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login" onClick={close}><Icon type="truck"/>Driver Login</Link>
    <Link href="/login?role=admin" onClick={close}><Icon type="shield"/>Admin Login</Link>
