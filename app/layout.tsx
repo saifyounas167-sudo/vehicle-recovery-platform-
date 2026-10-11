@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import PreviewLinkGuard from "./components/preview-link-guard";
 import { PwaRegister } from "./pwa-register";
 
 export const metadata: Metadata = {
@@ -22,5 +23,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-GB"><body><PwaRegister />{children}</body></html>;
+  return <html lang="en-GB"><body><PwaRegister /><PreviewLinkGuard/>{children}</body></html>;
 }
