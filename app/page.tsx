@@ -11,18 +11,10 @@ import "./home-enhancements.css";
 
 const steps=[["01","REQUEST RECOVERY","Enter your pickup, destination and vehicle details."],["02","GET AN ESTIMATE","Review an indicative price, subject to the request details."],["03","RECEIVE DRIVER OFFERS","Suitable approved drivers may propose a price and ETA."],["04","COMPARE & CHOOSE","Compare independent offers and select your preferred driver."],["05","RECOVERY COMPLETED","Your chosen professional carries out the recovery."],["06","PAY DRIVER DIRECTLY","Pay the selected driver or company directly, outside the platform."]];
 export default function HomePage(){
- const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [pickupCode,setPickupCode]=useState("");const [destinationCode,setDestinationCode]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
+ const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [pickupCode,setPickupCode]=useState("");const [destinationCode,setDestinationCode]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const [previewNotice,setPreviewNotice]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
+ useEffect(()=>{if(new URLSearchParams(window.location.search).get("quote")==="1")setQuoteOpen(true);},[]);
  useEffect(()=>{if(quoteOpen)pickupRef.current?.focus();},[quoteOpen]);
- function quote(e:FormEvent){
-  e.preventDefault();
-  const q=new URLSearchParams();
-  const pc=/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
-  if(pickupCode||pc.test(pickup.trim()))q.set("pickup",pickupCode||pickup.trim());
-  else if(pickup.trim())q.set("pickupLocation",pickup.trim());
-  if(destinationCode||pc.test(destination.trim()))q.set("destination",destinationCode||destination.trim());
-  else if(destination.trim())q.set("destinationLocation",destination.trim());
-  window.location.href="/recovery/request?"+q.toString();
- }
+ function quote(e:FormEvent){e.preventDefault();setPreviewNotice(true);}
  function selectLocation(kind:"pickup"|"destination",item:UkLocationSuggestion){
   if(kind==="pickup"){setPickup(item.label);setPickupCode(item.postcode||"");}
   else{setDestination(item.label);setDestinationCode(item.postcode||"");}
@@ -38,7 +30,7 @@ export default function HomePage(){
     </div>
     <button type="button" className="use-location hero-location" onClick={locate}>⌖ Use My Current Location</button>{locationText&&<small className="location-copy">{locationText}</small>}
     <button type="submit" className="estimate-cta hero-estimate">EXPLORE YOUR RECOVERY ESTIMATE <span aria-hidden="true">→</span></button>
-    <p className="hero-market-note">Explore the recovery request process. Live submissions, offers and payments are not yet available.</p>
+    <p className="hero-market-note" role="status">{previewNotice?"Client design preview only — the full booking journey is still under development. No request has been submitted.":"Explore the recovery request process. Live submissions, offers and payments are not yet available."}</p>
    </form>
   }/>
 
