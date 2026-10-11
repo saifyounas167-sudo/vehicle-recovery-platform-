@@ -24,9 +24,9 @@ test("iOS guidance and Android native prompt with standalone detection",()=>{
 });
 test("homepage keeps app section scope with non-interactive phone preview",()=>{
  const c=file("app/page.tsx");const css=file("app/home-enhancements.css");
- const sec=c.slice(c.indexOf('<section className="app-section"'),c.indexOf('<section className="driver-cta"'));
- assert.ok(sec.includes("pwa-phone-screen"));assert.ok(sec.includes("Not interactive"));assert.ok(sec.includes("<InstallAppButton/>"));
- assert.ok(css.includes(".uk-home .app-section"));assert.ok(css.includes(".pwa-dialog-backdrop"));
+ const sec=file("app/components/installable-web-app-section.tsx");
+ assert.ok(sec.includes("ukra-screen"));assert.ok(sec.includes("Not interactive"));assert.ok(sec.includes("<InstallAppButton className="));
+ assert.ok(file("app/components/installable-web-app-section.css").includes(".uk-home .ukra"));assert.ok(css.includes(".pwa-dialog-backdrop"));
  assert.ok(c.includes("<UkRecoveryHero "));
  assert.ok(file("app/components/uk-recovery-hero.css").includes("/WhatsApp%20Image%202026-10-11%20at%2012.50.07%20AM.jpeg"));
 });
