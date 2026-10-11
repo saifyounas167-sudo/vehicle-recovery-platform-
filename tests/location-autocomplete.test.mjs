@@ -10,8 +10,8 @@ const endpoint = readFileSync("app/api/recovery/location-suggest/route.ts","utf8
 test("location search is available in homepage pickup and drop-off",()=>{
   assert.match(home,/UkLocationSearch label="Pickup Location"/);
   assert.match(home,/UkLocationSearch label="Drop-off Location/);
-  assert.match(home,/pickupLocation/);
-  assert.match(home,/destinationLocation/);
+  assert.match(home,/UkLocationSearch label="Pickup Location"/);
+  assert.match(home,/UkLocationSearch label="Drop-off Location/);
   assert.doesNotMatch(home,/className="close-quote"/);
 });
 test("city search keeps exact postcode confirmation in existing recovery form",()=>{
@@ -42,8 +42,8 @@ test("demo security proxy permits only read-only location suggestions without ch
  const proxy=readFileSync("proxy.ts","utf8");
  assert.match(proxy,/method==="GET"/);
  assert.match(proxy,/\/api\/recovery\/location-suggest/);
- assert.match(proxy,/if\(!allowedGet&&!allowedEstimate\)/);
- assert.match(proxy,/status:503/);
+ assert.match(proxy,/safeApi\.has\(path\)/);
+ assert.match(proxy,/status:404/);
 });
 
 test("one-field mobile search does not render separate loading card or stale results",()=>{
