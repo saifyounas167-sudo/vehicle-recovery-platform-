@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-const home=readFileSync("app/page.tsx","utf8");\nconst hero=readFileSync("app/components/uk-recovery-hero.tsx","utf8");
+const home=readFileSync("app/page.tsx","utf8");
+const hero=readFileSync("app/components/uk-recovery-hero.tsx","utf8");
 const nearby=readFileSync("app/recovery/nearby/page.tsx","utf8");
 const form=readFileSync("app/recovery/request/page.tsx","utf8");
 test("three homepage choices and expandable quote",()=>{
- for(const text of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","aria-expanded={quoteOpen}","quoteOpen&&","/driver/register","/recovery/nearby"])assert.ok(hero.includes(text),text);\n assert.ok(home.includes("pickupRef.current?.focus()"));assert.ok(home.includes("<UkRecoveryHero "));assert.ok(home.includes("UkLocationSearch"));
+ for(const text of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","aria-expanded={quoteOpen}","quoteOpen&&","/driver/register","/recovery/nearby"])assert.ok(hero.includes(text),text);
+ assert.ok(home.includes("pickupRef.current?.focus()"));assert.ok(home.includes("<UkRecoveryHero "));assert.ok(home.includes("UkLocationSearch"));
  assert.ok(home.includes('q.set("pickup",pickupCode||pickup.trim())'));assert.ok(home.includes('q.set("destination",destinationCode||destination.trim())'));
  assert.ok(home.includes('q.set("pickupLocation",pickup.trim())'));assert.ok(home.includes('q.set("destinationLocation",destination.trim())'));
 });
