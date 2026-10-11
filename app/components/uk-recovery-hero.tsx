@@ -16,7 +16,7 @@ function Arrow(){return <svg className="ukr-go" viewBox="0 0 24 24" fill="none" 
 const trustPoints=["Driver approval process","Independent price & ETA offers","Designed for UK postcodes","Pay driver directly"];
 export default function UkRecoveryHero({quoteOpen,onToggleQuote,quoteToggleRef,quoteForm}:Props){
  return <section className="ukr-hero" id="home" aria-label="Vehicle recovery"><div className="ukr-wrap">
-  <h1 className="ukr-title">Need Vehicle Recovery?<span className="ukr-accent">Find Local Recovery Options Across the UK.</span></h1>
+  <h1 className="ukr-title">Need Vehicle Recovery?<span className="ukr-accent">Find a Local Recovery Driver in Minutes.</span></h1>
   <p className="ukr-sub">Breakdown recovery, vehicle transport and roadside assistance across the UK. Explore recovery options, compare independent offers when available, and choose your preferred driver.</p>
   <div className="ukr-actions">
    <button ref={quoteToggleRef} type="button" className="ukr-btn ukr-btn--primary" onClick={onToggleQuote} aria-expanded={quoteOpen} aria-controls="homepage-quick-quote"><span className="ukr-ico"><HeroIcon name="quote"/></span><span className="ukr-label">Get Recovery Quote</span><Arrow/></button>
