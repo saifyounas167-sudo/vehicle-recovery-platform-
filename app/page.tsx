@@ -2,12 +2,13 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import InstallAppButton from "./install-app-button";
+import RecoveryServicesSection from "./components/recovery-services-section";
+import InstallableWebAppSection from "./components/installable-web-app-section";
 import PublicHeader from "./components/public-header";
 import UkRecoveryHero from "./components/uk-recovery-hero";
 import UkLocationSearch, {type UkLocationSuggestion} from "./components/uk-location-search";
 import "./home-enhancements.css";
 
-const services=[["⚡","Breakdown Recovery"],["⚠","Accident Recovery"],["↔","Vehicle Transport"],["↗","Car Towing"],["＋","Jump Start / Flat Battery Assistance"],["◉","Flat Tyre Assistance"],["◇","Motorbike Recovery"],["▰","Van Recovery"],["▤","Auction Vehicle Collection"],["⌁","Non-Running Vehicle Transport"]];
 const steps=[["01","REQUEST RECOVERY","Enter your pickup, destination and vehicle details."],["02","GET AN ESTIMATE","Review an indicative price, subject to the request details."],["03","RECEIVE DRIVER OFFERS","Suitable approved drivers may propose a price and ETA."],["04","COMPARE & CHOOSE","Compare independent offers and select your preferred driver."],["05","RECOVERY COMPLETED","Your chosen professional carries out the recovery."],["06","PAY DRIVER DIRECTLY","Pay the selected driver or company directly, outside the platform."]];
 export default function HomePage(){
  const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [pickupCode,setPickupCode]=useState("");const [destinationCode,setDestinationCode]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
@@ -41,7 +42,7 @@ export default function HomePage(){
    </form>
   }/>
 
-  <section className="uk-section" id="services"><div className="uk-section-head"><span className="uk-kicker">RECOVERY SERVICES</span><h2>Recovery Services for Every Situation</h2><p>Explore the ten supported recovery and vehicle transport services. Each opens the existing demo request journey.</p></div><div className="uk-service-grid">{services.map(([i,t])=><Link href="/recovery/request" key={t} className="uk-service"><b>{i}</b><span>{t}</span><em>→</em></Link>)}</div></section>
+  <RecoveryServicesSection/>
 
   <section className="uk-how" id="how"><div className="uk-section-head"><span className="uk-kicker">HOW IT WORKS</span><h2>A Clear Journey, With You in Control</h2></div><div className="uk-steps">{steps.map(([n,t,d])=><article key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></article>)}</div><div className="center-action"><Link href="/how-it-works">SEE HOW IT WORKS →</Link></div></section>
 
@@ -65,10 +66,7 @@ export default function HomePage(){
    </ol>
   </section>
 
-  <section className="app-section" id="install-app" aria-labelledby="install-app-title">
-   <div className="pwa-phone-stage"><div className="pwa-phone" aria-label="Non-interactive preview of the UK Recovery application"><div className="pwa-phone-notch" aria-hidden="true"/><div className="pwa-phone-screen"><div className="pwa-screen-brand"><span className="pwa-brand-mark">UK</span><span>UK <strong>Recovery</strong><small>VEHICLE RECOVERY</small></span><span className="pwa-screen-menu" aria-hidden="true">☰</span></div><span className="pwa-preview-label">RECOVERY MADE SIMPLE</span><h3>Help when you<br/><em>need it.</em></h3><p>Explore the recovery request journey.</p><div className="pwa-preview-field"><span>⌖</span><div><small>PICKUP LOCATION</small><strong>Enter UK postcode</strong></div></div><div className="pwa-preview-field"><span>↗</span><div><small>DESTINATION</small><strong>Choose drop-off point</strong></div></div><div className="pwa-preview-cta">GET RECOVERY ESTIMATE <span>→</span></div><div className="pwa-preview-foot">Request details <span>•</span> Driver offers <span>•</span> Your choice</div></div></div><span className="pwa-preview-caption">Interface preview · Not interactive</span></div>
-   <div className="app-copy"><span className="uk-kicker">INSTALLABLE WEB APP</span><h2 id="install-app-title">Recovery Help<br/>in <em>Your Pocket.</em></h2><p>Add UK Recovery to your home screen for quick access to the website, recovery request form and account areas.</p><div className="pwa-benefits">{[["⌂","Home-screen access"],["↗","Recovery request journey"],["◎","Customer and driver areas"],["✓","No App Store download"]].map(([symbol,label])=><div key={label}><span aria-hidden="true">{symbol}</span><strong>{label}</strong></div>)}</div><InstallAppButton/><p className="pwa-safety-note">Live recovery submissions and payments are not yet available. Online connection required.</p><div className="install-guides"><div><b>iPhone / Safari</b><p>Share → Add to Home Screen → Open as Web App (if offered) → Add</p></div><div><b>Android / Chrome</b><p>Browser menu → Install app or Add to Home screen</p></div></div></div>
-  </section>
+  <InstallableWebAppSection/>
 
   <section className="driver-cta" id="drivers"><div><span className="uk-kicker">FOR RECOVERY PROFESSIONALS</span><h2>Own a Recovery Business?</h2><p>The planned marketplace welcomes independent drivers and recovery companies. Create a profile, supply verification documents, receive admin approval and maintain a driver membership before receiving suitable opportunities and sending price and ETA offers. Registration and Stripe subscriptions are not yet live.</p><div><Link href="/driver/register" className="estimate-cta">BECOME A RECOVERY DRIVER →</Link><Link href="/driver/membership" className="driver-secondary">MEMBERSHIP INFORMATION</Link></div></div><div className="truck-visual"><span>24/7</span><b>RECOVERY</b><small>Professional marketplace opportunities</small></div></section>
 
