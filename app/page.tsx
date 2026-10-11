@@ -8,7 +8,7 @@ import "./home-enhancements.css";
 
 const services=[["⚡","Breakdown Recovery"],["⚠","Accident Recovery"],["↔","Vehicle Transport"],["↗","Car Towing"],["＋","Jump Start / Flat Battery Assistance"],["◉","Flat Tyre Assistance"],["◇","Motorbike Recovery"],["▰","Van Recovery"],["▤","Auction Vehicle Collection"],["⌁","Non-Running Vehicle Transport"]];
 // Optimised local recovery image; keep the homepage controls unchanged.
-const HERO_BACKGROUND_IMAGE="/recovery-hero.webp";
+const HERO_BACKGROUND_IMAGE="/WhatsApp%20Image%202026-10-11%20at%2012.50.07%20AM.jpeg";
 const steps=[["01","REQUEST RECOVERY","Enter your pickup, destination and vehicle details."],["02","GET AN ESTIMATE","Review an indicative price, subject to the request details."],["03","RECEIVE DRIVER OFFERS","Suitable approved drivers may propose a price and ETA."],["04","COMPARE & CHOOSE","Compare independent offers and select your preferred driver."],["05","RECOVERY COMPLETED","Your chosen professional carries out the recovery."],["06","PAY DRIVER DIRECTLY","Pay the selected driver or company directly, outside the platform."]];
 export default function HomePage(){
  const [pickup,setPickup]=useState("");const [destination,setDestination]=useState("");const [pickupCode,setPickupCode]=useState("");const [destinationCode,setDestinationCode]=useState("");const [locationText,setLocationText]=useState("");const [quoteOpen,setQuoteOpen]=useState(false);const pickupRef=useRef<HTMLInputElement>(null);const quoteToggleRef=useRef<HTMLButtonElement>(null);
