@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./client-preview.css";
 import PreviewLinkGuard from "./components/preview-link-guard";
 import { PwaRegister } from "./pwa-register";
 
