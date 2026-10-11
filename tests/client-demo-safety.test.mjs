@@ -4,8 +4,8 @@ import {readFileSync} from "node:fs";
 const file=(p)=>readFileSync(p,"utf8");
 test("client demo cannot send any live request, offer, upload or admin mutation",()=>{
  const p=file("proxy.ts");
- assert.match(p,/isClientReviewDemo\(\)/);
- assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);
+ assert.match(p,/const pages=new Set/);
+ assert.match(p,/safeApi\.has\(path\)/);
  for(const endpoint of ["/api/recovery/jobs","/api/driver/offers","/api/recovery/photos","/api/admin/pricing"]){
   assert.ok(!p.includes('"'+endpoint+'"'),endpoint+" must not be allowlisted");
  }
