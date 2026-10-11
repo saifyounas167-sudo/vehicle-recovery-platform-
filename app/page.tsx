@@ -41,8 +41,6 @@ export default function HomePage(){
    </form>
   }/>
 
-  <section className="uk-trust"><div>{[["✓","Driver approval process"],["↔","Independent price & ETA offers"],["⌖","Designed for UK postcodes"],["£","Pay driver directly"]].map(([i,t])=><article key={t}><b>{i}</b><span>{t}</span></article>)}</div></section>
-
   <section className="uk-section" id="services"><div className="uk-section-head"><span className="uk-kicker">RECOVERY SERVICES</span><h2>Recovery Services for Every Situation</h2><p>Explore the ten supported recovery and vehicle transport services. Each opens the existing demo request journey.</p></div><div className="uk-service-grid">{services.map(([i,t])=><Link href="/recovery/request" key={t} className="uk-service"><b>{i}</b><span>{t}</span><em>→</em></Link>)}</div></section>
 
   <section className="uk-how" id="how"><div className="uk-section-head"><span className="uk-kicker">HOW IT WORKS</span><h2>A Clear Journey, With You in Control</h2></div><div className="uk-steps">{steps.map(([n,t,d])=><article key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></article>)}</div><div className="center-action"><Link href="/how-it-works">SEE HOW IT WORKS →</Link></div></section>
