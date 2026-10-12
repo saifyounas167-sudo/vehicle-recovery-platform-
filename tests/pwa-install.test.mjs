@@ -36,3 +36,12 @@ test("iPhone quick guidance includes actual Share icon and Safari fallback",()=>
  for(const t of ["pwa-share-icon","Add to Home Screen","Open as Web App","Copy website link","navigator.clipboard.writeText","Open website in browser","FBAN","Instagram"])assert.ok(c.includes(t),t);
  assert.ok(c.includes('event.prompt()'));assert.ok(c.includes("display-mode: standalone"));
 });
+
+test("mobile header hides installed PWA CTA without affecting other buttons",()=>{
+ const button=file("app/install-app-button.tsx");const header=file("app/components/public-header.tsx");
+ assert.ok(button.includes("hideWhenInstalled=false"));
+ assert.ok(button.includes("if(hideWhenInstalled&&standalone)return null"));
+ assert.ok(header.includes('<InstallAppButton className="header-install" hideWhenInstalled/>'));
+ assert.ok(header.includes('<InstallAppButton className="header-install"/>'));
+ assert.ok(header.includes('href="/recovery/request" className="get-started"'));
+});
