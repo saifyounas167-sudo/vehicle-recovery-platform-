@@ -24,7 +24,7 @@ export default function PublicHeader(){
    <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
    <InstallAppButton className="header-install"/>
   </div>
-  <div className="public-mobile-actions"><InstallAppButton className="header-install"/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
+  <div className="public-mobile-actions"><InstallAppButton className="header-install" hideWhenInstalled/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
  </div>
  <div id="public-mobile-menu" className={"public-mobile-menu "+(open?"open":"")}>
   {nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""} onClick={close}>{label}</Link>)}
