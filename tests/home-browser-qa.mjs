@@ -85,5 +85,46 @@ try{
  console.log("PASS simulated standalone installed-state header");
 }catch(e){failures.push("PWA standalone: "+e.message);console.error("FAIL PWA standalone",e.message)}
 await installedContext.close();
+const formContext=await browser.newContext({viewport:{width:390,height:844}});
+const formPage=await formContext.newPage();
+try{
+ await formPage.route("**/api/recovery/location-suggest**",async route=>{
+  const query=new URL(route.request().url()).searchParams.get("q")||"";
+  const label=query.toLowerCase().includes("london")?"London SW1A 1AA":"Manchester M1 1AA";
+  const postcode=label.includes("London")?"SW1A 1AA":"M1 1AA";
+  await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({suggestions:[{id:postcode,label,detail:"Mock UK address",postcode,kind:"postcode"}]})});
+ });
+ await formPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
+ await formPage.locator(".ukr-btn--primary").click();
+ const form=formPage.locator("#homepage-quick-quote");
+ const pickup=form.getByRole("combobox",{name:/Pickup Location/});
+ const dropoff=form.getByRole("combobox",{name:/Drop-off Location/});
+ await form.getByRole("button",{name:/EXPLORE YOUR RECOVERY ESTIMATE/}).click();
+ if(await pickup.evaluate(e=>e.validity.valueMissing)!==true)throw Error("empty pickup did not validate as required");
+ await pickup.fill("London");
+ await form.getByRole("option",{name:/London SW1A 1AA/}).waitFor({timeout:12000});
+ await pickup.press("ArrowDown");await pickup.press("Enter");
+ if(await pickup.inputValue()!=="London SW1A 1AA")throw Error("keyboard pickup selection failed");
+ await dropoff.fill("Manchester");
+ await form.getByRole("option",{name:/Manchester M1 1AA/}).click();
+ if(await dropoff.inputValue()!=="Manchester M1 1AA")throw Error("dropoff selection failed");
+ await form.getByRole("button",{name:/EXPLORE YOUR RECOVERY ESTIMATE/}).click();
+ await formPage.waitForURL(/\/recovery\/request\?/,{timeout:12000});
+ const url=new URL(formPage.url());
+ if(url.searchParams.get("pickup")!=="SW1A 1AA"||url.searchParams.get("destination")!=="M1 1AA")throw Error("both UK postcodes were not transferred");
+ console.log("PASS required input, keyboard pickup, dropoff and both postcode transfers");
+}catch(e){failures.push("form keyboard/dropoff: "+e.message);console.error("FAIL form keyboard/dropoff",e.message)}
+await formContext.close();
+const errContext=await browser.newContext({viewport:{width:390,height:844}});
+const errPage=await errContext.newPage();
+try{
+ await errPage.route("**/api/recovery/location-suggest**",route=>route.fulfill({status:503,contentType:"application/json",body:'{"error":"temporarily unavailable"}'}));
+ await errPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
+ await errPage.locator(".ukr-btn--primary").click();
+ await errPage.getByRole("combobox",{name:/Pickup Location/}).fill("London");
+ await errPage.getByText("Location search is temporarily unavailable.").waitFor({timeout:12000});
+ console.log("PASS postcode autocomplete API failure state");
+}catch(e){failures.push("API error fallback: "+e.message);console.error("FAIL API fallback",e.message)}
+await errContext.close();
 await browser.close();
 if(failures.length){console.error("QA failures:\n"+failures.join("\n"));process.exitCode=1}
