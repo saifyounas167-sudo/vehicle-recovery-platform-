@@ -133,3 +133,8 @@
   background:#f6f7f8;border-radius:8px;
 }
 @media(prefers-reduced-motion:reduce){.uk-location-loading{animation:none}}
+
+/* Compact supporting sections for client roadmap Design #1; no API or route changes. */
+.uk-home .uk-how-compact{padding:38px 18px;background:#11161d;color:#fff}.uk-home .uk-how-compact .uk-section-head{margin-bottom:16px}.uk-home .uk-how-compact .uk-section-head h2{font-size:clamp(25px,3vw,34px);color:#fff}.uk-home .uk-how-compact .uk-section-head p{font-size:13px;line-height:1.5;color:#bec5ce}.uk-home .uk-how-compact .uk-steps{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.uk-home .uk-how-compact .uk-steps article{min-height:135px;padding:15px;border:1px solid #303941;border-radius:12px;background:#1c232b;color:#fff}.uk-home .uk-how-compact .uk-steps h3{font-size:12px;margin-top:12px}.uk-home .uk-how-compact .uk-steps p{font-size:11px;color:#c2c8d0}.uk-home .driver-cta{padding-top:45px;padding-bottom:45px}.uk-home .driver-cta p{max-width:650px;font-size:13px;line-height:1.5}.uk-home .final-cta{display:none}
+@media(max-width:760px){.uk-home .uk-how-compact .uk-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.uk-home .uk-how-compact .uk-steps article{min-height:122px}.uk-home .uk-how-compact{padding:26px 14px}}
+@media(max-width:480px){.uk-home .uk-how-compact .uk-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.uk-home .uk-how-compact .uk-steps article{min-height:120px}.uk-home .uk-how-compact .uk-steps h3{font-size:11px}.uk-home .uk-how-compact .uk-steps p{font-size:10px}}
