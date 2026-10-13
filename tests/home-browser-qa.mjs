@@ -15,7 +15,7 @@ for(const width of widths){
   if(!res||res.status()>=400)throw Error("Homepage HTTP "+res?.status());
   await page.locator(".ukr-title").waitFor();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-  if(overflow>2)throw Error("horizontal overflow "+overflow+"px");
+  if(overflow>2){const offenders=await page.evaluate(()=>Array.from(document.querySelectorAll("body *")).filter(el=>el.getBoundingClientRect().right>innerWidth+2||el.getBoundingClientRect().left< -2).slice(0,12).map(el=>({tag:el.tagName,cls:el.className?.baseVal||el.className,left:Math.round(el.getBoundingClientRect().left),right:Math.round(el.getBoundingClientRect().right)})));throw Error("horizontal overflow "+overflow+"px "+JSON.stringify(offenders))}
   const cards=page.locator("#services .ukrs-card");
   if(await cards.count()!==10)throw Error("expected exactly ten service cards");
   if(width<=600){const a=await cards.nth(0).boundingBox(),b=await cards.nth(1).boundingBox();if(!a||!b||Math.abs(a.y-b.y)>4||b.x<=a.x)throw Error("two-column mobile service layout missing")}
@@ -29,7 +29,7 @@ for(const width of widths){
   if(width<=430){
    const menu=page.getByRole("button",{name:"Open menu"});
    await menu.click();
-   if(await menu.getAttribute("aria-expanded")!=="true")throw Error("mobile menu not expanded");
+   if(await page.getByRole("button",{name:"Close menu"}).getAttribute("aria-expanded")!=="true")throw Error("mobile menu not expanded");
    await page.getByRole("button",{name:"Close menu"}).click();
   }
   if(errors.length)throw Error("console/page errors: "+errors.slice(0,3).join("; "));
@@ -37,7 +37,7 @@ for(const width of widths){
  }catch(e){failures.push(`${width}: ${e.message}`);console.error("FAIL viewport",width,e.message)}
  await context.close();
 }
-const context=await browser.newContext({viewport:{width:390,height:844},permissions:["geolocation"],geolocation:{latitude:51.501,long: -0.142}});
+const context=await browser.newContext({viewport:{width:390,height:844},permissions:["geolocation"],geolocation:{latitude:51.501,longitude: -0.142}});
 const page=await context.newPage();
 try{
  await page.route("**/api/recovery/location-suggest**",async route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({suggestions:[{id:"mock",label:"10 Downing Street, London SW1A 2AA",detail:"London",postcode:"SW1A 2AA",kind:"building"}]})}));
