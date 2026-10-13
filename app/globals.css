@@ -196,3 +196,11 @@ label{font-size:15px}
 .install-app-button:hover,.global-public-header .header-install:hover{background:#0b0b0b!important;box-shadow:0 12px 28px rgba(0,0,0,.35)}
 .install-app-button:focus-visible,.global-public-header .header-install:focus-visible{outline:3px solid #ff6600!important;outline-offset:3px}
 .global-public-header .public-mobile-actions .header-install{border-radius:12px}
+
+/* Customer request only: compact grouped choices and slim mobile header. */
+.recovery-v2 .recovery-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.recovery-v2 .recovery-category-grid button,.recovery-v2 .recovery-service-grid button{min-width:0;min-height:48px;padding:10px;border:1.5px solid #cbd4db;border-radius:11px;background:#fff;color:#152332;font-size:13px;font-weight:800;line-height:1.4;cursor:pointer}
+.recovery-v2 .recovery-category-grid button.selected,.recovery-v2 .recovery-service-grid button.selected{background:#ff6600;border-color:#ff6600;color:#fff}
+.recovery-v2 .recovery-help{color:#526273;font-size:13px;line-height:1.5}
+@media(max-width:600px){.recovery-v2 .recovery-category-grid{grid-template-columns:1fr;gap:8px}.recovery-v2 .recovery-category-grid button{min-height:44px}.recovery-v2 .recovery-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.recovery-v2 .recovery-service-grid button{font-size:12px;min-height:52px;padding:8px;overflow-wrap:anywhere}.global-public-header:has(+ .recovery-v2) .uk-nav{min-height:58px;padding-top:6px;padding-bottom:6px}}
+@media(max-width:340px){.recovery-v2 .recovery-service-grid{grid-template-columns:1fr}}

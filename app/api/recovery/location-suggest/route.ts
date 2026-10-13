@@ -96,7 +96,7 @@ export async function GET(request: Request) {
 
   const seen = new Set<string>();
   const suggestions = result.filter((x) => {
-    const code = x.postcode?.replace(/\s/g, "") || x.label.toLowerCase();
+    const code = (x.kind === "building" || x.kind === "amenity") ? "address:" + x.label.toLowerCase() : (x.postcode?.replace(/\s/g, "") || x.label.toLowerCase());
     if (seen.has(code)) return false;
     seen.add(code);
     return true;
