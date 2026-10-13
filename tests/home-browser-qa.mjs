@@ -32,6 +32,14 @@ for(const width of widths){
    if(await page.getByRole("button",{name:"Close menu"}).getAttribute("aria-expanded")!=="true")throw Error("mobile menu not expanded");
    await page.getByRole("button",{name:"Close menu"}).click();
   }
+  if(await hero.locator('a[href="/recovery/nearby"]').count()!==1)throw Error("nearby CTA route missing");
+  if(await hero.locator('a[href="/driver/register"]').count()!==1)throw Error("driver CTA route missing");
+  if(await cards.filter({has:page.locator('a[href="/recovery/request"]')}).count()!==10){
+   for(let i=0;i<10;i++)if(await cards.nth(i).getAttribute("href")!=="/recovery/request")throw Error("service link wrong "+i)
+  }
+  if(await page.locator('a[href="/how-it-works"]').count()===0)throw Error("How It Works route missing");
+  if(await page.locator('a[href="/about"]').count()===0)throw Error("About route missing");
+  if(await page.locator('footer a[href="/recovery/request"]').count()===0)throw Error("footer recovery route missing");
   if(errors.length)throw Error("console/page errors: "+errors.slice(0,3).join("; "));
   console.log("PASS viewport",width);
  }catch(e){failures.push(`${width}: ${e.message}`);console.error("FAIL viewport",width,e.message)}
@@ -56,5 +64,26 @@ try{
  console.log("PASS mocked autocomplete, GPS granted, quote transfer");
 }catch(e){failures.push("functionality: "+e.message);console.error("FAIL functionality",e.message)}
 await context.close();
+const deniedContext=await browser.newContext({viewport:{width:375,height:812},permissions:[]});
+const deniedPage=await deniedContext.newPage();
+try{
+ await deniedPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
+ await deniedPage.locator(".ukr-btn--primary").click();
+ await deniedPage.getByText("Use My Current Location").click();
+ await deniedPage.getByText("Location permission was not granted.").waitFor({timeout:12000});
+ console.log("PASS GPS permission denied");
+}catch(e){failures.push("GPS denied: "+e.message);console.error("FAIL GPS denied",e.message)}
+await deniedContext.close();
+const installedContext=await browser.newContext({viewport:{width:375,height:812}});
+await installedContext.addInitScript(()=>{const orig=window.matchMedia.bind(window);window.matchMedia=(query)=>query==="(display-mode: standalone)"?{matches:true,media:query,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){},dispatchEvent(){return true}}:orig(query)});
+const installedPage=await installedContext.newPage();
+try{
+ await installedPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
+ await installedPage.waitForTimeout(400);
+ if(await installedPage.locator(".public-mobile-actions .header-install").count()!==0)throw Error("installed header button still present");
+ if(await installedPage.locator("#install-app .ukra-install").count()!==1)throw Error("homepage installed-state CTA missing");
+ console.log("PASS simulated standalone installed-state header");
+}catch(e){failures.push("PWA standalone: "+e.message);console.error("FAIL PWA standalone",e.message)}
+await installedContext.close();
 await browser.close();
 if(failures.length){console.error("QA failures:\n"+failures.join("\n"));process.exitCode=1}
