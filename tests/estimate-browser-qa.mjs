@@ -53,7 +53,8 @@ try{
  await page.getByText("Price to be confirmed by recovery drivers.",{exact:true}).waitFor();
  await page.getByRole("button",{name:/Retry estimate/}).click();
  await page.getByText("Price to be confirmed by recovery drivers.",{exact:true}).waitFor();
- await page.screenshot({path:"qa-estimate-screenshots/estimate-unavailable-mocked-390.png",fullPage:true});
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await page.screenshot({path:"qa-estimate-screenshots/estimate-unavailable-mocked-390.png",fullPage:true,animations:"disabled"});
  await page.getByRole("button",{name:/Continue/}).click();
  await page.getByText("Driver offers coming soon").waitFor();
  console.log("PASS unavailable/retry/read-only offers");
