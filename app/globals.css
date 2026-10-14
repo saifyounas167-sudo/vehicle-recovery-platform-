@@ -262,3 +262,26 @@ label{font-size:15px}
 .recovery-v2 .recovery-location-card .recovery-demo-toggle:hover{background:#fff8f3}
 .recovery-v2 .recovery-location-card .recovery-demo-toggle:focus-visible{outline:3px solid #ff6600;outline-offset:-3px}
 @media(max-width:600px){.recovery-v2 .recovery-location-card .recovery-demo-toggle{min-height:55px;padding:9px 12px}.recovery-v2 .recovery-location-card{margin:7px 0}}
+
+/* Client Screenshot 3 – compact estimate stage */
+.recovery-v2 .uk-estimate-result{max-width:640px;margin:auto;color:#15212b}
+.recovery-v2 .uk-estimate-result h2{font-size:clamp(23px,4vw,29px);margin:0 0 9px;letter-spacing:-.035em}
+.recovery-v2 .uk-estimate-intro{font-size:14px;color:#596571;line-height:1.5;margin:0 0 16px}
+.recovery-v2 .uk-estimate-price{background:#f5f6f8;border:1px solid #edf0f2;border-radius:13px;padding:22px 20px;margin:0 0 13px}
+.recovery-v2 .uk-estimate-price>span{font-size:13px;font-weight:750;display:block;margin-bottom:8px}
+.recovery-v2 .uk-estimate-price>strong{display:block;font-size:clamp(28px,6vw,43px);line-height:1.2;overflow-wrap:anywhere;color:#111}
+.recovery-v2 .uk-estimate-price>strong.uk-estimate-fallback{font-size:clamp(18px,4vw,24px)}
+.recovery-v2 .uk-estimate-price>p{font-size:13px;color:#5a6570;margin:11px 0 0}
+.recovery-v2 .uk-estimate-row{display:flex;align-items:center;gap:14px;padding:12px 6px;border-bottom:1px solid #edf0f2}
+.recovery-v2 .uk-estimate-row .uk-estimate-icon{font-size:22px;flex:0 0 30px;color:#5a6570;text-align:center}
+.recovery-v2 .uk-estimate-row small{display:block;font-size:12px;color:#65717c;margin-bottom:4px}
+.recovery-v2 .uk-estimate-row strong{font-size:14px;overflow-wrap:anywhere}
+.recovery-v2 .uk-estimate-note{display:flex;gap:11px;padding:12px;background:#eaf3ff;border-radius:9px;margin:18px 0 14px;font-size:13px;color:#234973}
+.recovery-v2 .uk-estimate-note p{margin:0;line-height:1.45}
+.recovery-v2 .uk-estimate-continue{width:100%;min-height:49px;border-radius:9px}
+.recovery-v2 .uk-estimate-coming{padding:13px;border:1px solid #fed8bc;background:#fff8f2;border-radius:9px;margin-top:12px;font-size:13px}
+.recovery-v2 .uk-estimate-coming p{margin:6px 0 0}
+.recovery-v2 .uk-estimate-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 0}
+.recovery-v2 .uk-estimate-actions button{padding:11px 14px;min-height:44px;border:1px solid #d3d9df;background:white;border-radius:9px;color:#1b2a38;font-weight:700;cursor:pointer}
+.recovery-v2 .uk-estimate-actions button:focus-visible,.recovery-v2 .uk-estimate-continue:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
+@media(max-width:430px){.recovery-v2 .uk-estimate-price{padding:17px 14px}.recovery-v2 .uk-estimate-row{padding:10px 3px}.recovery-v2 .uk-estimate-intro{font-size:13px}}
