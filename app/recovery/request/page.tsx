@@ -50,8 +50,8 @@ export default function RecoveryRequestPage(){
   setV(s=>({...s,
     pickupPostcode:pickupPostcode||s.pickupPostcode,
     destinationPostcode:destinationPostcode||s.destinationPostcode,
-    pickupAddress:pickupPostcode?pickupLocation.slice(0,250):"",
-    destinationAddress:destinationPostcode?destinationLocation.slice(0,250):"",
+    pickupAddress:pickupPostcode&&pickupLocation&&!postcode.test(pickupLocation.trim())?pickupLocation.slice(0,250):"",
+    destinationAddress:destinationPostcode&&destinationLocation&&!postcode.test(destinationLocation.trim())?destinationLocation.slice(0,250):"",
     destinationMode:"transport"
   }));
  },[]);
