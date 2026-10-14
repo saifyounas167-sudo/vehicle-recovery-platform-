@@ -159,8 +159,11 @@ export default function RecoveryRequestPage(){
    }
   }
   setError("");setPostcodeStatus("Checking UK postcodes…");
-  if(!(await checkPostcode(v.pickupPostcode,"pickup"))){setError("Pickup postcode is invalid or not found. Please correct it.");return;}
-  if(v.destinationPostcode&&!(await checkPostcode(v.destinationPostcode,"destination"))){setError("Destination postcode is invalid or not found. Please correct it.");return;}
+  const pickupCheck=await checkPostcode(v.pickupPostcode,"pickup");
+  if(pickupCheck===false){setError("Pickup postcode is invalid or not found. Please correct it.");return;}
+  if(v.destinationPostcode){const destinationCheck=await checkPostcode(v.destinationPostcode,"destination");if(destinationCheck===false){setError("Destination postcode is invalid or not found. Please correct it.");return;}}
+  // A lookup outage is not a rejection: retain the manually confirmed postcode/address.
+  if(pickupCheck===null)setPostcodeStatus("Postcode service unavailable. Your manually entered pickup address will be used for this demo preview.");
   navigateStep(4);window.scrollTo(0,0);
  }
  function back(){navigateStep(0);}
