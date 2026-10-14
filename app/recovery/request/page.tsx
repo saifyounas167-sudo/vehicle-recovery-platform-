@@ -152,7 +152,7 @@ export default function RecoveryRequestPage(){
    }
   }
   setError("");setPostcodeStatus("Checking UK postcodes…");
-  if(!(await checkPostcode(v.pickupPostcode,"pickup"))){setError("Pickup postcode is invalid or unavailable. Please correct it.");return;}
+  if(!(await checkPostcode(v.pickupPostcode,"pickup"))){setError("Pickup postcode is invalid or not found. Please correct it.");return;}
   if(v.destinationPostcode&&!(await checkPostcode(v.destinationPostcode,"destination"))){setError("Destination postcode is invalid or unavailable. Please correct it.");return;}
   navigateStep(4);window.scrollTo(0,0);
  }
