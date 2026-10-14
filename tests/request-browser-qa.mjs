@@ -107,7 +107,7 @@ try{
  await outage.getByRole("button",{name:/Vehicle Details/}).click();
  await outage.getByLabel(/Vehicle make/).fill("Ford");await outage.getByLabel(/Vehicle model/).fill("Focus");
  await outage.getByLabel(/Vehicle type/).selectOption("Car");await outage.getByLabel(/Transmission/).selectOption("Manual");
- await outage.getByLabel(/Is the vehicle running/).selectOption("Running");await outage.getByLabel(/Can the vehicle roll/).selectOption("Yes");
+ await outage.getByLabel(/Is the vehicle running/).selectOption("Running");await outage.getByLabel(/Can the vehicle roll/).selectOption("Yes");await outage.getByLabel(/How many passengers/).selectOption("0");
  await outage.getByLabel(/Involved in an accident/).selectOption("No");
  await outage.getByRole("button",{name:/What's the issue/}).click();
  await outage.getByRole("button",{name:/Emergency & Roadside/}).click();
