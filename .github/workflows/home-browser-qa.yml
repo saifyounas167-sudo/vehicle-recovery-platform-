@@ -4,7 +4,7 @@ on:
     branches: [main]
 jobs:
   browser-qa:
-    if: github.head_ref == 'feature/roadmap-home-design-one'
+    if: github.head_ref == 'feature/client-demo-direct-recovery-form'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
