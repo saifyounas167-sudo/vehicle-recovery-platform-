@@ -59,6 +59,10 @@ export default function RecoveryRequestPage(){
     destinationMode:"transport"
   }));
  },[]);
+ useEffect(()=>{
+  const chosen=serviceGroups.find(group=>group.items.some(item=>item===v.recoveryType));
+  if(chosen)setServiceGroup(chosen.title);
+ },[v.recoveryType]);
  const [draftHydrated,setDraftHydrated]=useState(false);
  const draftKeys=["vehicleType","transmission","runningStatus","rollingStatus","passengerCount","lockedWheels","damagedWheels","accident","recoveryType","timing"] as const;
  useEffect(()=>{
