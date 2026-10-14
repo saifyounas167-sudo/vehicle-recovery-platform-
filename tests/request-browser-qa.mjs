@@ -70,7 +70,7 @@ for(const width of widths){
   await page.screenshot({path:`qa-request-screenshots/contact-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:/Get Estimate/}).click();
   await page.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
-  if(!(await page.getByText("Price to be confirmed by recovery drivers").first().isVisible()))throw Error("Estimate fallback missing");
+  await page.getByText("Price to be confirmed by recovery drivers").first().waitFor({timeout:12000});
   if(!(await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Demo booking write enabled");
   if(await page.locator(".recovery-demo-progress li.current").count()!==1)throw Error("Estimate progress stage not selected");
   await assertNoOverflow(page,"estimate",width);
