@@ -10,7 +10,7 @@
 - **Visible buttons/controls:** Get Recovery Quote, 10 service links, Near Me, Driver, menu
 - **Expected interactions/conditional fields:** Direct form; service preselection; no duplicate quote panel
 - **Existing implementation:** Hero + services and routes exist; CTA direct in PR37
-- **Missing functionality / blockers:** Service preselection absent; compact More Services optional
+- **Missing functionality / blockers:** Service preselection implementation added on PR37; verify ten links in browser
 - **Backend/API dependencies:** Location suggest/postcode, guest form handoff
 - **Database dependencies:** None for display; approved routes and backend security
 - **Security requirements:** No write on CTA
@@ -23,12 +23,12 @@
 - **Visible buttons/controls:** GPS, postcode/address, vehicle, issue, Get Estimate, Back, edits
 - **Expected interactions/conditional fields:** Destination by relevant service, running/rolling/wheels, passengers 0–8, ASAP/scheduled, optional notes/photos, contact
 - **Existing implementation:** PR37 direct CTA, accordions, validation, preview estimate, refresh/history
-- **Missing functionality / blockers:** Over-required make/model, transmission, accident, email; optional destination vs transport backend conflict; manual fallback issue; condition rules need client decision
+- **Missing functionality / blockers:** Conditional frontend and shared validator added; legacy database NOT NULL constraints and required contact email still block writable submissions; migration 0011 staging verification pending
 - **Backend/API dependencies:** Postcode, autocomplete, GPS, vehicle lookup, estimates; current jobs POST
 - **Database dependencies:** migration 0011 passenger count application unverified
 - **Security requirements:** No live submissions; no private data in session; permission checks
 - **Tests needed:** Every accordion/input, postcode API error, history, refresh, seven widths, payload tests
-- **Production readiness:** PR37 preview; contract fixes and client decisions pending
+- **Production readiness:** PR37 preview; client conditional rules approved; staging/database and visual verification pending
 
 ## 03 Estimate Result
 
@@ -163,7 +163,17 @@
 ## Release gates and client decisions
 
 1. **PR #37: no merge** until actual browser images at 320/375/390/430/768/1024/1440, form/CTA, backend contract, error recovery, privacy and visual client approval.
-2. Decide which service types require destination vs roadside-only help, and minimum vehicle/contact details; do not silently invent defaults or make backend looser than necessary.
+2. Approved conditional fields now reside in src/lib/recovery-service-rules.ts; re-test all 10 service categories and ensure write-time database migration compatibility before activating submissions.
 3. Verify migration 0011 and active pricing_rules in authorised staging before live commercial activation; do not modify Production schema or bypass read-only middleware.
 4. Real Postcodes.io/Geoapify, routing, physical GPS, Supabase and Stripe only PASS after authorised real tests; mocks must be explicitly labelled.
 5. Implement screens 3–12 in order only after screen 2 approved, on separate small PRs with CI and preview.
+
+## PR #37 approval implementation — 14 October 2026
+
+- Approved 10 service identifiers preserved. Shared typed validation defines destination, transport/loading condition, accident and passenger questions. Roadside-only services do not require destinations; Breakdown Recovery asks one transport-versus-roadside question.
+- Guest estimate requires pickup postcode/address, vehicle type, service, full name and UK mobile. Vehicle make/model, registration, transmission, email and description are optional. Scheduled timing requires a future date/time.
+- Home service cards already link with a `service` query parameter; request page now consumes it and chooses the service group while preserving other choices. Requires live browser QA.
+- Transport-only pricing requires a verified road route and active authoritative admin rules. £5 callout and £3/mile remain proposed approved base amounts, not fabricated default estimates.
+- Production and review are fail-closed at jobs API even on direct POST requests. PR is still draft and must not merge.
+- **BLOCKER**: write endpoint's legacy validation and persistence still require make/model/transmission/accident/passenger/email for some paths; existing Supabase NOT NULL defaults/constraints not yet verified. They must be updated alongside a backward-compatible migration, tested in authorised staging. Do not enable writes while unresolved.
+- Screenshot #2 final visual approval pending genuine browser screenshots and customer original side-by-side comparison. Do not claim mocks equal real postcode, routing, database, or billing tests.
