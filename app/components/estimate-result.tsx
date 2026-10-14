@@ -1,11 +1,11 @@
 "use client";
-import type {ReactNode} from "react";
+import {useState,type ReactNode} from "react";
 
 export type EstimatePreview={available:boolean;estimateGbp?:number;distanceMiles?:number|null;reason?:string;route?:unknown;locations?:unknown};
 type Props={estimate:EstimatePreview|null;estimating:boolean;vehicle:string;service:string;pickup:string;destination?:string;needsDestination:boolean;onEdit:()=>void;onRetry:()=>void};
 const money=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
 export default function EstimateResult({estimate,estimating,vehicle,service,pickup,destination,needsDestination,onEdit,onRetry}:Props){
- const [offersInfo,setOffersInfo]=importedState();
+ const [offersInfo,setOffersInfo]=useState(false);
  const validPrice=estimate?.available===true&&typeof estimate.estimateGbp==="number"&&Number.isFinite(estimate.estimateGbp)&&estimate.estimateGbp>=0;
  const validDistance=typeof estimate?.distanceMiles==="number"&&Number.isFinite(estimate.distanceMiles)&&estimate.distanceMiles>0;
  const item=(icon:ReactNode,label:string,value:string)=><div className="uk-estimate-row"><span className="uk-estimate-icon" aria-hidden="true">{icon}</span><div><small>{label}</small><strong>{value}</strong></div></div>;
@@ -30,4 +30,3 @@ export default function EstimateResult({estimate,estimating,vehicle,service,pick
   <div className="uk-estimate-actions"><button type="button" className="recovery-back" onClick={onEdit}>← Back / Edit Details</button>{!estimating&&!validPrice&&needsDestination&&<button type="button" onClick={onRetry}>Retry estimate</button>}</div>
  </div>;
 }
-import {useState as importedState} from "react";
