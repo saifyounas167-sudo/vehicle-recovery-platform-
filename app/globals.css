@@ -220,3 +220,6 @@ label{font-size:15px}
 .recovery-v2 .recovery-review-edit button:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
 @media(max-width:600px){.recovery-v2{padding:18px 12px 42px}.recovery-v2 .recovery-progress{gap:3px}.recovery-v2 .recovery-heading h1{font-size:29px}.recovery-v2 .recovery-heading p{font-size:13px}.recovery-v2 .recovery-card{padding:18px 14px}.recovery-v2 .recovery-buttons button{min-height:45px}}
 @media(max-width:350px){.recovery-v2 .recovery-card{padding:15px 10px}}
+
+/* Screenshot #2 desktop header: contain navigation within 1440px viewport. */
+@media(min-width:1161px) and (max-width:1600px){body:has(.recovery-v2) .global-public-header .public-main-nav{gap:16px!important}body:has(.recovery-v2) .global-public-header .public-actions{gap:4px}body:has(.recovery-v2) .global-public-header .public-actions .role-login{padding-left:4px;padding-right:4px}}
