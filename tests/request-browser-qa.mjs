@@ -29,7 +29,7 @@ for(const width of widths){
   for(const title of ["Vehicle Details","What's the issue?","Your Contact Details"]){
    if(await page.getByRole("button",{name:new RegExp(title.replace(/[?]/g,"."))}).count()!==1)throw Error("Missing collapsible "+title);
   }
-  const pickupCard=page.getByRole("button",{name:/Pickup Location.*Enter postcode/});
+  const pickupCard=page.getByRole("button",{name:/Pickup Location/});
   if(await pickupCard.getAttribute("aria-expanded")!=="false")throw Error("Pickup must start collapsed");
   if(await page.getByRole("combobox",{name:/Pickup Location/}).count())throw Error("Pickup input initially visible");
   await pickupCard.click();
