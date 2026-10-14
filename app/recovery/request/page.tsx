@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import PublicHeader from "../../components/public-header";
 import RecoveryRouteMap from "../../components/recovery-route-map";
 import UkLocationSearch, {type UkLocationSuggestion} from "../../components/uk-location-search";
@@ -55,6 +55,7 @@ export default function RecoveryRequestPage(){
     destinationMode:"transport"
   }));
  },[]);
+ const draftHydrated=useRef(false);
  const draftKeys=["vehicleType","transmission","runningStatus","rollingStatus","passengerCount","lockedWheels","damagedWheels","accident","recoveryType","timing"] as const;
  useEffect(()=>{
   // Restore only non-identifying choices. Never persist contact, street address, registration or notes.
@@ -66,6 +67,7 @@ export default function RecoveryRequestPage(){
     return next;
    });}
   }catch{}
+  draftHydrated.current=true;
   window.history.replaceState({...window.history.state,ukrWizardStep:0},"");
   const handlePop= (event:PopStateEvent)=>{
    const newStep=event.state?.ukrWizardStep;
@@ -76,6 +78,7 @@ export default function RecoveryRequestPage(){
  },[]);
  useEffect(()=>{
   // This storage excludes exact locations and all personal information.
+  if(!draftHydrated.current)return;
   try{
    const safe:Record<string,string>={};
    for(const key of draftKeys)safe[key]=v[key]||"";
