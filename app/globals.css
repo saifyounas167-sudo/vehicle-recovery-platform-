@@ -253,3 +253,12 @@ label{font-size:15px}
 .recovery-v2 .recovery-address-summary span{overflow-wrap:anywhere;min-width:0}.recovery-v2 .recovery-address-summary button{flex-shrink:0;border:0;color:#bf4900;background:transparent;font-weight:800;min-height:40px;cursor:pointer}
 .recovery-v2 .recovery-address-summary button:focus-visible{outline:2px solid #ff6600;outline-offset:2px}
 @media(max-width:600px){.recovery-v2 .recovery-buttons{gap:8px;margin-top:17px}.recovery-v2 .recovery-buttons>.recovery-back{min-width:80px;padding:10px}.recovery-v2 .recovery-buttons>.recovery-next{font-size:13px;padding:10px 9px}}
+
+/* Screenshot #2 location accordion polish */
+.recovery-v2 .recovery-location-card{margin:8px 0}
+.recovery-v2 .recovery-location-card .recovery-demo-toggle{min-height:59px}
+.recovery-v2 .recovery-location-card .recovery-demo-toggle>span:first-child{font-size:26px;color:#ff6600}
+.recovery-v2 .recovery-location-card .recovery-demo-toggle small{overflow-wrap:anywhere}
+.recovery-v2 .recovery-location-card .recovery-demo-toggle:hover{background:#fff8f3}
+.recovery-v2 .recovery-location-card .recovery-demo-toggle:focus-visible{outline:3px solid #ff6600;outline-offset:-3px}
+@media(max-width:600px){.recovery-v2 .recovery-location-card .recovery-demo-toggle{min-height:55px;padding:9px 12px}.recovery-v2 .recovery-location-card{margin:7px 0}}
