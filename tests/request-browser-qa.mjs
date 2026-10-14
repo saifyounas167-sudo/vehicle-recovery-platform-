@@ -96,5 +96,28 @@ for(const width of widths){
  }catch(e){errors.push("journey "+width+": "+e.message);console.error("FAIL journey "+width,e.message)}
  await context.close();
 }
+// Fail-closed on invalid format, but allow manually confirmed address during provider outage.
+const ctx=await browser.newContext({viewport:{width:390,height:844}});
+const outage=await ctx.newPage();
+try{
+ await outage.route("**/api/recovery/postcode?**",route=>route.fulfill({status:503,contentType:"application/json",body:JSON.stringify({error:"Provider unavailable"})}));
+ await outage.route("**/api/recovery/open-estimate",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({available:false,message:"Price to be confirmed by recovery drivers"})}));
+ await outage.goto(target,{waitUntil:"domcontentloaded"});
+ await outage.getByRole("button",{name:/Vehicle Details/}).click();
+ await outage.getByLabel(/Vehicle make/).fill("Ford");await outage.getByLabel(/Vehicle model/).fill("Focus");
+ await outage.getByLabel(/Vehicle type/).selectOption("Car");await outage.getByLabel(/Transmission/).selectOption("Manual");
+ await outage.getByLabel(/Is the vehicle running/).selectOption("Running");await outage.getByLabel(/Can the vehicle roll/).selectOption("Yes");
+ await outage.getByLabel(/Involved in an accident/).selectOption("No");
+ await outage.getByRole("button",{name:/What's the issue/}).click();
+ await outage.getByRole("button",{name:/Emergency & Roadside/}).click();
+ await outage.getByRole("button",{name:"Breakdown Recovery",exact:true}).click();
+ await outage.getByRole("button",{name:/Your Contact Details/}).click();
+ await outage.getByLabel(/Full name/).fill("Test Customer");await outage.getByLabel(/UK mobile number/).fill("07123456789");await outage.getByLabel(/Email address/).fill("demo@example.test");
+ await outage.getByRole("button",{name:/Get Estimate/}).click();
+ await outage.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
+ if(!(await outage.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Read-only protection missing");
+ console.log("PASS provider outage/manual address fallback without activating write");
+}catch(e){errors.push("postcode provider outage: "+e.message);console.error("FAIL postcode provider outage",e.message)}
+await ctx.close();
 await browser.close();
 if(errors.length){console.error(errors.join("\n"));process.exitCode=1}
