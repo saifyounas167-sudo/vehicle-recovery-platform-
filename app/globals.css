@@ -285,3 +285,21 @@ label{font-size:15px}
 .recovery-v2 .uk-estimate-actions button{padding:11px 14px;min-height:44px;border:1px solid #d3d9df;background:white;border-radius:9px;color:#1b2a38;font-weight:700;cursor:pointer}
 .recovery-v2 .uk-estimate-actions button:focus-visible,.recovery-v2 .uk-estimate-continue:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
 @media(max-width:430px){.recovery-v2 .uk-estimate-price{padding:17px 14px}.recovery-v2 .uk-estimate-row{padding:10px 3px}.recovery-v2 .uk-estimate-intro{font-size:13px}}
+
+/* Only Screen #3 uses the client's compact black-header estimate presentation. */
+body:has(.uk-estimate-result) .global-public-header{background:#111820!important;color:#fff!important;border-color:#273038!important;height:62px!important}
+body:has(.uk-estimate-result) .global-public-header .uk-nav{min-height:62px!important}
+body:has(.uk-estimate-result) .global-public-header .uk-logo b{color:#fff!important}
+body:has(.uk-estimate-result) .global-public-header .uk-menu{background:transparent!important;color:#fff!important;border:1px solid #4a535d!important}
+body:has(.uk-estimate-result) .global-public-header .header-install{display:none!important}
+.recovery-v2:has(.uk-estimate-result){background:#fff;padding-top:12px}
+.recovery-v2:has(.uk-estimate-result) .recovery-shell{max-width:640px}
+.recovery-v2:has(.uk-estimate-result) .recovery-progress{margin-bottom:13px}
+.recovery-v2:has(.uk-estimate-result) .recovery-card{border:0;box-shadow:none;background:transparent;padding:0;border-radius:0}
+.recovery-v2:has(.uk-estimate-result) .uk-estimate-result{max-width:100%}
+.recovery-v2:has(.uk-estimate-result) .uk-estimate-price{margin-top:13px}
+@media(max-width:600px){
+ body:has(.uk-estimate-result) .global-public-header{height:57px!important}
+ body:has(.uk-estimate-result) .global-public-header .uk-nav{min-height:57px!important;padding-top:5px;padding-bottom:5px}
+ .recovery-v2:has(.uk-estimate-result){padding:12px 14px 28px}
+}
