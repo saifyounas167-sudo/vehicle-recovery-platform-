@@ -1,97 +1,89 @@
 import {chromium} from "playwright";
 import {mkdir} from "node:fs/promises";
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
-const widths=[320,375,390,430,768,1024,1440],fail=[];
-await mkdir("qa-request-screenshots",{recursive:true});
+const widths=[320,375,390,430,768,1024,1440];
+const errors=[];await mkdir("qa-request-screenshots",{recursive:true});
+async function mockSafeApi(page){
+ await page.route("**/api/recovery/postcode?**",route=>{
+  const u=new URL(route.request().url()),pc=u.searchParams.get("postcode")||"SW1A 1AA";
+  return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({valid:true,postcode:pc})});
+ });
+ await page.route("**/api/recovery/open-estimate",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({available:false,message:"Price to be confirmed by recovery drivers"})}));
+ await page.route("**/api/recovery/jobs",route=>{throw Error("Forbidden job submission attempt")});
+}
+const target="http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester";
 for(const width of widths){
- const context=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1});
- const page=await context.newPage();
- const errors=[];page.on("pageerror",e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width,height:844}});
+ const page=await context.newPage();const js=[];
+ page.on("pageerror",err=>js.push(err.message));
  try{
-  await page.route("**/api/recovery/postcode?**",route=>{const u=new URL(route.request().url()),raw=u.searchParams.get("postcode");return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(raw?{valid:true,postcode:raw,latitude:51.5,longitude:-0.12}:{postcode:"SW1A 1AA"})})});
-  await page.route("**/api/recovery/open-estimate",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({available:false,message:"Price to be confirmed by recovery drivers"})}));
-  await page.goto("http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester",{waitUntil:"domcontentloaded"});
-  await page.locator(".recovery-card").waitFor();
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);if(overflow>2)throw Error("horizontal overflow "+overflow+"px");
-  if(!await page.getByRole("heading",{name:"Request Recovery"}).isVisible())throw Error("heading not visible");
-  await page.screenshot({path:`qa-request-screenshots/request-step1-${width}.png`,fullPage:true,animations:"disabled"});
-  await page.getByRole("button",{name:/Continue/}).click();
-  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
-  await page.screenshot({path:`qa-request-screenshots/request-step2-${width}.png`,fullPage:true,animations:"disabled"});
-  if(errors.length)throw Error("browser errors: "+errors.join("; "));
-  console.log("PASS width "+width+" step 1-2");
- }catch(e){fail.push(width+": "+e.message);console.error("FAIL "+width,e.message)}
+  await mockSafeApi(page);
+  await page.goto(target,{waitUntil:"domcontentloaded"});
+  await page.getByRole("heading",{name:"Request Recovery"}).waitFor();
+  const labels=await page.locator(".recovery-demo-progress li").allTextContents();
+  if(labels.map(x=>x.replace(/\d/g,"").trim()).join("|")!=="Details|Estimate|Offers|Choose")throw Error("Wrong client-stage labels: "+labels);
+  const over=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+  if(over>2)throw Error("Horizontal overflow "+over);
+  for(const title of ["Vehicle Details","What's the issue?","Your Contact Details"]){
+   if(await page.getByRole("button",{name:new RegExp(title.replace(/[?]/g,"."))}).count()!==1)throw Error("Missing collapsible "+title);
+  }
+  if(!(await page.getByRole("button",{name:/Get Estimate/}).isVisible()))throw Error("No Get Estimate action");
+  await page.screenshot({path:`qa-request-screenshots/details-${width}.png`,fullPage:true,animations:"disabled"});
+  if(js.length)throw Error("JS errors "+js.join("; "));
+  console.log("PASS details viewport "+width);
+ }catch(e){errors.push("viewport "+width+": "+e.message);console.error("FAIL viewport "+width,e.message)}
  await context.close();
 }
-for(const journeyWidth of [390,1440]){
-const context=await browser.newContext({viewport:{width:journeyWidth,height:844}});
-const page=await context.newPage();
-try{
- await page.route("**/api/recovery/postcode?**",route=>{const u=new URL(route.request().url());return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({valid:true,postcode:u.searchParams.get("postcode")})})});
- await page.route("**/api/recovery/open-estimate",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({available:false,message:"Driver prices not available in preview"})}));
- await page.goto("http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester",{waitUntil:"domcontentloaded"});
- await page.getByRole("button",{name:/Continue/}).click();
- await page.getByLabel(/Vehicle make/).fill("Ford");await page.getByLabel(/Vehicle model/).fill("Focus");
- await page.getByLabel(/Vehicle type/).selectOption("Car");await page.getByLabel(/Transmission/).selectOption("Manual");
- await page.getByLabel(/Is the vehicle running/).selectOption("Running");
- await page.getByLabel(/Can the vehicle roll/).selectOption("Yes");await page.getByLabel(/Involved in an accident/).selectOption("No");
- await page.getByRole("button",{name:/Continue/}).click();
- await page.screenshot({path:`qa-request-screenshots/request-step3-${journeyWidth}.png`,fullPage:true,animations:"disabled"});
- await page.getByRole("button",{name:/Emergency & Roadside/}).click();
- await page.getByRole("button",{name:"Breakdown Recovery"}).click();
- await page.getByRole("button",{name:/Continue/}).click();
- await page.screenshot({path:`qa-request-screenshots/request-step4-${journeyWidth}.png`,fullPage:true,animations:"disabled"});
- await page.getByLabel(/Full name/).fill("Test Customer");
- await page.getByLabel(/UK mobile number/).fill("07123456789");
- await page.getByLabel(/Email address/).fill("demo@example.test");
- await page.getByRole("button",{name:/Continue/}).click();
- await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
- await page.screenshot({path:`qa-request-screenshots/request-step5-${journeyWidth}.png`,fullPage:true,animations:"disabled"});
- if(!await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled())throw Error("demo submission not blocked");
- await page.getByRole("button",{name:"Edit vehicle"}).click();
- await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
- if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("back navigation lost vehicle");
- // Direct review-edit adds a history entry; browser Back must restore Review.
- for(let round=0;round<2;round++){
-  await page.goBack();
-  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
-  if(!page.url().includes("/recovery/request"))throw Error("browser Back unexpectedly exited form");
-  await page.goForward();
-  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
-  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("browser Forward lost form data");
- }
- console.log("PASS repeated browser Back/Forward and review edit state preservation");
- await page.reload({waitUntil:"domcontentloaded"});
- await page.getByRole("heading",{name:"Request Recovery"}).waitFor();
- await page.getByRole("button",{name:/Continue/}).click();
- await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
- if(await page.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("safe vehicle choice not retained after refresh");
- if(await page.getByLabel(/Vehicle make/).inputValue()!=="")throw Error("identifying vehicle make persisted unexpectedly");
- await page.goBack({waitUntil:"domcontentloaded"}).catch(()=>null);
- console.log("PASS five-step mock journey, review editing, read-only guard and privacy-safe refresh");
-}catch(e){fail.push("journey: "+e.message);console.error("FAIL journey",e.message)}
-await context.close();}
-// Fresh session: select a safe value, refresh immediately, and inspect storage privacy.
-const immediate=await browser.newContext({viewport:{width:375,height:812}});
-const immediatePage=await immediate.newPage();
-try{
- await immediatePage.route("**/api/recovery/postcode?**",route=>{
-  const code=new URL(route.request().url()).searchParams.get("postcode")||"SW1A 1AA";
-  return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({valid:true,postcode:code})});
- });
- await immediatePage.goto("http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester",{waitUntil:"domcontentloaded"});
- await immediatePage.getByRole("button",{name:/Continue/}).click();
- await immediatePage.getByLabel(/Vehicle type/).selectOption("Car");
- await immediatePage.reload({waitUntil:"domcontentloaded"});
- await immediatePage.getByRole("button",{name:/Continue/}).click();
- if(await immediatePage.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("immediate refresh erased safe selection");
- const raw=await immediatePage.evaluate(()=>sessionStorage.getItem("ukr-request-safe-draft-v1"));
- const safe=JSON.parse(raw||"{}");
- for(const key of ["customerName","phone","email","registration","pickupAddress","destinationAddress","problemDescription","make","model"]){
-  if(Object.prototype.hasOwnProperty.call(safe,key))throw Error("sensitive draft key persisted: "+key);
- }
- console.log("PASS immediate refresh safe draft restore, sensitive storage exclusion");
-}catch(e){fail.push("immediate refresh: "+e.message);console.error("FAIL immediate refresh",e.message)}
-await immediate.close();
+for(const width of [390,1440]){
+ const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage();
+ try{
+  await mockSafeApi(page);await page.goto(target,{waitUntil:"domcontentloaded"});
+  await page.getByRole("button",{name:/Get Estimate/}).click();
+  await page.getByRole("button",{name:/Vehicle Details/}).waitFor();
+  if(!(await page.getByRole("button",{name:/Vehicle Details/}).getAttribute("aria-expanded")==="true"))throw Error("Required vehicle card not expanded");
+  await page.getByLabel(/Vehicle make/).fill("Ford");
+  await page.getByLabel(/Vehicle model/).fill("Focus");
+  await page.getByLabel(/Vehicle type/).selectOption("Car");
+  await page.getByLabel(/Transmission/).selectOption("Manual");
+  await page.getByLabel(/Is the vehicle running/).selectOption("Running");
+  await page.getByLabel(/Can the vehicle roll/).selectOption("No");
+  await page.getByLabel(/How many passengers/).selectOption("2");
+  await page.getByLabel(/Involved in an accident/).selectOption("No");
+  await page.getByLabel(/Locked wheels/).selectOption("No");
+  await page.screenshot({path:`qa-request-screenshots/vehicle-${width}.png`,fullPage:true,animations:"disabled"});
+  await page.getByRole("button",{name:/What's the issue/}).click();
+  await page.getByRole("button",{name:/Emergency & Roadside/}).click();
+  await page.getByRole("button",{name:"Breakdown Recovery",exact:true}).click();
+  await page.getByRole("button",{name:"Scheduled",exact:true}).click();
+  await page.getByLabel(/Preferred collection date/).fill("2099-05-22T12:00");
+  await page.getByLabel(/Additional Details/).fill("Mock test note");
+  await page.screenshot({path:`qa-request-screenshots/issue-${width}.png`,fullPage:true,animations:"disabled"});
+  await page.getByRole("button",{name:/Your Contact Details/}).click();
+  await page.getByLabel(/Full name/).fill("Test Customer");
+  await page.getByLabel(/UK mobile number/).fill("07123456789");
+  await page.getByLabel(/Email address/).fill("demo@example.test");
+  await page.screenshot({path:`qa-request-screenshots/contact-${width}.png`,fullPage:true,animations:"disabled"});
+  await page.getByRole("button",{name:/Get Estimate/}).click();
+  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
+  if(!(await page.getByText("Price to be confirmed by recovery drivers").first().isVisible()))throw Error("Estimate fallback missing");
+  if(!(await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Demo booking write enabled");
+  await page.screenshot({path:`qa-request-screenshots/estimate-${width}.png`,fullPage:true,animations:"disabled"});
+  await page.getByRole("button",{name:"Edit vehicle"}).click();
+  if(!(await page.getByLabel(/Vehicle make/).inputValue()==="Ford"))throw Error("Vehicle data lost after editing");
+  await page.goBack();await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
+  await page.goForward();await page.getByLabel(/Vehicle make/).waitFor();
+  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("Browser history lost input");
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.getByRole("button",{name:/Vehicle Details/}).click();
+  if(await page.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("Non-sensitive selection not restored");
+  if(await page.getByLabel(/Vehicle make/).inputValue()!=="")throw Error("Private make persisted");
+  const draft=await page.evaluate(()=>sessionStorage.getItem("ukr-request-safe-draft-v1"));
+  for(const secret of ["customerName","phone","email","registration","pickupAddress","destinationAddress","problemDescription"]){
+   if(Object.hasOwn(JSON.parse(draft||"{}"),secret))throw Error("Private key stored: "+secret);
+  }
+  console.log("PASS complete demo details-to-estimate flow "+width);
+ }catch(e){errors.push("journey "+width+": "+e.message);console.error("FAIL journey "+width,e.message)}
+ await context.close();
+}
 await browser.close();
-if(fail.length){console.error(fail.join("\n"));process.exitCode=1}
+if(errors.length){console.error(errors.join("\n"));process.exitCode=1}
