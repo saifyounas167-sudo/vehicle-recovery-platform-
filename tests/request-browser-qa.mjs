@@ -46,7 +46,7 @@ try{
  await page.getByRole("button",{name:/Continue/}).click();
  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
  await page.screenshot({path:"qa-request-screenshots/request-step5-390.png",fullPage:true,animations:"disabled"});
- if(!await page.getByRole("button",{name:/LIVE SUBMISSION UNAVAILABLE/}).isDisabled())throw Error("demo submission not blocked");
+ if(!await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled())throw Error("demo submission not blocked");
  await page.getByRole("button",{name:"Edit vehicle"}).click();
  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("back navigation lost vehicle");
