@@ -11,8 +11,8 @@ test("client quote CTA opens the existing form with its pickup and drop-off auto
   const hero=readFileSync("app/components/uk-recovery-hero.tsx","utf8");
   assert.match(hero,/href="\/recovery\/request"/);
   assert.doesNotMatch(home,/homepage-quick-quote/);
-  assert.match(customer,/UkLocationSearch label="Pickup location or UK postcode"/);
-  assert.match(customer,/UkLocationSearch label="Drop-off location or UK postcode"/);
+  assert.ok(customer.includes('UkLocationSearch label="Pickup Location"'));
+  assert.ok(customer.includes('UkLocationSearch label="Drop-off Location (optional)"'));
 });
 test("city search keeps exact postcode confirmation in existing recovery form",()=>{
   assert.match(customer,/pickupLocation/);
