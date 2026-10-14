@@ -204,3 +204,19 @@ label{font-size:15px}
 .recovery-v2 .recovery-help{color:#526273;font-size:13px;line-height:1.5}
 @media(max-width:600px){.recovery-v2 .recovery-category-grid{grid-template-columns:1fr;gap:8px}.recovery-v2 .recovery-category-grid button{min-height:44px}.recovery-v2 .recovery-service-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.recovery-v2 .recovery-service-grid button{font-size:12px;min-height:52px;padding:8px;overflow-wrap:anywhere}.global-public-header:has(+ .recovery-v2) .uk-nav{min-height:58px;padding-top:6px;padding-bottom:6px}}
 @media(max-width:340px){.recovery-v2 .recovery-service-grid{grid-template-columns:1fr}}
+
+/* Screenshot #2 — compact, accessible request wizard only. */
+.recovery-v2{background:linear-gradient(180deg,#f5f6f7,#ffffff);padding:28px 16px 56px}
+.recovery-v2 .recovery-shell{max-width:820px}
+.recovery-v2 .recovery-heading{text-align:left;margin:0 0 18px}
+.recovery-v2 .recovery-heading h1{font-size:clamp(29px,4vw,40px);line-height:1.1;letter-spacing:-.035em;margin:8px 0}
+.recovery-v2 .recovery-heading p{font-size:14px;line-height:1.5;color:#59636d;margin:0}
+.recovery-v2 .recovery-progress{margin-bottom:16px;gap:5px}
+.recovery-v2 .recovery-progress li{min-width:0}
+.recovery-v2 .recovery-card{border-radius:16px}
+.recovery-v2 .recovery-review-edit{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px}
+.recovery-v2 .recovery-review-edit button{padding:9px 12px;border:1px solid #d7dde2;background:#fff;color:#182431;border-radius:9px;font-size:12px;font-weight:750;cursor:pointer}
+.recovery-v2 .recovery-review-edit button:hover{border-color:#ff6600}
+.recovery-v2 .recovery-review-edit button:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
+@media(max-width:600px){.recovery-v2{padding:18px 12px 42px}.recovery-v2 .recovery-progress{gap:3px}.recovery-v2 .recovery-heading h1{font-size:29px}.recovery-v2 .recovery-heading p{font-size:13px}.recovery-v2 .recovery-card{padding:18px 14px}.recovery-v2 .recovery-buttons button{min-height:45px}}
+@media(max-width:350px){.recovery-v2 .recovery-card{padding:15px 10px}}
