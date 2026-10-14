@@ -5,11 +5,11 @@ const home=readFileSync("app/page.tsx","utf8");
 const hero=readFileSync("app/components/uk-recovery-hero.tsx","utf8");
 const nearby=readFileSync("app/recovery/nearby/page.tsx","utf8");
 const form=readFileSync("app/recovery/request/page.tsx","utf8");
-test("three homepage choices and expandable quote",()=>{
- for(const text of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","aria-expanded={quoteOpen}","quoteOpen&&","/driver/register","/recovery/nearby"])assert.ok(hero.includes(text),text);
- assert.ok(home.includes("pickupRef.current?.focus()"));assert.ok(home.includes("<UkRecoveryHero "));assert.ok(home.includes("UkLocationSearch"));
- assert.ok(home.includes('q.set("pickup",pickupCode||pickup.trim())'));assert.ok(home.includes('q.set("destination",destinationCode||destination.trim())'));
- assert.ok(home.includes('q.set("pickupLocation",pickup.trim())'));assert.ok(home.includes('q.set("destinationLocation",destination.trim())'));
+test("three homepage actions and direct client-style recovery form",()=>{
+ for(const value of ["Get Recovery Quote","Find Recovery Near Me","Join as a Recovery Driver","/driver/register","/recovery/nearby"])assert.ok(hero.includes(value),value);
+ assert.ok(hero.includes('href="/recovery/request" className="ukr-btn ukr-btn--primary"'));
+ assert.ok(!home.includes("homepage-quick-quote"));
+ assert.ok(form.includes('const demoStages=["Details","Estimate","Offers","Choose"]'));
 });
 test("nearby postcode/GPS search reuses existing map and makes no private DB query",()=>{
  for(const text of ["RecoveryRouteMap","/api/recovery/postcode?postcode=","/api/recovery/postcode?lat=","navigator.geolocation.getCurrentPosition","data.valid!==true","Verified company listings are not available","encodeURIComponent(postcode)","/recovery/request"])assert.ok(nearby.includes(text),text);
