@@ -38,6 +38,7 @@ for(const width of widths){
   await page.getByRole("button",{name:/Continue/}).click();
   await page.getByText("Driver offers coming soon").waitFor();
   await page.getByRole("button",{name:/Back \/ Edit Details/}).click();
+  await page.getByRole("button",{name:/Vehicle Details/}).click();
   if(await page.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("Back lost vehicle data");
   await page.goBack();await page.getByRole("heading",{name:"Estimated Price"}).waitFor();
   await page.goForward();await page.getByRole("button",{name:/Get Estimate/}).waitFor();
