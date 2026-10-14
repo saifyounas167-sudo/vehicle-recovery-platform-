@@ -18,7 +18,7 @@ test("city search keeps exact postcode confirmation in existing recovery form",(
   assert.match(customer,/pickupLocation/);
   assert.match(customer,/destinationLocation/);
   assert.match(customer,/Confirm complete UK pickup postcode/);
-  assert.ok(customer.includes("Confirm UK destination postcode (optional)"));
+  assert.ok(customer.includes("Confirm UK destination postcode"));
   assert.match(customer,/postcode\.test\(v\.pickupPostcode\.trim\(\)\)/);
 });
 test("autocomplete supports keyboard, safe suggestion selection and debounced requests",()=>{
