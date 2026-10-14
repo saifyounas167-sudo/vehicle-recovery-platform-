@@ -12,7 +12,7 @@ test("client quote CTA opens the existing form with its pickup and drop-off auto
   assert.match(hero,/href="\/recovery\/request"/);
   assert.doesNotMatch(home,/homepage-quick-quote/);
   assert.ok(customer.includes('UkLocationSearch label="Pickup Location"'));
-  assert.ok(customer.includes('UkLocationSearch label="Drop-off Location (optional)"'));
+  assert.ok(customer.includes('UkLocationSearch label="Drop-off Location"'));
 });
 test("city search keeps exact postcode confirmation in existing recovery form",()=>{
   assert.match(customer,/pickupLocation/);
