@@ -51,7 +51,14 @@ try{
  await page.getByRole("button",{name:"Edit vehicle"}).click();
  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("back navigation lost vehicle");
- console.log("PASS five-step mock journey, review editing, read-only guard");
+ await page.reload({waitUntil:"domcontentloaded"});
+ await page.getByRole("heading",{name:"Request Recovery"}).waitFor();
+ await page.getByRole("button",{name:/Continue/}).click();
+ await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
+ if(await page.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("safe vehicle choice not retained after refresh");
+ if(await page.getByLabel(/Vehicle make/).inputValue()!=="")throw Error("identifying vehicle make persisted unexpectedly");
+ await page.goBack({waitUntil:"domcontentloaded"}).catch(()=>null);
+ console.log("PASS five-step mock journey, review editing, read-only guard and privacy-safe refresh");
 }catch(e){fail.push("journey: "+e.message);console.error("FAIL journey",e.message)}
 await context.close();}
 await browser.close();
