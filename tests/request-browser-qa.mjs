@@ -84,6 +84,10 @@ for(const width of widths){
   await page.getByRole("button",{name:/Vehicle Details/}).click();
   if(await page.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("Non-sensitive selection not restored");
   if(await page.getByLabel(/Vehicle make/).inputValue()!=="")throw Error("Private make persisted");
+  await page.getByRole("button",{name:/What's the issue/}).click();
+  if(!(await page.getByRole("button",{name:"Breakdown Recovery",exact:true}).isVisible()))throw Error("Restored service group not visible after refresh");
+  if(await page.getByRole("button",{name:"Breakdown Recovery",exact:true}).getAttribute("aria-pressed")!=="true")throw Error("Restored service not selected");
+
   const draft=await page.evaluate(()=>sessionStorage.getItem("ukr-request-safe-draft-v1"));
   for(const secret of ["customerName","phone","email","registration","pickupAddress","destinationAddress","problemDescription"]){
    if(Object.hasOwn(JSON.parse(draft||"{}"),secret))throw Error("Private key stored: "+secret);
