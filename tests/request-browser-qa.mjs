@@ -3,6 +3,8 @@ import {mkdir} from "node:fs/promises";
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 const widths=[320,375,390,430,768,1024,1440];
 const errors=[];await mkdir("qa-request-screenshots",{recursive:true});
+async function assertNoOverflow(page,stage,width){const amount=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);if(amount>2)throw Error(stage+" "+width+"px: horizontal overflow "+amount+"px")}
+
 async function mockSafeApi(page){
  await page.route("**/api/recovery/postcode?**",route=>{
   const u=new URL(route.request().url()),pc=u.searchParams.get("postcode")||"SW1A 1AA";
@@ -34,7 +36,7 @@ for(const width of widths){
  }catch(e){errors.push("viewport "+width+": "+e.message);console.error("FAIL viewport "+width,e.message)}
  await context.close();
 }
-for(const width of [390,1440]){
+for(const width of widths){
  const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage();
  try{
   await mockSafeApi(page);await page.goto(target,{waitUntil:"domcontentloaded"});
@@ -50,6 +52,7 @@ for(const width of [390,1440]){
   await page.getByLabel(/How many passengers/).selectOption("2");
   await page.getByLabel(/Involved in an accident/).selectOption("No");
   await page.getByLabel(/Locked wheels/).selectOption("No");
+  await assertNoOverflow(page,"vehicle",width);
   await page.screenshot({path:`qa-request-screenshots/vehicle-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:/What's the issue/}).click();
   await page.getByRole("button",{name:/Emergency & Roadside/}).click();
@@ -57,16 +60,20 @@ for(const width of [390,1440]){
   await page.getByRole("button",{name:"Scheduled",exact:true}).click();
   await page.getByLabel(/Preferred collection date/).fill("2099-05-22T12:00");
   await page.getByLabel(/Additional Details/).fill("Mock test note");
+  await assertNoOverflow(page,"issue",width);
   await page.screenshot({path:`qa-request-screenshots/issue-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:/Your Contact Details/}).click();
   await page.getByLabel(/Full name/).fill("Test Customer");
   await page.getByLabel(/UK mobile number/).fill("07123456789");
   await page.getByLabel(/Email address/).fill("demo@example.test");
+  await assertNoOverflow(page,"contact",width);
   await page.screenshot({path:`qa-request-screenshots/contact-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:/Get Estimate/}).click();
   await page.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
   if(!(await page.getByText("Price to be confirmed by recovery drivers").first().isVisible()))throw Error("Estimate fallback missing");
   if(!(await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Demo booking write enabled");
+  if(await page.locator(".recovery-demo-progress li.current").count()!==1)throw Error("Estimate progress stage not selected");
+  await assertNoOverflow(page,"estimate",width);
   await page.screenshot({path:`qa-request-screenshots/estimate-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:"Edit vehicle"}).click();
   if(!(await page.getByLabel(/Vehicle make/).inputValue()==="Ford"))throw Error("Vehicle data lost after editing");
