@@ -27,7 +27,7 @@ test("homepage keeps app section scope with non-interactive phone preview",()=>{
  const sec=file("app/components/installable-web-app-section.tsx");
  assert.ok(sec.includes("ukra-screen"));assert.ok(sec.includes("Not interactive"));assert.ok(sec.includes("<InstallAppButton className="));
  assert.ok(file("app/components/installable-web-app-section.css").includes(".uk-home .ukra"));assert.ok(css.includes(".pwa-dialog-backdrop"));
- assert.ok(c.includes("<UkRecoveryHero "));
+ assert.ok(c.includes("<UkRecoveryHero/>"));
  assert.ok(file("app/components/uk-recovery-hero.css").includes("/WhatsApp%20Image%202026-10-11%20at%2012.50.07%20AM.jpeg"));
 });
 
