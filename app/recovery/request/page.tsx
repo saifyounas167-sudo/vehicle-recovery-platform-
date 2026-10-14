@@ -107,9 +107,11 @@ export default function RecoveryRequestPage(){
  function selectLocation(kind:"pickup"|"destination",item:UkLocationSuggestion){
   if(kind==="pickup"){
    setPickupSearch(item.label);
+   if(item.postcode&&(item.kind==="building"||item.kind==="amenity"))setPickupOpen(false);
    setV(s=>({...s,pickupPostcode:item.postcode||"",pickupAddress:item.kind==="building"||item.kind==="amenity"?item.label:""}));
   }else{
    setDestinationSearch(item.label);
+   if(item.postcode&&(item.kind==="building"||item.kind==="amenity"))setDropoffOpen(false);
    setV(s=>({...s,destinationPostcode:item.postcode||"",destinationAddress:item.kind==="building"||item.kind==="amenity"?item.label:""}));
   }
   setError("");setPostcodeStatus(item.postcode?"Postcode selected. Choose a precise address if listed, or add an address/landmark manually.":"Location selected. Enter the full postcode and address or landmark.");
