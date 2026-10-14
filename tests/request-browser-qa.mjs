@@ -51,6 +51,16 @@ try{
  await page.getByRole("button",{name:"Edit vehicle"}).click();
  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("back navigation lost vehicle");
+ // Direct review-edit adds a history entry; browser Back must restore Review.
+ for(let round=0;round<2;round++){
+  await page.goBack();
+  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
+  if(!page.url().includes("/recovery/request"))throw Error("browser Back unexpectedly exited form");
+  await page.goForward();
+  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
+  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("browser Forward lost form data");
+ }
+ console.log("PASS repeated browser Back/Forward and review edit state preservation");
  await page.reload({waitUntil:"domcontentloaded"});
  await page.getByRole("heading",{name:"Request Recovery"}).waitFor();
  await page.getByRole("button",{name:/Continue/}).click();
