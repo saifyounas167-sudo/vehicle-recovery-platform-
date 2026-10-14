@@ -23,7 +23,8 @@ for(const width of widths){
  }catch(e){fail.push(width+": "+e.message);console.error("FAIL "+width,e.message)}
  await context.close();
 }
-const context=await browser.newContext({viewport:{width:390,height:844}});
+for(const journeyWidth of [390,1440]){
+const context=await browser.newContext({viewport:{width:journeyWidth,height:844}});
 const page=await context.newPage();
 try{
  await page.route("**/api/recovery/postcode?**",route=>{const u=new URL(route.request().url());return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({valid:true,postcode:u.searchParams.get("postcode")})})});
@@ -35,22 +36,23 @@ try{
  await page.getByLabel(/Is the vehicle running/).selectOption("Running");
  await page.getByLabel(/Can the vehicle roll/).selectOption("Yes");await page.getByLabel(/Involved in an accident/).selectOption("No");
  await page.getByRole("button",{name:/Continue/}).click();
- await page.screenshot({path:"qa-request-screenshots/request-step3-390.png",fullPage:true,animations:"disabled"});
+ await page.screenshot({path:"qa-request-screenshots/request-step3-${journeyWidth}.png",fullPage:true,animations:"disabled"});
  await page.getByRole("button",{name:/Emergency & Roadside/}).click();
  await page.getByRole("button",{name:"Breakdown Recovery"}).click();
  await page.getByRole("button",{name:/Continue/}).click();
- await page.screenshot({path:"qa-request-screenshots/request-step4-390.png",fullPage:true,animations:"disabled"});
+ await page.screenshot({path:"qa-request-screenshots/request-step4-${journeyWidth}.png",fullPage:true,animations:"disabled"});
  await page.getByLabel(/Full name/).fill("Test Customer");
  await page.getByLabel(/UK mobile number/).fill("07123456789");
  await page.getByLabel(/Email address/).fill("demo@example.test");
  await page.getByRole("button",{name:/Continue/}).click();
  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
- await page.screenshot({path:"qa-request-screenshots/request-step5-390.png",fullPage:true,animations:"disabled"});
+ await page.screenshot({path:"qa-request-screenshots/request-step5-${journeyWidth}.png",fullPage:true,animations:"disabled"});
  if(!await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled())throw Error("demo submission not blocked");
  await page.getByRole("button",{name:"Edit vehicle"}).click();
  await page.getByRole("heading",{name:/Tell us about your vehicle/}).waitFor();
  if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("back navigation lost vehicle");
  console.log("PASS five-step mock journey, review editing, read-only guard");
 }catch(e){fail.push("journey: "+e.message);console.error("FAIL journey",e.message)}
-await context.close();await browser.close();
+await context.close();}
+await browser.close();
 if(fail.length){console.error(fail.join("\n"));process.exitCode=1}
