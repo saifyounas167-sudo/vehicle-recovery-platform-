@@ -6,8 +6,8 @@ type Props={estimate:EstimatePreview|null;estimating:boolean;vehicle:string;serv
 const money=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
 export default function EstimateResult({estimate,estimating,vehicle,service,pickup,destination,needsDestination,onEdit,onRetry}:Props){
  const [offersInfo,setOffersInfo]=useState(false);
- const validPrice=estimate?.available===true&&typeof estimate.estimateGbp==="number"&&Number.isFinite(estimate.estimateGbp)&&estimate.estimateGbp>=0;
  const validDistance=typeof estimate?.distanceMiles==="number"&&Number.isFinite(estimate.distanceMiles)&&estimate.distanceMiles>0;
+ const validPrice=estimate?.available===true&&validDistance&&typeof estimate.estimateGbp==="number"&&Number.isFinite(estimate.estimateGbp)&&estimate.estimateGbp>0;
  const item=(icon:ReactNode,label:string,value:string)=><div className="uk-estimate-row"><span className="uk-estimate-icon" aria-hidden="true">{icon}</span><div><small>{label}</small><strong>{value}</strong></div></div>;
  return <div className="uk-estimate-result" aria-labelledby="uk-estimate-title">
   <h2 id="uk-estimate-title">Estimated Price</h2>
