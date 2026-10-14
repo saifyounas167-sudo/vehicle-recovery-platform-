@@ -71,5 +71,27 @@ try{
  console.log("PASS five-step mock journey, review editing, read-only guard and privacy-safe refresh");
 }catch(e){fail.push("journey: "+e.message);console.error("FAIL journey",e.message)}
 await context.close();}
+// Fresh session: select a safe value, refresh immediately, and inspect storage privacy.
+const immediate=await browser.newContext({viewport:{width:375,height:812}});
+const immediatePage=await immediate.newPage();
+try{
+ await immediatePage.route("**/api/recovery/postcode?**",route=>{
+  const code=new URL(route.request().url()).searchParams.get("postcode")||"SW1A 1AA";
+  return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({valid:true,postcode:code})});
+ });
+ await immediatePage.goto("http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester",{waitUntil:"domcontentloaded"});
+ await immediatePage.getByRole("button",{name:/Continue/}).click();
+ await immediatePage.getByLabel(/Vehicle type/).selectOption("Car");
+ await immediatePage.reload({waitUntil:"domcontentloaded"});
+ await immediatePage.getByRole("button",{name:/Continue/}).click();
+ if(await immediatePage.getByLabel(/Vehicle type/).inputValue()!=="Car")throw Error("immediate refresh erased safe selection");
+ const raw=await immediatePage.evaluate(()=>sessionStorage.getItem("ukr-request-safe-draft-v1"));
+ const safe=JSON.parse(raw||"{}");
+ for(const key of ["customerName","phone","email","registration","pickupAddress","destinationAddress","problemDescription","make","model"]){
+  if(Object.prototype.hasOwnProperty.call(safe,key))throw Error("sensitive draft key persisted: "+key);
+ }
+ console.log("PASS immediate refresh safe draft restore, sensitive storage exclusion");
+}catch(e){fail.push("immediate refresh: "+e.message);console.error("FAIL immediate refresh",e.message)}
+await immediate.close();
 await browser.close();
 if(fail.length){console.error(fail.join("\n"));process.exitCode=1}
