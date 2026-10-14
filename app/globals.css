@@ -227,3 +227,19 @@ label{font-size:15px}
 /* Client demo #2: four visible marketplace stages, compact mobile details wizard. */
 .recovery-v2 .recovery-demo-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;list-style:none;padding:0;margin:0 0 10px}.recovery-v2 .recovery-demo-progress li{min-width:0;text-align:center;font-size:12px}.recovery-v2 .recovery-demo-progress li b{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 5px;border-radius:50%;background:#e7e8eb;color:#333}.recovery-v2 .recovery-demo-progress li.current b{background:#ff6600;color:#fff}.recovery-v2 .recovery-demo-progress li.complete b{background:#13202a;color:#fff}.recovery-v2 .recovery-detail-progress{font-size:12px;font-weight:750;color:#535e68;margin:0 0 10px}.recovery-v2 .recovery-heading{margin-bottom:12px}.recovery-v2 .recovery-card h2{margin-top:0}.recovery-v2 .recovery-card{padding-top:18px;padding-bottom:18px}
 @media(max-width:600px){.recovery-v2 .recovery-demo-progress li{font-size:10px}.recovery-v2 .recovery-demo-progress li b{width:26px;height:26px}.recovery-v2 .recovery-card{padding:14px 12px}.recovery-v2 .recovery-heading{margin-bottom:12px}}
+
+/* Screenshot #2 reference: compact, expandable vehicle/issue/contact cards. */
+.recovery-v2 .recovery-card{max-width:760px;margin-inline:auto;border:1px solid #edf0f2;box-shadow:0 12px 36px rgba(13,22,32,.07)}
+.recovery-v2 .recovery-client-locations>h2{font-size:17px;margin:8px 0}.recovery-v2 .recovery-client-locations>h3{font-size:15px;margin:14px 0 8px}
+.recovery-v2 .recovery-demo-collapsible{border:1px solid #e7eaef;background:#fff;border-radius:12px;margin:10px 0;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.025)}
+.recovery-v2 .recovery-demo-toggle{display:flex;align-items:center;width:100%;min-height:62px;gap:12px;padding:12px 15px;border:0;background:#fff;color:#172330;text-align:left;cursor:pointer;font-weight:800;font-size:14px}
+.recovery-v2 .recovery-demo-toggle>span:first-child{width:29px;display:grid;place-items:center;flex:0 0 29px;color:#ff6600;font-size:22px}
+.recovery-v2 .recovery-demo-toggle>span:nth-child(2){flex:1;min-width:0}
+.recovery-v2 .recovery-demo-toggle small{display:block;font-size:11px;line-height:1.45;color:#606a76;margin-top:3px;font-weight:500}
+.recovery-v2 .recovery-demo-toggle>span:last-child{color:#ff6600;font-size:22px}
+.recovery-v2 .recovery-demo-toggle:focus-visible{outline:3px solid #ff6600;outline-offset:-3px}
+.recovery-v2 .recovery-demo-fields{border-top:1px solid #e9ecf1;padding:14px 16px 16px}
+.recovery-v2 .recovery-demo-fields h2{font-size:17px;margin:0 0 12px}.recovery-v2 .recovery-demo-fields h3{font-size:15px;margin:12px 0}
+.recovery-v2 .recovery-next{background:#ff6600;color:#fff;font-weight:850}
+@media(max-width:600px){.recovery-v2 .recovery-heading p{line-height:1.4}.recovery-v2 .recovery-demo-toggle{min-height:57px;padding:10px 12px}.recovery-v2 .recovery-demo-fields{padding:12px 10px}.recovery-v2 .recovery-client-locations>h2{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.recovery-v2 .recovery-demo-toggle{transition:none}}
