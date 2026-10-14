@@ -23,7 +23,7 @@
 - **Visible buttons/controls:** GPS, postcode/address, vehicle, issue, Get Estimate, Back, edits
 - **Expected interactions/conditional fields:** Destination by relevant service, running/rolling/wheels, passengers 0–8, ASAP/scheduled, optional notes/photos, contact
 - **Existing implementation:** PR37 direct CTA, accordions, validation, preview estimate, refresh/history
-- **Missing functionality / blockers:** Conditional frontend and shared validator added; legacy database NOT NULL constraints and required contact email still block writable submissions; migration 0011 staging verification pending
+- **Missing functionality / blockers:** Conditional frontend and shared server validator added; migration 0012 prepares nullable email, but authorised staging application, DB constraints and migration 0011 verification are still pending
 - **Backend/API dependencies:** Postcode, autocomplete, GPS, vehicle lookup, estimates; current jobs POST
 - **Database dependencies:** migration 0011 passenger count application unverified
 - **Security requirements:** No live submissions; no private data in session; permission checks
@@ -175,5 +175,5 @@
 - Home service cards already link with a `service` query parameter; request page now consumes it and chooses the service group while preserving other choices. Requires live browser QA.
 - Transport-only pricing requires a verified road route and active authoritative admin rules. £5 callout and £3/mile remain proposed approved base amounts, not fabricated default estimates.
 - Production and review are fail-closed at jobs API even on direct POST requests. PR is still draft and must not merge.
-- **BLOCKER**: write endpoint's legacy validation and persistence still require make/model/transmission/accident/passenger/email for some paths; existing Supabase NOT NULL defaults/constraints not yet verified. They must be updated alongside a backward-compatible migration, tested in authorised staging. Do not enable writes while unresolved.
+- **BLOCKER**: write endpoint now accepts optional validated fields and persists missing data as NULL; migration 0012 makes private-contact email nullable. Actual Supabase constraints, RLS and migration 0011/0012 execution have not been checked in an authorised staging database. Keep writes disabled until this verification is complete.
 - Screenshot #2 final visual approval pending genuine browser screenshots and customer original side-by-side comparison. Do not claim mocks equal real postcode, routing, database, or billing tests.
