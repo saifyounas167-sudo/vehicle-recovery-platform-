@@ -3,6 +3,8 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import {guestProof} from "@/src/lib/guest-access";
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {validateRecoveryDetails} from "@/src/lib/recovery-service-rules";
 
 const services = new Set(["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"]);
 const postcode=/^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}))$/i;
@@ -11,6 +13,8 @@ const text=(v:unknown,max=250)=>typeof v==="string"?v.trim().slice(0,max):"";
 const bad=(error:string,status=400,diagnosticStage?:string)=>NextResponse.json({error,...(diagnosticStage?{diagnosticStage}:{})},{status,headers:{"Cache-Control":"no-store"}});
 export async function POST(request:Request){
  try{
+  // Hard server guard: direct API calls must not create bookings in client-review mode.
+  if(isClientReviewDemo()||process.env.VERCEL_ENV==="production")return bad("Live recovery requests are paused for client review",403,"read_only");
   const type=request.headers.get("content-type")||"";
   if(!type.includes("application/json"))return bad("JSON required",415);
   const length=Number(request.headers.get("content-length")||0);
@@ -18,6 +22,8 @@ export async function POST(request:Request){
   const b=await request.json();
   if(!b||typeof b!=="object"||Array.isArray(b))return bad("Invalid request");
   if(text(b.website))return bad("Request rejected");
+  const contractError=validateRecoveryDetails(b);
+  if(contractError)return bad(contractError);
   const pickup=text(b.pickupPostcode,12).toUpperCase(),mode=text(b.destinationMode,60),destination=text(b.destinationPostcode,12).toUpperCase();
   const name=text(b.customerName,120),email=text(b.email,254).toLowerCase(),phone=text(b.phone,30).replace(/[\s-]/g,"");
   const service=text(b.recoveryType,100);
