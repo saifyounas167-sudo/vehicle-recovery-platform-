@@ -223,3 +223,7 @@ label{font-size:15px}
 
 /* Screenshot #2 desktop header: contain navigation within 1440px viewport. */
 @media(min-width:1161px) and (max-width:1600px){body:has(.recovery-v2) .global-public-header .public-main-nav{gap:16px!important}body:has(.recovery-v2) .global-public-header .public-actions{gap:4px}body:has(.recovery-v2) .global-public-header .public-actions .role-login{padding-left:4px;padding-right:4px}}
+
+/* Client demo #2: four visible marketplace stages, compact mobile details wizard. */
+.recovery-v2 .recovery-demo-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;list-style:none;padding:0;margin:0 0 10px}.recovery-v2 .recovery-demo-progress li{min-width:0;text-align:center;font-size:12px}.recovery-v2 .recovery-demo-progress li b{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 5px;border-radius:50%;background:#e7e8eb;color:#333}.recovery-v2 .recovery-demo-progress li.current b{background:#ff6600;color:#fff}.recovery-v2 .recovery-demo-progress li.complete b{background:#13202a;color:#fff}.recovery-v2 .recovery-detail-progress{font-size:12px;font-weight:750;color:#535e68;margin:0 0 10px}.recovery-v2 .recovery-heading{margin-bottom:12px}.recovery-v2 .recovery-card h2{margin-top:0}.recovery-v2 .recovery-card{padding-top:18px;padding-bottom:18px}
+@media(max-width:600px){.recovery-v2 .recovery-demo-progress li{font-size:10px}.recovery-v2 .recovery-demo-progress li b{width:26px;height:26px}.recovery-v2 .recovery-card{padding:14px 12px}.recovery-v2 .recovery-heading{margin-bottom:12px}}
