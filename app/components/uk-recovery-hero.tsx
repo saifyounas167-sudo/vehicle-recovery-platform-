@@ -1,9 +1,7 @@
 "use client";
 import Link from "next/link";
-import type { ReactNode, RefObject } from "react";
 import "./uk-recovery-hero.css";
 
-type Props={quoteOpen:boolean;onToggleQuote:()=>void;quoteToggleRef:RefObject<HTMLButtonElement|null>;quoteForm:ReactNode};
 type IconName="quote"|"location"|"truck";
 function HeroIcon({name}:{name:IconName}){
  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -13,16 +11,15 @@ function HeroIcon({name}:{name:IconName}){
  </svg>;
 }
 function Arrow(){return <svg className="ukr-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
-export default function UkRecoveryHero({quoteOpen,onToggleQuote,quoteToggleRef,quoteForm}:Props){
+export default function UkRecoveryHero(){
  return <section className="ukr-hero" id="home" aria-label="Vehicle recovery"><div className="ukr-wrap">
   <h1 className="ukr-title">Need Vehicle <span className="ukr-accent">Recovery?</span></h1>
   <p className="ukr-sub">Find UK recovery options, compare independent driver offers when available, and choose who helps you.</p>
   <div className="ukr-actions" aria-label="Recovery actions">
-   <button ref={quoteToggleRef} type="button" className="ukr-btn ukr-btn--primary" onClick={onToggleQuote} aria-expanded={quoteOpen} aria-controls="homepage-quick-quote"><span className="ukr-ico"><HeroIcon name="quote"/></span><span className="ukr-label">Get Recovery Quote</span><Arrow/></button>
+   <Link href="/recovery/request" className="ukr-btn ukr-btn--primary"><span className="ukr-ico"><HeroIcon name="quote"/></span><span className="ukr-label">Get Recovery Quote</span><Arrow/></Link>
    <Link href="/recovery/nearby" className="ukr-btn"><span className="ukr-ico"><HeroIcon name="location"/></span><span className="ukr-label">Find Recovery Near Me</span><Arrow/></Link>
    <Link href="/driver/register" className="ukr-btn"><span className="ukr-ico"><HeroIcon name="truck"/></span><span className="ukr-label">Join as a Recovery Driver</span><Arrow/></Link>
   </div>
-  {quoteOpen&&<div className="ukr-quote-slot">{quoteForm}</div>}
   <p className="ukr-trust-summary"><span aria-hidden="true">✓</span> Driver approval process <span aria-hidden="true">·</span> Independent offers <span aria-hidden="true">·</span> Your choice</p>
   <p className="ukr-demo-note">Live recovery bookings and payments are not yet available.</p>
  </div></section>;
