@@ -130,6 +130,8 @@ export default function RecoveryRequestPage(){
  const loading=!!rule&&(rule.destination==="required"||(rule.destination==="choice"&&v.destinationMode==="transport"));
  function selectService(service:string){
   if(!isRecoveryService(service))return;
+  // Reflect the non-sensitive service selection in the URL for correct refresh and history.
+  window.history.replaceState({...window.history.state},"",`/recovery/request?service=${encodeURIComponent(service)}`);
   const newRules=getServiceRules(service);
   setV(old=>({...old,recoveryType:service,destinationMode:newRules?.destination==="required"?"transport":newRules?.destination==="none"?"Roadside Assistance Without Transport":"",...(newRules?.destination==="none"?{destinationPostcode:"",destinationAddress:""}:{}),...(!newRules?.accident?{accident:""}:{}),...(!newRules?.passengers?{passengerCount:""}:{})}));
   setError("");
