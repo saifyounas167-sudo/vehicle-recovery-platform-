@@ -25,6 +25,7 @@ for(const width of widths){
   await hero.locator('a.ukr-btn--primary').click();
   await page.waitForURL(/\/recovery\/request/,{timeout:12000});
   if(!(await page.getByRole("heading",{name:"Request Recovery"}).isVisible()))throw Error("Request Recovery not opened directly");
+  await page.screenshot({path:`qa-screenshots/after-quote-cta-${width}.png`,fullPage:true,animations:"disabled"});
   if(!(await page.getByText("Details",{exact:true}).first().isVisible()))throw Error("Client demo progress missing");
   await page.goBack({waitUntil:"domcontentloaded"});
   await page.locator(".ukr-title").waitFor();
