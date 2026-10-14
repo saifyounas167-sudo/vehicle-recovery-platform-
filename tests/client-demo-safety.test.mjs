@@ -25,9 +25,10 @@ test("five-step form and ten services preserved with visible map",()=>{
  assert.ok(services);
  assert.equal([...services[1].matchAll(/"([^"]+)"/g)].length,10);
  assert.match(p,/fetch\("\/api\/recovery\/open-estimate"/);
- assert.match(p,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\} pickup=/);
- assert.match(p,/REQUEST SUBMISSION PAUSED/);
- assert.match(p,/clientReview\?<\>/);
+ assert.match(p,/<EstimateResult estimate=\{estimate\}/);
+ const result=file("app/components/estimate-result.tsx");
+ assert.match(result,/No driver has been booked/);
+ assert.match(file("app/api/recovery/jobs/route.ts"),/isClientReviewDemo\(\)/);
  const map=file("app/components/recovery-route-map.tsx");
  assert.match(map,/tile\.openstreetmap\.org/);
  assert.match(map,/map\.setView\(\[54\.5,-3\],6\)/);
