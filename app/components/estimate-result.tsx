@@ -2,9 +2,9 @@
 import {useState,type ReactNode} from "react";
 
 export type EstimatePreview={available:boolean;estimateGbp?:number;distanceMiles?:number|null;reason?:string;route?:unknown;locations?:unknown};
-type Props={estimate:EstimatePreview|null;estimating:boolean;vehicle:string;service:string;pickup:string;destination?:string;needsDestination:boolean;onEdit:()=>void;onRetry:()=>void};
+type Props={estimate:EstimatePreview|null;estimating:boolean;vehicle:string;service:string;needsDestination:boolean;onEdit:()=>void;onRetry:()=>void};
 const money=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
-export default function EstimateResult({estimate,estimating,vehicle,service,pickup,destination,needsDestination,onEdit,onRetry}:Props){
+export default function EstimateResult({estimate,estimating,vehicle,service,needsDestination,onEdit,onRetry}:Props){
  const [offersInfo,setOffersInfo]=useState(false);
  const validDistance=typeof estimate?.distanceMiles==="number"&&Number.isFinite(estimate.distanceMiles)&&estimate.distanceMiles>0;
  const validPrice=estimate?.available===true&&validDistance&&typeof estimate.estimateGbp==="number"&&Number.isFinite(estimate.estimateGbp)&&estimate.estimateGbp>0;
@@ -21,8 +21,6 @@ export default function EstimateResult({estimate,estimating,vehicle,service,pick
    {item("⌖","Distance",validDistance?estimate!.distanceMiles!.toFixed(2)+" road miles (postcode-centre route)":"Not verified")}
    {item("▣","Vehicle",vehicle||"Not provided")}
    {item("⚒","Recovery Service",service)}
-   {item("↗","Pickup",pickup)}
-   {needsDestination&&item("◎","Destination",destination||"Not provided")}
   </div>
   <div className="uk-estimate-note" role="note"><span aria-hidden="true">ⓘ</span><p>Independent recovery companies may offer different prices and arrival times. No driver has been booked.</p></div>
   <button type="button" className="recovery-next uk-estimate-continue" onClick={()=>setOffersInfo(true)}>Continue →</button>
