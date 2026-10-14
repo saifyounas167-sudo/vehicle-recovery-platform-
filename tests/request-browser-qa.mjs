@@ -13,7 +13,7 @@ async function mockSafeApi(page){
  await page.route("**/api/recovery/open-estimate",route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({available:false,message:"Price to be confirmed by recovery drivers"})}));
  await page.route("**/api/recovery/jobs",route=>{throw Error("Forbidden job submission attempt")});
 }
-const target="http://127.0.0.1:3000/recovery/request?pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester";
+const target="http://127.0.0.1:3000/recovery/request?service=Accident%20Recovery&pickup=SW1A%201AA&pickupLocation=10%20Downing%20Street&destination=M1%201AA&destinationLocation=Manchester";
 for(const width of widths){
  const context=await browser.newContext({viewport:{width,height:844}});
  const page=await context.newPage();const js=[];
@@ -57,6 +57,7 @@ for(const width of widths){
   await page.getByRole("button",{name:/What's the issue/}).click();
   await page.getByRole("button",{name:/Emergency & Roadside/}).click();
   await page.getByRole("button",{name:"Breakdown Recovery",exact:true}).click();
+  await page.getByRole("button",{name:"transport",exact:true}).click();
   await page.getByRole("button",{name:"Scheduled",exact:true}).click();
   await page.getByLabel(/Preferred collection date/).fill("2099-05-22T12:00");
   await page.getByLabel(/Additional Details/).fill("Mock test note");
@@ -111,6 +112,7 @@ try{
  await outage.getByRole("button",{name:/What's the issue/}).click();
  await outage.getByRole("button",{name:/Emergency & Roadside/}).click();
  await outage.getByRole("button",{name:"Breakdown Recovery",exact:true}).click();
+ await outage.getByRole("button",{name:"transport",exact:true}).click();
  await outage.getByRole("button",{name:/Your Contact Details/}).click();
  await outage.getByLabel(/Full name/).fill("Test Customer");await outage.getByLabel(/UK mobile number/).fill("07123456789");await outage.getByLabel(/Email address/).fill("demo@example.test");
  await outage.getByRole("button",{name:/Get Estimate/}).click();
