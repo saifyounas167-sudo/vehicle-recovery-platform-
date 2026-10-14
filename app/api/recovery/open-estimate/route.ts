@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {isClientReviewDemo} from "@/src/lib/client-review";
+import {requiresDestination,getServiceRules} from "@/src/lib/recovery-service-rules";
 import {createClient as createAdminClient} from "@supabase/supabase-js";
 import {resolvePostcode,previewDrivingRoute} from "@/src/lib/open-routing";
 import {calculateRecoveryPrice,validPricingConfig,ukHoliday,pricingKeys} from "@/src/lib/recovery-pricing";
@@ -18,6 +19,7 @@ export async function POST(request:Request){
  try{
   if(Number(request.headers.get("content-length")||0)>4096)return NextResponse.json({error:"Request too large"},{status:413,headers:{"Cache-Control":"no-store"}});
   const input=await request.json(),pickup=String(input.pickupPostcode||"").trim(),destination=String(input.destinationPostcode||"").trim();
+  if(input.recoveryType&&(!getServiceRules(input.recoveryType)||!requiresDestination(input.recoveryType,"transport")||!destination))return unavailable("validation");
   if(!pc.test(pickup)||!pc.test(destination))return NextResponse.json({error:"Valid UK pickup and destination postcodes required"},{status:400,headers:{"Cache-Control":"no-store"}});
   stage="postcode";
   const [origin,end]=await Promise.all([resolvePostcode(pickup),resolvePostcode(destination)]);

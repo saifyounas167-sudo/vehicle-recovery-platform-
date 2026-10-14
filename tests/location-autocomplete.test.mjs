@@ -7,18 +7,18 @@ const customer = readFileSync("app/recovery/request/page.tsx","utf8");
 const component = readFileSync("app/components/uk-location-search.tsx","utf8");
 const endpoint = readFileSync("app/api/recovery/location-suggest/route.ts","utf8");
 
-test("location search is available in homepage pickup and drop-off",()=>{
-  assert.match(home,/UkLocationSearch label="Pickup Location"/);
-  assert.match(home,/UkLocationSearch label="Drop-off Location/);
-  assert.match(home,/pickupLocation/);
-  assert.match(home,/destinationLocation/);
-  assert.doesNotMatch(home,/className="close-quote"/);
+test("client quote CTA opens the existing form with its pickup and drop-off autocomplete",()=>{
+  const hero=readFileSync("app/components/uk-recovery-hero.tsx","utf8");
+  assert.match(hero,/href="\/recovery\/request"/);
+  assert.doesNotMatch(home,/homepage-quick-quote/);
+  assert.ok(customer.includes('UkLocationSearch label="Pickup Location"'));
+  assert.ok(customer.includes('UkLocationSearch label="Drop-off Location"'));
 });
 test("city search keeps exact postcode confirmation in existing recovery form",()=>{
   assert.match(customer,/pickupLocation/);
   assert.match(customer,/destinationLocation/);
   assert.match(customer,/Confirm complete UK pickup postcode/);
-  assert.match(customer,/Confirm complete UK destination postcode/);
+  assert.ok(customer.includes("Confirm UK destination postcode"));
   assert.match(customer,/postcode\.test\(v\.pickupPostcode\.trim\(\)\)/);
 });
 test("autocomplete supports keyboard, safe suggestion selection and debounced requests",()=>{

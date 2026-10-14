@@ -8,8 +8,8 @@ test("pricing uses configured mileage and charges without invented rates",()=>{
  assert.equal(result.breakdown.distanceFee,24);
 });
 test("form has exactly ten approved services and no scrap",()=>{
- const source=readFileSync("app/recovery/request/page.tsx","utf8");
- const match=source.match(/const services=\[([^\]]+)\]/);
+ const source=readFileSync("src/lib/recovery-service-rules.ts","utf8");
+ const match=source.match(/export const recoveryServices=\[([^\]]+)\]/);
  assert.ok(match);
  const services=[...match[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
  assert.equal(services.length,10);

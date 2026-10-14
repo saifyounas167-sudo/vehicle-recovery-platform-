@@ -21,7 +21,8 @@ test("safe demo quote never reads Supabase or publishes test prices",()=>{
 test("five-step form and ten services preserved with visible map",()=>{
  const p=file("app/recovery/request/page.tsx");
  assert.match(p,/const steps=\["Location","Vehicle","Recovery","Customer","Review"\]/);
- const services=p.match(/const services=\[([^\]]+)\]/);
+ const services=file("src/lib/recovery-service-rules.ts").match(/export const recoveryServices=\[([^\]]+)\]/);
+ assert.ok(services);
  assert.equal([...services[1].matchAll(/"([^"]+)"/g)].length,10);
  assert.match(p,/fetch\("\/api\/recovery\/open-estimate"/);
  assert.match(p,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\} pickup=/);

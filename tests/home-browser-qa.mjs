@@ -22,10 +22,13 @@ for(const width of widths){
   const hero=page.locator(".ukr-hero");
   if(!(await hero.locator(".ukr-btn--primary").isVisible()))throw Error("primary CTA hidden");
   await page.screenshot({path:`qa-screenshots/home-${width}.png`,fullPage:true,animations:"disabled"});
-  await hero.locator("button.ukr-btn--primary").click();
-  if(!(await page.locator("#homepage-quick-quote").isVisible()))throw Error("quote form did not open");
-  await hero.locator("button.ukr-btn--primary").click();
-  if(await page.locator("#homepage-quick-quote").count())throw Error("quote form did not close");
+  await hero.locator('a.ukr-btn--primary').click();
+  await page.waitForURL(/\/recovery\/request/,{timeout:12000});
+  if(!(await page.getByRole("heading",{name:"Request Recovery"}).isVisible()))throw Error("Request Recovery not opened directly");
+  await page.screenshot({path:`qa-screenshots/after-quote-cta-${width}.png`,fullPage:true,animations:"disabled"});
+  if(!(await page.getByText("Details",{exact:true}).first().isVisible()))throw Error("Client demo progress missing");
+  await page.goBack({waitUntil:"domcontentloaded"});
+  await page.locator(".ukr-title").waitFor();
   if(width<=430){
    const menu=page.getByRole("button",{name:"Open menu"});
    await menu.click();
@@ -34,8 +37,10 @@ for(const width of widths){
   }
   if(await hero.locator('a[href="/recovery/nearby"]').count()!==1)throw Error("nearby CTA route missing");
   if(await hero.locator('a[href="/driver/register"]').count()!==1)throw Error("driver CTA route missing");
-  if(await cards.filter({has:page.locator('a[href="/recovery/request"]')}).count()!==10){
-   for(let i=0;i<10;i++)if(await cards.nth(i).getAttribute("href")!=="/recovery/request")throw Error("service link wrong "+i)
+  const serviceNames=["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"];
+  for(let i=0;i<serviceNames.length;i++){
+   const href=await cards.nth(i).getAttribute("href");
+   if(href!=="/recovery/request?service="+encodeURIComponent(serviceNames[i]))throw Error("service preselection link wrong "+i+": "+href);
   }
   if(await page.locator('a[href="/how-it-works"]').count()===0)throw Error("How It Works route missing");
   if(await page.locator('a[href="/about"]').count()===0)throw Error("About route missing");
@@ -45,86 +50,5 @@ for(const width of widths){
  }catch(e){failures.push(`${width}: ${e.message}`);console.error("FAIL viewport",width,e.message)}
  await context.close();
 }
-const context=await browser.newContext({viewport:{width:390,height:844},permissions:["geolocation"],geolocation:{latitude:51.501,longitude: -0.142}});
-const page=await context.newPage();
-try{
- await page.route("**/api/recovery/location-suggest**",async route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({suggestions:[{id:"mock",label:"10 Downing Street, London SW1A 2AA",detail:"London",postcode:"SW1A 2AA",kind:"building"}]})}));
- await page.route("**/api/recovery/postcode?**",async route=>route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({postcode:"SW1A 1AA"})}));
- await page.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
- await page.locator(".ukr-btn--primary").click();
- const inputs=page.locator("#homepage-quick-quote input");
- await inputs.first().fill("SW1A");
- await page.getByText("10 Downing Street, London SW1A 2AA").first().waitFor({timeout:12000});
- await page.getByText("10 Downing Street, London SW1A 2AA").first().click();
- if(await inputs.first().inputValue()!=="10 Downing Street, London SW1A 2AA")throw Error("autocomplete selection failed");
- await page.getByText("Use My Current Location").click();
- await page.getByText("Pickup postcode detected.").waitFor({timeout:12000});
- await page.getByRole("button",{name:/EXPLORE YOUR RECOVERY ESTIMATE/}).click();
- await page.waitForURL(/\/recovery\/request\?pickup=SW1A(?:\+|%20)1AA/,{timeout:12000});
- console.log("PASS mocked autocomplete, GPS granted, quote transfer");
-}catch(e){failures.push("functionality: "+e.message);console.error("FAIL functionality",e.message)}
-await context.close();
-const deniedContext=await browser.newContext({viewport:{width:375,height:812},permissions:[]});
-const deniedPage=await deniedContext.newPage();
-try{
- await deniedPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
- await deniedPage.locator(".ukr-btn--primary").click();
- await deniedPage.getByText("Use My Current Location").click();
- await deniedPage.getByText("Location permission was not granted.").waitFor({timeout:12000});
- console.log("PASS GPS permission denied");
-}catch(e){failures.push("GPS denied: "+e.message);console.error("FAIL GPS denied",e.message)}
-await deniedContext.close();
-const installedContext=await browser.newContext({viewport:{width:375,height:812}});
-await installedContext.addInitScript(()=>{const orig=window.matchMedia.bind(window);window.matchMedia=(query)=>query==="(display-mode: standalone)"?{matches:true,media:query,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){},dispatchEvent(){return true}}:orig(query)});
-const installedPage=await installedContext.newPage();
-try{
- await installedPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
- await installedPage.waitForTimeout(400);
- if(await installedPage.locator(".public-mobile-actions .header-install").count()!==0)throw Error("installed header button still present");
- if(await installedPage.locator("#install-app .ukra-install").count()!==1)throw Error("homepage installed-state CTA missing");
- console.log("PASS simulated standalone installed-state header");
-}catch(e){failures.push("PWA standalone: "+e.message);console.error("FAIL PWA standalone",e.message)}
-await installedContext.close();
-const formContext=await browser.newContext({viewport:{width:390,height:844}});
-const formPage=await formContext.newPage();
-try{
- await formPage.route("**/api/recovery/location-suggest**",async route=>{
-  const query=new URL(route.request().url()).searchParams.get("q")||"";
-  const label=query.toLowerCase().includes("london")?"London SW1A 1AA":"Manchester M1 1AA";
-  const postcode=label.includes("London")?"SW1A 1AA":"M1 1AA";
-  await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({suggestions:[{id:postcode,label,detail:"Mock UK address",postcode,kind:"postcode"}]})});
- });
- await formPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
- await formPage.locator(".ukr-btn--primary").click();
- const form=formPage.locator("#homepage-quick-quote");
- const pickup=form.getByRole("combobox",{name:/Pickup Location/});
- const dropoff=form.getByRole("combobox",{name:/Drop-off Location/});
- await form.getByRole("button",{name:/EXPLORE YOUR RECOVERY ESTIMATE/}).click();
- if(await pickup.evaluate(e=>e.validity.valueMissing)!==true)throw Error("empty pickup did not validate as required");
- await pickup.fill("London");
- await form.getByRole("option",{name:/London SW1A 1AA/}).waitFor({timeout:12000});
- await pickup.press("ArrowDown");await pickup.press("Enter");
- if(await pickup.inputValue()!=="London SW1A 1AA")throw Error("keyboard pickup selection failed");
- await dropoff.fill("Manchester");
- await form.getByRole("option",{name:/Manchester M1 1AA/}).click();
- if(await dropoff.inputValue()!=="Manchester M1 1AA")throw Error("dropoff selection failed");
- await form.getByRole("button",{name:/EXPLORE YOUR RECOVERY ESTIMATE/}).click();
- await formPage.waitForURL(/\/recovery\/request\?/,{timeout:12000});
- const url=new URL(formPage.url());
- if(url.searchParams.get("pickup")!=="SW1A 1AA"||url.searchParams.get("destination")!=="M1 1AA")throw Error("both UK postcodes were not transferred");
- console.log("PASS required input, keyboard pickup, dropoff and both postcode transfers");
-}catch(e){failures.push("form keyboard/dropoff: "+e.message);console.error("FAIL form keyboard/dropoff",e.message)}
-await formContext.close();
-const errContext=await browser.newContext({viewport:{width:390,height:844}});
-const errPage=await errContext.newPage();
-try{
- await errPage.route("**/api/recovery/location-suggest**",route=>route.fulfill({status:503,contentType:"application/json",body:'{"error":"temporarily unavailable"}'}));
- await errPage.goto("http://127.0.0.1:3000/",{waitUntil:"domcontentloaded"});
- await errPage.locator(".ukr-btn--primary").click();
- await errPage.getByRole("combobox",{name:/Pickup Location/}).fill("London");
- await errPage.getByText("Location search is temporarily unavailable.").waitFor({timeout:12000});
- console.log("PASS postcode autocomplete API failure state");
-}catch(e){failures.push("API error fallback: "+e.message);console.error("FAIL API fallback",e.message)}
-await errContext.close();
 await browser.close();
-if(failures.length){console.error("QA failures:\n"+failures.join("\n"));process.exitCode=1}
+if(failures.length){console.error("QA failures:\\n"+failures.join("\\n"));process.exitCode=1}

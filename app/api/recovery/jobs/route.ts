@@ -3,6 +3,8 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import {guestProof} from "@/src/lib/guest-access";
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {validateRecoveryDetails} from "@/src/lib/recovery-service-rules";
 
 const services = new Set(["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"]);
 const postcode=/^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}))$/i;
@@ -11,6 +13,8 @@ const text=(v:unknown,max=250)=>typeof v==="string"?v.trim().slice(0,max):"";
 const bad=(error:string,status=400,diagnosticStage?:string)=>NextResponse.json({error,...(diagnosticStage?{diagnosticStage}:{})},{status,headers:{"Cache-Control":"no-store"}});
 export async function POST(request:Request){
  try{
+  // Hard server guard: direct API calls must not create bookings in client-review mode.
+  if(isClientReviewDemo()||process.env.VERCEL_ENV==="production")return bad("Live recovery requests are paused for client review",403,"read_only");
   const type=request.headers.get("content-type")||"";
   if(!type.includes("application/json"))return bad("JSON required",415);
   const length=Number(request.headers.get("content-length")||0);
@@ -18,6 +22,8 @@ export async function POST(request:Request){
   const b=await request.json();
   if(!b||typeof b!=="object"||Array.isArray(b))return bad("Invalid request");
   if(text(b.website))return bad("Request rejected");
+  const contractError=validateRecoveryDetails(b);
+  if(contractError)return bad(contractError);
   const pickup=text(b.pickupPostcode,12).toUpperCase(),mode=text(b.destinationMode,60),destination=text(b.destinationPostcode,12).toUpperCase();
   const name=text(b.customerName,120),email=text(b.email,254).toLowerCase(),phone=text(b.phone,30).replace(/[\s-]/g,"");
   const service=text(b.recoveryType,100);
@@ -25,12 +31,15 @@ export async function POST(request:Request){
   if(mode==="transport"&&!postcode.test(destination))return bad("Invalid destination postcode");
   if(!text(b.pickupAddress,250))return bad("Confirm pickup address or nearest landmark");
   if(!services.has(service))return bad("Invalid recovery service");
-  if(!text(b.make,100)||!text(b.model,100)||!["Car","Van","Motorbike","4x4","Other"].includes(b.vehicleType)||!["Automatic","Manual"].includes(b.transmission)||!["Running","Non-running"].includes(b.runningStatus)||!["Yes","No"].includes(b.accident))return bad("Invalid vehicle information");
-  if(!["Yes","No","Not Sure","Not sure"].includes(b.rollingStatus))return bad("Vehicle rolling status required");
-  if(!Number.isInteger(Number(b.passengerCount))||Number(b.passengerCount)<0||Number(b.passengerCount)>8)return bad("Invalid passenger count");
-  if(typeof b.problemDescription!=="string"||b.problemDescription.length>3000||!["urgent","Scheduled"].includes(b.timing))return bad("Invalid recovery details");
+  // Optional does not mean unchecked: validate any supplied fields without requiring them.
+  if(b.transmission&&!["Automatic","Manual"].includes(b.transmission))return bad("Invalid transmission");
+  if(b.runningStatus&&!["Running","Non-running"].includes(b.runningStatus))return bad("Invalid running condition");
+  if(b.rollingStatus&&!["Yes","No","Not Sure","Not sure"].includes(b.rollingStatus))return bad("Invalid rolling condition");
+  if(b.accident&&!["Yes","No"].includes(b.accident))return bad("Invalid accident status");
+  if(b.passengerCount!==undefined&&b.passengerCount!==""&&(!Number.isInteger(Number(b.passengerCount))||Number(b.passengerCount)<0||Number(b.passengerCount)>8))return bad("Invalid passenger count");
+  if(b.problemDescription!==undefined&&(typeof b.problemDescription!=="string"||b.problemDescription.length>3000))return bad("Invalid problem details");
   if(b.timing==="Scheduled"&&(!b.preferredCollectionTime||!Number.isFinite(Date.parse(b.preferredCollectionTime))||Date.parse(b.preferredCollectionTime)<Date.now()))return bad("Valid future collection time required");
-  if(!name||!mobile.test(phone)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!["Phone","SMS","Email"].includes(b.contactPreference))return bad("Valid contact details required");
+  if(!name||!mobile.test(phone)||(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))||(b.contactPreference&&!["Phone","SMS","Email"].includes(b.contactPreference)))return bad("Valid contact details required");
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!url||!key)return bad("Guest requests are temporarily unavailable",503,"db_configuration");
   const admin=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{"X-Client-Info":"recovery-preview-guest-submission"}}});
@@ -54,10 +63,10 @@ export async function POST(request:Request){
   }
   const fingerprint=createHash("sha256").update(secret+"|"+email+"|"+phone+"|"+pickup+"|"+service+"|"+text(b.registration,20)+"|"+Math.floor(Date.now()/300000)).digest("hex");
   const reference="UKR-"+randomBytes(7).toString("hex").toUpperCase();
-  const row={customer_id:userId,guest_reference:reference,request_fingerprint:fingerprint,recovery_type:service,pickup_postcode:pickup,pickup_address:text(b.pickupAddress,250)||null,destination_address:mode==="transport"?text(b.destinationAddress,250)||null:null,destination_postcode:mode==="transport"?destination:null,nearest_garage_requested:mode==="Nearest Garage",roadside_assistance_requested:mode==="Roadside Assistance Without Transport",vehicle_registration:text(b.registration,20)||null,vehicle_make:text(b.make,100),vehicle_model:text(b.model,100),vehicle_type:b.vehicleType,transmission:b.transmission,running_status:b.runningStatus,rolling_status:b.rollingStatus,passenger_count:Number(b.passengerCount),wheel_condition:b.lockedWheels||b.damagedWheels?"Locked: "+(b.lockedWheels||"Unknown")+"; damaged: "+(b.damagedWheels||"Unknown"):null,accident_status:b.accident,problem_description:text(b.problemDescription,3000),is_urgent:b.timing==="urgent",preferred_collection_time:b.timing==="Scheduled"?new Date(b.preferredCollectionTime).toISOString():null,customer_contact_preference:b.contactPreference,status:"submitted" as const};
+  const row={customer_id:userId,guest_reference:reference,request_fingerprint:fingerprint,recovery_type:service,pickup_postcode:pickup,pickup_address:text(b.pickupAddress,250)||null,destination_address:mode==="transport"?text(b.destinationAddress,250)||null:null,destination_postcode:mode==="transport"?destination:null,nearest_garage_requested:mode==="Nearest Garage",roadside_assistance_requested:mode==="Roadside Assistance Without Transport",vehicle_registration:text(b.registration,20)||null,vehicle_make:text(b.make,100)||null,vehicle_model:text(b.model,100)||null,vehicle_type:b.vehicleType,transmission:b.transmission||null,running_status:b.runningStatus||null,rolling_status:b.rollingStatus||null,passenger_count:b.passengerCount===undefined||b.passengerCount===""?null:Number(b.passengerCount),wheel_condition:b.lockedWheels||b.damagedWheels?"Locked: "+(b.lockedWheels||"Unknown")+"; damaged: "+(b.damagedWheels||"Unknown"):null,accident_status:b.accident||null,problem_description:text(b.problemDescription,3000)||null,is_urgent:b.timing==="urgent",preferred_collection_time:b.timing==="Scheduled"?new Date(b.preferredCollectionTime).toISOString():null,customer_contact_preference:b.contactPreference||null,status:"submitted" as const};
   const {data:job,error:insertError}=await admin.from("recovery_jobs").insert(row).select("id,status,guest_reference").single();
   if(insertError){if(insertError.code==="23505")return bad("A similar request was submitted recently. Please wait before trying again.",429);console.error("Recovery job insert failed",insertError.code);return bad("Could not create recovery request",503,"job_insert");}
-  const {error:contactError}=await admin.from("recovery_job_private_contacts").insert({job_id:job.id,full_name:name,phone,email});
+  const {error:contactError}=await admin.from("recovery_job_private_contacts").insert({job_id:job.id,full_name:name,phone,email:email||null});
   if(contactError){await admin.from("recovery_jobs").delete().eq("id",job.id);console.error("Private contact save failed",contactError.code);return bad("Could not securely save contact details",503,"private_contact_insert");}
   const photoToken=createHmac("sha256",secret).update("photo|"+job.id+"|"+job.guest_reference).digest("hex");
   return NextResponse.json({guestAccess:{jobId:job.id,reference:job.guest_reference,proof:guestProof(job.id,job.guest_reference)},photoUpload:{jobId:job.id,reference:job.guest_reference,token:photoToken},job:{id:job.guest_reference,status:job.status}},{status:201,headers:{"Cache-Control":"no-store"}});
