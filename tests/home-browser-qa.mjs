@@ -37,8 +37,10 @@ for(const width of widths){
   }
   if(await hero.locator('a[href="/recovery/nearby"]').count()!==1)throw Error("nearby CTA route missing");
   if(await hero.locator('a[href="/driver/register"]').count()!==1)throw Error("driver CTA route missing");
-  if(await cards.filter({has:page.locator('a[href="/recovery/request"]')}).count()!==10){
-   for(let i=0;i<10;i++)if(await cards.nth(i).getAttribute("href")!=="/recovery/request")throw Error("service link wrong "+i)
+  const serviceNames=["Breakdown Recovery","Accident Recovery","Vehicle Transport","Car Towing","Jump Start / Flat Battery Assistance","Flat Tyre Assistance","Motorbike Recovery","Van Recovery","Auction Vehicle Collection","Non-Running Vehicle Transport"];
+  for(let i=0;i<serviceNames.length;i++){
+   const href=await cards.nth(i).getAttribute("href");
+   if(href!=="/recovery/request?service="+encodeURIComponent(serviceNames[i]))throw Error("service preselection link wrong "+i+": "+href);
   }
   if(await page.locator('a[href="/how-it-works"]').count()===0)throw Error("How It Works route missing");
   if(await page.locator('a[href="/about"]').count()===0)throw Error("About route missing");
