@@ -31,7 +31,7 @@ export default function RecoveryRequestPage(){
    setEstimating(false);return ()=>controller.abort();
   }
   const payload={
-   recoveryType:v.recoveryType,pickupPostcode:v.pickupPostcode,destinationPostcode:v.destinationPostcode,
+   recoveryType:v.recoveryType,destinationMode:v.destinationMode,pickupPostcode:v.pickupPostcode,destinationPostcode:v.destinationPostcode,
    vehicleType:v.vehicleType,runningStatus:v.runningStatus,
    lockedWheels:v.lockedWheels==="Yes",accident:v.accident==="Yes",
    urgent:v.timing==="urgent",specialEquipment:Boolean(v.equipment),
