@@ -29,6 +29,13 @@ for(const width of widths){
   for(const title of ["Vehicle Details","What's the issue?","Your Contact Details"]){
    if(await page.getByRole("button",{name:new RegExp(title.replace(/[?]/g,"."))}).count()!==1)throw Error("Missing collapsible "+title);
   }
+  const pickupCard=page.getByRole("button",{name:/Pickup Location.*Enter postcode/});
+  if(await pickupCard.getAttribute("aria-expanded")!=="false")throw Error("Pickup must start collapsed");
+  if(await page.getByRole("combobox",{name:/Pickup Location/}).count())throw Error("Pickup input initially visible");
+  await pickupCard.click();
+  if(!(await page.getByText("Use My Current Location").isVisible()))throw Error("GPS not revealed");
+  await pickupCard.click();
+  if(await pickupCard.getAttribute("aria-expanded")!=="false")throw Error("Pickup did not collapse");
   if(!(await page.getByRole("button",{name:/Get Estimate/}).isVisible()))throw Error("No Get Estimate action");
   await page.screenshot({path:`qa-request-screenshots/details-${width}.png`,fullPage:true,animations:"disabled"});
   if(js.length)throw Error("JS errors "+js.join("; "));
