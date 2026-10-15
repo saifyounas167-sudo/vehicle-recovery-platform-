@@ -1,3 +1,4 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createHash, createHmac, randomBytes } from "node:crypto";
@@ -14,7 +15,7 @@ const bad=(error:string,status=400,diagnosticStage?:string)=>NextResponse.json({
 export async function POST(request:Request){
  try{
   // Hard server guard: direct API calls must not create bookings in client-review mode.
-  if(isClientReviewDemo()||process.env.VERCEL_ENV==="production")return bad("Live recovery requests are paused for client review",403,"read_only");
+  if((isClientReviewDemo()&&!isIsolatedMarketplaceStaging())||process.env.VERCEL_ENV==="production")return bad("Live recovery requests are paused for client review",403,"read_only");
   const type=request.headers.get("content-type")||"";
   if(!type.includes("application/json"))return bad("JSON required",415);
   const length=Number(request.headers.get("content-length")||0);
