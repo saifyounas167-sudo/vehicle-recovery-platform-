@@ -262,3 +262,61 @@ label{font-size:15px}
 .recovery-v2 .recovery-location-card .recovery-demo-toggle:hover{background:#fff8f3}
 .recovery-v2 .recovery-location-card .recovery-demo-toggle:focus-visible{outline:3px solid #ff6600;outline-offset:-3px}
 @media(max-width:600px){.recovery-v2 .recovery-location-card .recovery-demo-toggle{min-height:55px;padding:9px 12px}.recovery-v2 .recovery-location-card{margin:7px 0}}
+
+/* Client Screenshot 3 – compact estimate stage */
+.recovery-v2 .uk-estimate-result{max-width:640px;margin:auto;color:#15212b}
+.recovery-v2 .uk-estimate-result h2{font-size:clamp(23px,4vw,29px);margin:0 0 9px;letter-spacing:-.035em}
+.recovery-v2 .uk-estimate-intro{font-size:14px;color:#596571;line-height:1.5;margin:0 0 16px}
+.recovery-v2 .uk-estimate-price{background:#f5f6f8;border:1px solid #edf0f2;border-radius:13px;padding:22px 20px;margin:0 0 13px}
+.recovery-v2 .uk-estimate-price>span{font-size:13px;font-weight:750;display:block;margin-bottom:8px}
+.recovery-v2 .uk-estimate-price>strong{display:block;font-size:clamp(28px,6vw,43px);line-height:1.2;overflow-wrap:anywhere;color:#111}
+.recovery-v2 .uk-estimate-price>strong.uk-estimate-fallback{font-size:clamp(18px,4vw,24px)}
+.recovery-v2 .uk-estimate-price>p{font-size:13px;color:#5a6570;margin:11px 0 0}
+.recovery-v2 .uk-estimate-row{display:flex;align-items:center;gap:14px;padding:12px 6px;border-bottom:1px solid #edf0f2}
+.recovery-v2 .uk-estimate-row .uk-estimate-icon{font-size:22px;flex:0 0 30px;color:#5a6570;text-align:center}
+.recovery-v2 .uk-estimate-row small{display:block;font-size:12px;color:#65717c;margin-bottom:4px}
+.recovery-v2 .uk-estimate-row strong{font-size:14px;overflow-wrap:anywhere}
+.recovery-v2 .uk-estimate-note{display:flex;gap:11px;padding:12px;background:#eaf3ff;border-radius:9px;margin:18px 0 14px;font-size:13px;color:#234973}
+.recovery-v2 .uk-estimate-note p{margin:0;line-height:1.45}
+.recovery-v2 .uk-estimate-continue{width:100%;min-height:49px;border-radius:9px}
+.recovery-v2 .uk-estimate-coming{padding:13px;border:1px solid #fed8bc;background:#fff8f2;border-radius:9px;margin-top:12px;font-size:13px}
+.recovery-v2 .uk-estimate-coming p{margin:6px 0 0}
+.recovery-v2 .uk-estimate-actions{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 0}
+.recovery-v2 .uk-estimate-actions button{padding:11px 14px;min-height:44px;border:1px solid #d3d9df;background:white;border-radius:9px;color:#1b2a38;font-weight:700;cursor:pointer}
+.recovery-v2 .uk-estimate-actions button:focus-visible,.recovery-v2 .uk-estimate-continue:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
+@media(max-width:430px){.recovery-v2 .uk-estimate-price{padding:17px 14px}.recovery-v2 .uk-estimate-row{padding:10px 3px}.recovery-v2 .uk-estimate-intro{font-size:13px}}
+
+/* Only Screen #3 uses the client's compact black-header estimate presentation. */
+body:has(.uk-estimate-result) .global-public-header{background:#111820!important;color:#fff!important;border-color:#273038!important;height:62px!important}
+body:has(.uk-estimate-result) .global-public-header .uk-nav{min-height:62px!important}
+body:has(.uk-estimate-result) .global-public-header .uk-logo b{color:#fff!important}
+body:has(.uk-estimate-result) .global-public-header .uk-menu{background:transparent!important;color:#fff!important;border:1px solid #4a535d!important}
+body:has(.uk-estimate-result) .global-public-header .header-install{display:none!important}
+.recovery-v2:has(.uk-estimate-result){background:#fff;padding-top:12px}
+.recovery-v2:has(.uk-estimate-result) .recovery-shell{max-width:640px}
+.recovery-v2:has(.uk-estimate-result) .recovery-progress{margin-bottom:13px}
+.recovery-v2:has(.uk-estimate-result) .recovery-card{border:0;box-shadow:none;background:transparent;padding:0;border-radius:0}
+.recovery-v2:has(.uk-estimate-result) .uk-estimate-result{max-width:100%}
+.recovery-v2:has(.uk-estimate-result) .uk-estimate-price{margin-top:13px}
+@media(max-width:600px){
+ body:has(.uk-estimate-result) .global-public-header{height:57px!important}
+ body:has(.uk-estimate-result) .global-public-header .uk-nav{min-height:57px!important;padding-top:5px;padding-bottom:5px}
+ .recovery-v2:has(.uk-estimate-result){padding:12px 14px 28px}
+}
+
+/* Screens 4 and 5 – real dynamic offer comparison */
+.uk-offers{max-width:680px;margin:16px auto;color:#1b232a}.uk-offers h2{font-size:26px;letter-spacing:-.03em;margin:14px 0 8px}.uk-offers>p{line-height:1.5;color:#5b6570}.uk-marketplace-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;font-size:11px;margin:12px 0 19px}.uk-marketplace-steps>*{padding:10px 4px;border-radius:30px;background:#f3f4f6;text-align:center;min-width:0}.uk-marketplace-steps strong{background:#ff6600;color:white}.uk-offer-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:16px 0}.uk-offer-toolbar select,.uk-offer-toolbar button,.uk-offers-back{min-height:42px;border:1px solid #ced5dc;border-radius:9px;background:#fff;padding:8px 12px}.uk-offer-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 14px #00000009;margin:11px 0;padding:15px}.uk-offer-driver{display:flex;align-items:center;gap:12px;min-width:0}.uk-offer-driver img{object-fit:cover;border-radius:50%;flex-shrink:0}.uk-offer-driver h3{font-size:16px;margin:0 0 5px;overflow-wrap:anywhere}.uk-offer-driver small{color:#1b7953}.uk-offer-driver p{font-size:12px;margin:5px 0;color:#5c626b}.uk-offer-avatar{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#e8edf1;font-size:24px;flex-shrink:0}.uk-offer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.uk-offer-bottom strong{display:block;font-size:21px}.uk-offer-bottom small{display:block;color:#66717b}.uk-offer-bottom button,.uk-offer-primary{border:0;border-radius:9px;background:#ff6600;color:#fff;font-weight:750;padding:12px 15px;cursor:pointer;min-height:44px}.uk-offer-primary{width:100%;margin-top:14px}.uk-offer-primary:disabled{opacity:.55;cursor:not-allowed}.uk-offer-empty{padding:24px;border-radius:10px;background:#f5f6f7}.uk-driver-stats{margin:18px 0}.uk-driver-stats>div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #edf0f2;padding:11px 0}.uk-driver-stats dt{color:#606b74}.uk-driver-stats dd{font-weight:700;margin:0;text-align:right;overflow-wrap:anywhere}.uk-offer-hint{color:#66717b;font-size:12px}.uk-offers button:focus-visible,.uk-offers select:focus-visible{outline:3px solid #ff6600;outline-offset:2px}@media(max-width:390px){.uk-offer-card{padding:12px}.uk-offer-bottom button{padding:10px}.uk-marketplace-steps{font-size:10px}}
+
+/* Only the genuine persisted SS4/SS5 journey gets a reference-style dark header. */
+body:has(.uk-offers) .global-public-header{background:#101820!important;height:61px!important;border-color:#26303a!important;color:#fff!important}
+body:has(.uk-offers) .global-public-header .uk-nav{min-height:61px!important}
+body:has(.uk-offers) .global-public-header .uk-logo b{color:white!important}
+body:has(.uk-offers) .global-public-header .uk-menu{background:transparent!important;color:#fff!important;border-color:#54606b!important}
+body:has(.uk-offers) .global-public-header .header-install{display:none!important}
+.recovery-v2:has(.uk-offers){background:#fff;padding-top:8px}
+.recovery-v2:has(.uk-offers) .recovery-shell{max-width:650px}
+.recovery-v2:has(.uk-offers) .recovery-card{padding:0;border:0;box-shadow:none;background:transparent}
+.recovery-v2:has(.uk-offers) .uk-offers{margin-top:3px}
+.recovery-v2:has(.uk-offers) .uk-offers h2{margin:12px 0 7px}
+.recovery-v2:has(.uk-offers) .uk-offers-receipt{font-size:12px;color:#64717c;border-top:1px solid #eee;padding:12px 2px;margin:20px 0}
+@media(max-width:600px){body:has(.uk-offers) .global-public-header{height:57px!important}body:has(.uk-offers) .global-public-header .uk-nav{min-height:57px!important}.recovery-v2:has(.uk-offers){padding:9px 14px 24px}}

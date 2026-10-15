@@ -21,7 +21,7 @@ test("estimate route resolves local routing and pricing modules without alias",(
 test("customer form calls server-side road estimate and recalculates on selections",()=>{
  const page=readFileSync("app/recovery/request/page.tsx","utf8");
  assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
- assert.match(page,/\[step,v\]/);
+ assert.match(page,/\[step,v,estimateAttempt\]/);
  assert.match(page,/controller\.abort\(\)/);
  assert.match(page,/Price to be confirmed by recovery drivers/);
  assert.doesNotMatch(page,/Estimate calculated after route & pricing data/);
@@ -46,7 +46,7 @@ test("five-step wizard retains guest data and shows real route pricing",()=>{
  assert.match(page,/setV\(s=>\(\{\.\.\.s,\[key\]:value\}\)\)/);
  assert.match(page,/fetch\("\/api\/recovery\/open-estimate"/);
  assert.match(page,/estimatedPriceGbp/);
- assert.match(page,/<RecoveryRouteMap route=\{estimate\?\.route\?\?null\} pickup=/);
+ assert.match(page,/<EstimateResult estimate=\{estimate\}/);
  assert.match(page,/fetch\("\/api\/recovery\/jobs"/);
 });
 test("server-only price and secure offer checks stay required",()=>{

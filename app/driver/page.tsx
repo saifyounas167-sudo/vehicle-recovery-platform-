@@ -1,4 +1,5 @@
 import OpenRoutePreview from "../components/open-route-preview";
+import DriverAvailability from "./driver-availability";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
@@ -8,8 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function DriverPage() {
   const { user } = await requireRole("driver");
   const supabase = await createClient();
-  const { data: driver } = await supabase.from("driver_profiles").select("approval_status,company_name").eq("id", user.id).maybeSingle();
+  const { data: driver } = await supabase.from("driver_profiles").select("approval_status,company_name,availability").eq("id", user.id).maybeSingle();
   const approved = driver?.approval_status === "approved";
+  const {data:myOffers}=approved?await supabase.from("driver_job_offers").select("id,job_id,offer_amount_gbp,eta_minutes,status,created_at").eq("driver_id",user.id).order("created_at",{ascending:false}).limit(50):{data:[]};
   const { data: jobs } = approved ? await supabase.from("recovery_jobs").select("id,recovery_type,pickup_postcode,destination_postcode,is_urgent,status").in("status", ["submitted","matching","offered"]).order("created_at", { ascending: false }) : { data: [] };
 
   return <main className="dashboard-shell">
@@ -18,6 +20,8 @@ export default async function DriverPage() {
       <div className="dashboard-grid"><div className="metric-card"><span className="metric-label">Marketplace jobs</span><strong className="metric-value">{approved ? jobs?.length ?? 0 : "—"}</strong><span className="badge">{approved ? "Live database" : "Approval required"}</span></div><div className="metric-card"><span className="metric-label">Driver status</span><strong className="metric-value">{driver?.approval_status ?? "Pending"}</strong><span className="badge dark">Admin review</span></div><div className="metric-card"><span className="metric-label">Account</span><strong className="metric-value">Protected</strong><span className="badge dark">Authenticated</span></div></div>
       <div className="dashboard-card"><div className="dashboard-card-heading"><div><p className="dashboard-kicker">Job feed</p><h2>{approved ? "Available recovery requests" : "Marketplace access is pending approval"}</h2></div><span className="badge">{approved ? "Live" : "Restricted"}</span></div>
       {approved && jobs?.length ? <div className="dashboard-list">{jobs.map(job => <article className="dashboard-row" key={job.id}><div><strong>{job.recovery_type}</strong><small>{job.pickup_postcode}{job.destination_postcode ? " → " + job.destination_postcode : ""} · {job.status}</small></div><div className="row-actions"><span className="badge">{job.is_urgent ? "Urgent" : "Standard"}</span><Link href={"/driver/jobs/" + job.id} className="button secondary">View details</Link></div></article>)}</div> : <div className="empty-state"><strong>{approved ? "No live jobs are available yet." : "Your account must be approved before marketplace jobs are visible."}</strong><p>Only jobs that actually exist in the database appear here.</p></div>}</div>
+      <DriverAvailability initial={driver?.availability||"offline"} approved={approved}/>
+      <div className="dashboard-card"><h2>My Offers</h2>{myOffers?.length?<div className="dashboard-list">{myOffers.map(o=><article className="dashboard-row" key={o.id}><div><strong>£{Number(o.offer_amount_gbp).toFixed(2)}</strong><small>ETA {o.eta_minutes??"—"} minutes · {o.status}</small></div><Link className="button secondary" href={"/driver/jobs/"+o.job_id}>View Job</Link></article>)}</div>:<p>No driver offers have been submitted yet.</p>}</div>
       <OpenRoutePreview/>
     </section>
   </main>;

@@ -77,15 +77,17 @@ for(const width of widths){
   await assertNoOverflow(page,"contact",width);
   await page.screenshot({path:`qa-request-screenshots/contact-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:/Get Estimate/}).click();
-  await page.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
+  await page.getByRole("heading",{name:"Estimated Price"}).waitFor({timeout:12000});
   await page.getByText("Price to be confirmed by recovery drivers").first().waitFor({timeout:12000});
-  if(!(await page.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Demo booking write enabled");
+  await page.getByRole("button",{name:/Continue/}).click();
+  await page.getByText("Driver offers coming soon").waitFor();
   if(await page.locator(".recovery-demo-progress li.current").count()!==1)throw Error("Estimate progress stage not selected");
   await assertNoOverflow(page,"estimate",width);
   await page.screenshot({path:`qa-request-screenshots/estimate-${width}.png`,fullPage:true,animations:"disabled"});
-  await page.getByRole("button",{name:"Edit vehicle"}).click();
+  await page.getByRole("button",{name:/Back \/ Edit Details/}).click();
+  await page.getByRole("button",{name:/Vehicle Details/}).click();
   if(!(await page.getByLabel(/Vehicle make/).inputValue()==="Ford"))throw Error("Vehicle data lost after editing");
-  await page.goBack();await page.getByRole("heading",{name:/Review your recovery request/}).waitFor();
+  await page.goBack();await page.getByRole("heading",{name:"Estimated Price"}).waitFor();
   await page.goForward();await page.getByLabel(/Vehicle make/).waitFor();
   if(await page.getByLabel(/Vehicle make/).inputValue()!=="Ford")throw Error("Browser history lost input");
   await page.reload({waitUntil:"domcontentloaded"});
@@ -123,8 +125,9 @@ try{
  await outage.getByRole("button",{name:/Your Contact Details/}).click();
  await outage.getByLabel(/Full name/).fill("Test Customer");await outage.getByLabel(/UK mobile number/).fill("07123456789");await outage.getByLabel(/Email address/).fill("demo@example.test");
  await outage.getByRole("button",{name:/Get Estimate/}).click();
- await outage.getByRole("heading",{name:/Review your recovery request/}).waitFor({timeout:12000});
- if(!(await outage.getByRole("button",{name:/REQUEST SUBMISSION PAUSED/}).isDisabled()))throw Error("Read-only protection missing");
+ await outage.getByRole("heading",{name:"Estimated Price"}).waitFor({timeout:12000});
+ await outage.getByRole("button",{name:/Continue/}).click();
+ await outage.getByText("Driver offers coming soon").waitFor();
  console.log("PASS provider outage/manual address fallback without activating write");
 }catch(e){errors.push("postcode provider outage: "+e.message);console.error("FAIL postcode provider outage",e.message)}
 await ctx.close();

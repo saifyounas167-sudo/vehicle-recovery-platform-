@@ -1,3 +1,4 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {isClientReviewDemo} from "@/src/lib/client-review";
 import {requiresDestination,getServiceRules} from "@/src/lib/recovery-service-rules";
@@ -19,7 +20,7 @@ export async function POST(request:Request){
  try{
   if(Number(request.headers.get("content-length")||0)>4096)return NextResponse.json({error:"Request too large"},{status:413,headers:{"Cache-Control":"no-store"}});
   const input=await request.json(),pickup=String(input.pickupPostcode||"").trim(),destination=String(input.destinationPostcode||"").trim();
-  if(input.recoveryType&&(!getServiceRules(input.recoveryType)||!requiresDestination(input.recoveryType,"transport")||!destination))return unavailable("validation");
+  if(!getServiceRules(input.recoveryType)||!requiresDestination(input.recoveryType,String(input.destinationMode||""))||!destination)return unavailable("validation");
   if(!pc.test(pickup)||!pc.test(destination))return NextResponse.json({error:"Valid UK pickup and destination postcodes required"},{status:400,headers:{"Cache-Control":"no-store"}});
   stage="postcode";
   const [origin,end]=await Promise.all([resolvePostcode(pickup),resolvePostcode(destination)]);
@@ -27,7 +28,7 @@ export async function POST(request:Request){
   stage="routing";
   route=await previewDrivingRoute(origin,end);
   stage="pricing_config";
-  if(isClientReviewDemo())return unavailable(stage,route,locations);
+  if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return unavailable(stage,route,locations);
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!url||!key){report(stage,"missing_configuration");return unavailable(stage,route,locations);}
   const db=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false}});

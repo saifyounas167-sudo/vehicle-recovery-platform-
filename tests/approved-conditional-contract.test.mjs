@@ -39,5 +39,6 @@ test("scheduled requires future time; optional email is validated when supplied"
 test("read-only bookings are protected on the server, not only by disabled UI",async()=>{
  const {readFileSync}=await import("node:fs");
  const source=readFileSync("app/api/recovery/jobs/route.ts","utf8");
- assert.match(source,/if\(isClientReviewDemo\(\)\|\|process\.env\.VERCEL_ENV==="production"\)return bad/);
+ assert.match(source,/isClientReviewDemo\(\).*isIsolatedMarketplaceStaging\(\).*VERCEL_ENV==="production"/);
+ assert.match(readFileSync("src/lib/marketplace-staging.ts","utf8"),/process\.env\.VERCEL_ENV==="production"/);
 });

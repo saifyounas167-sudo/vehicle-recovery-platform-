@@ -51,6 +51,7 @@ test("existing customer wizard remains five-step and real booking disabled",()=>
  const wizard=readFileSync("app/recovery/request/page.tsx","utf8");
  const proxy=readFileSync("proxy.ts","utf8");
  assert.match(wizard,/const steps=\["Location","Vehicle","Recovery","Customer","Review"\]/);
- assert.match(wizard,/REQUEST SUBMISSION PAUSED/);
+ assert.match(wizard,/<EstimateResult estimate=\{estimate\}/);
+ assert.match(readFileSync("app/api/recovery/jobs/route.ts","utf8"),/isClientReviewDemo\(\).*isIsolatedMarketplaceStaging\(\).*VERCEL_ENV==="production"/);
  assert.match(proxy,/isClientReviewDemo\(\)/);
 });

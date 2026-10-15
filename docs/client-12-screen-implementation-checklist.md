@@ -35,13 +35,13 @@
 - **Reference layout:** Simple estimate amount/fallback, distance, vehicle/service, Continue
 - **Visible buttons/controls:** Continue to offers when active
 - **Expected interactions/conditional fields:** Only verified road miles, £5+£3/mi, no fabricated £95–£140; safe unavailable state
-- **Existing implementation:** Estimate POST + pricing rules basis; embedded review in form
-- **Missing functionality / blockers:** Dedicated approved UI/continue not implemented; live pricing DB unverified
+- **Existing implementation:** Dedicated Screenshot #3 Estimate Result in draft PR #38, with Details-to-Estimate transition, server estimate amount/fallback, distance/vehicle/service summary, Back/Edit and truthful read-only Continue
+- **Missing functionality / blockers:** Original screenshot pixel-level comparison and authorised real routing/admin pricing integration are unverified; preview-only Continue announces that driver offers are coming soon
 - **Backend/API dependencies:** Road routing, postcode resolver, pricing API
 - **Database dependencies:** pricing_rules active row / staging seed only
 - **Security requirements:** Read-only; server is authoritative
 - **Tests needed:** Formula rounding, missing routes/rates, visual reference, screen transitions
-- **Production readiness:** Not started; estimate preview available
+- **Production readiness:** Dedicated UI preview in PR #38; not merged, no live estimate approval
 
 ## 04 Driver Offers
 
@@ -177,3 +177,12 @@
 - Production and review are fail-closed at jobs API even on direct POST requests. PR is still draft and must not merge.
 - **BLOCKER**: write endpoint now accepts optional validated fields and persists missing data as NULL; migration 0012 makes private-contact email nullable. Actual Supabase constraints, RLS and migration 0011/0012 execution have not been checked in an authorised staging database. Keep writes disabled until this verification is complete.
 - Screenshot #2 final visual approval pending genuine browser screenshots and customer original side-by-side comparison. Do not claim mocks equal real postcode, routing, database, or billing tests.
+
+## Screenshot #3 implementation review notes
+
+- PR #38 targets main; distinct focused feature branch. Existing request location cards and 10 service identifiers are unchanged.
+- The dedicated client-reference Estimate screen highlights the orange second step, uses UK Recovery styling, displays server-derived price only when the existing endpoint reports an available price, and otherwise clearly says “Price to be confirmed by recovery drivers.”
+- Indicative price is never copied from the RoadMate sample screenshot. Base £5 callout + £3 per verified mile remains controlled by existing active Admin pricing rules; all surcharge fields remain configurable, none invented.
+- No database migration is applied. 0011/0012 staging status unverified. Driver offers/booking/payment/notifications remain read-only or disabled; Continue explicitly says that offers are coming soon.
+- Browser QA mocks a server response and must be reported as **MOCKED**, not verification of real routing, postcode lookup, Supabase, or driver availability.
+- Final client visual approval and authorisation required before merge or Production deploy. Screen #4 is deliberately not implemented.
