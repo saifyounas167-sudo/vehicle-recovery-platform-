@@ -1,6 +1,9 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 export async function POST(req:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Client review is read-only. Live marketplace operations are paused."},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
   const input=await req.json();
   if(typeof input.jobId!=="string"||!/^[0-9a-f-]{36}$/i.test(input.jobId)||!Number.isFinite(input.price)||input.price<=0||input.price>100000||!Number.isInteger(input.etaMinutes)||input.etaMinutes<1||input.etaMinutes>1440||typeof input.message!=="string"||input.message.length>500)return NextResponse.json({error:"Invalid offer"},{status:400});
