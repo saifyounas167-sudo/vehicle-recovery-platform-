@@ -120,3 +120,41 @@ end $$;
 drop trigger if exists guard_driver_sensitive_fields_trigger on public.driver_profiles;
 create trigger guard_driver_sensitive_fields_trigger
  before update on public.driver_profiles for each row execute function public.guard_driver_sensitive_fields();
+
+-- Preserve atomic guest manual acceptance from 0010 while checking the driver
+-- remains eligible at acceptance time. Job row is locked before the offer.
+create or replace function public.accept_guest_recovery_offer(p_job_id uuid,p_offer_id uuid)
+returns boolean language plpgsql security invoker set search_path=public as $$
+declare selected public.driver_job_offers%rowtype; current_job public.recovery_jobs%rowtype;
+begin
+ select * into current_job from public.recovery_jobs where id=p_job_id for update;
+ if not found or current_job.status not in ('submitted','matching','offered') or current_job.assigned_driver_id is not null then return false;end if;
+ select * into selected from public.driver_job_offers
+ where id=p_offer_id and job_id=p_job_id and status='pending' for update;
+ if not found or not public.eligible_driver_for_job(selected.driver_id,p_job_id) then return false;end if;
+ update public.recovery_jobs set assigned_driver_id=selected.driver_id,status='assigned',updated_at=now()
+ where id=p_job_id and assigned_driver_id is null and status in ('submitted','matching','offered');
+ if not found then return false;end if;
+ update public.driver_job_offers set status=case when id=selected.id then 'accepted' else 'rejected' end,updated_at=now()
+ where job_id=p_job_id and status='pending';
+ return true;
+end $$;
+revoke all on function public.accept_guest_recovery_offer(uuid,uuid) from public,anon,authenticated;
+grant execute on function public.accept_guest_recovery_offer(uuid,uuid) to service_role;
+
+-- Existing authenticated customer acceptance is also guarded by the same eligibility.
+create or replace function public.accept_customer_offer(p_offer_id uuid)
+returns boolean language plpgsql security definer set search_path=public as $$
+declare selected public.driver_job_offers%rowtype; current_job public.recovery_jobs%rowtype;
+begin
+ select * into selected from public.driver_job_offers where id=p_offer_id;
+ if not found then return false;end if;
+ select * into current_job from public.recovery_jobs where id=selected.job_id for update;
+ if not found or current_job.customer_id is distinct from auth.uid() or current_job.status not in ('submitted','matching','offered') or current_job.assigned_driver_id is not null or selected.status<>'pending' then return false;end if;
+ if not public.eligible_driver_for_job(selected.driver_id,current_job.id) then return false;end if;
+ update public.recovery_jobs set assigned_driver_id=selected.driver_id,status='assigned',updated_at=now() where id=current_job.id;
+ update public.driver_job_offers set status=case when id=selected.id then 'accepted' else 'rejected' end,updated_at=now() where job_id=current_job.id and status='pending';
+ return true;
+end $$;
+revoke all on function public.accept_customer_offer(uuid) from public,anon;
+grant execute on function public.accept_customer_offer(uuid) to authenticated;
