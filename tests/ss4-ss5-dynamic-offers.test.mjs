@@ -26,3 +26,16 @@ test("existing driver offer acceptance remains atomic and guarded",()=>{
  assert.match(sql,/for update/);assert.match(sql,/assigned_driver_id is null/);
  assert.match(sql,/revoke all on function public\.accept_guest_recovery_offer/);
 });
+
+test("direct marketplace API handlers preserve review-mode blocks",()=>{
+ assert.match(read("src/lib/client-review.ts"),/return true/);
+ for(const path of ["app/api/recovery/guest-offers/route.ts","app/api/recovery/accept-offer/route.ts","app/api/driver/offers/route.ts"]){
+  const source=read(path);
+  assert.ok(source.includes("isClientReviewDemo()&&!isIsolatedMarketplaceStaging()"));
+  assert.ok(source.includes("status:503"));
+ }
+});
+test("SS3 read-only Continue never promises a real SS4/SS5 booking",()=>{
+ const source=read("app/components/estimate-result.tsx");
+ for(const phrase of ["Driver Offers","Driver Details","No booking or driver request has been created","Choose This Driver — Unavailable"])assert.ok(source.includes(phrase));
+});
