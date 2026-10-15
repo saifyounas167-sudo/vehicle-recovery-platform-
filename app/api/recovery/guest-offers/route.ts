@@ -15,7 +15,7 @@ export async function POST(req:Request){
   const {data:rows,error}=await db.from("driver_job_offers").select("id,driver_id,offer_amount_gbp,eta_minutes,message,status,created_at").eq("job_id",job.id).in("status",["pending","accepted"]).order("created_at",{ascending:false}).limit(100);
   if(error)return response({error:"Offers temporarily unavailable"},503);
   const driverIds=[...new Set((rows||[]).map(row=>row.driver_id).filter(Boolean))];
-  const {data:drivers,error:driverError}=driverIds.length?await db.from("driver_profiles").select("id,company_name,truck_type,services,coverage_radius_miles,profile_image_url,approval_status").in("id",driverIds):{data:[],error:null};
+  const {data:drivers,error:driverError}=driverIds.length?await db.from("driver_profiles").select("id,company_name,truck_type,services,coverage_radius_miles,profile_image_url,about,approval_status").in("id",driverIds):{data:[],error:null};
   if(driverError)return response({error:"Driver information unavailable"},503);
   const byId=new Map((drivers||[]).map(d=>[d.id,d]));
   const offers=(rows||[]).flatMap(row=>{
@@ -27,7 +27,7 @@ export async function POST(req:Request){
     etaMinutes:row.eta_minutes,
     message:typeof row.message==="string"?row.message.slice(0,500):"",
     status:row.status,
-    driver:{name:driver.company_name?.trim()||"Independent recovery provider",verified:driver.approval_status==="approved",imageUrl:driver.profile_image_url||null,truckType:driver.truck_type||null,services:driver.services||[],coverageRadiusMiles:driver.coverage_radius_miles??null,rating:null,reviewCount:0}
+    driver:{name:driver.company_name?.trim()||"Independent recovery provider",verified:driver.approval_status==="approved",imageUrl:driver.profile_image_url||null,truckType:driver.truck_type||null,services:driver.services||[],coverageRadiusMiles:driver.coverage_radius_miles??null,rating:null,reviewCount:0,about:driver.about||null}
    }];
   });
   return response({job:{reference:job.guest_reference,status:job.status},offers});

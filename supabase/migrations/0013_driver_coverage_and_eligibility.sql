@@ -19,7 +19,7 @@ alter table public.driver_profiles add constraint driver_radius_reasonable
 alter table public.driver_profiles drop constraint if exists driver_coords_pair;
 alter table public.driver_profiles add constraint driver_coords_pair check (
  (coverage_latitude is null and coverage_longitude is null) or
- (coverage_latitude between 49 and 61 and coverage_longitude between -9 and 3)
+ (coverage_latitude is not null and coverage_longitude is not null and coverage_latitude between 49 and 61 and coverage_longitude between -9 and 3)
 );
 
 create table if not exists public.driver_verification_documents (

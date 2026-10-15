@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useState} from "react";
-type Driver={name:string;verified:boolean;imageUrl:string|null;truckType:string|null;services:string[];coverageRadiusMiles:number|null;rating:number|null;reviewCount:number};
+type Driver={name:string;verified:boolean;imageUrl:string|null;truckType:string|null;services:string[];coverageRadiusMiles:number|null;rating:number|null;reviewCount:number;about:string|null};
 type Offer={id:string;priceGbp:number;etaMinutes:number;message:string;status:string;driver:Driver};
 type Guest={jobId:string;reference:string;proof:string};
 type Sort="price"|"eta"|"rating";
@@ -35,7 +35,7 @@ export default function CustomerDriverOffers({access}:{access:Guest}){
   {selected&&current?<><button className="uk-offers-back" type="button" onClick={()=>setSelected(null)}>← Back to Driver Offers</button><h2>Driver Details</h2><article className="uk-offer-card">
    <div className="uk-offer-driver">{current.driver.imageUrl?<img alt="" src={current.driver.imageUrl} width={56} height={56}/>:<span className="uk-offer-avatar" aria-hidden="true">🚚</span>}<div><h3>{current.driver.name}</h3><small>{current.driver.verified?"✓ Verified Recovery Driver":"Verification not confirmed"}</small><p>{current.driver.rating!==null?`★ ${current.driver.rating.toFixed(1)} (${current.driver.reviewCount} reviews)`:"No reviews yet"}</p></div></div>
    <dl className="uk-driver-stats"><div><dt>Price</dt><dd>£{current.priceGbp.toFixed(2)}</dd></div><div><dt>ETA</dt><dd>{current.etaMinutes} minutes</dd></div><div><dt>Recovery truck</dt><dd>{current.driver.truckType||"Not supplied"}</dd></div><div><dt>Coverage radius</dt><dd>{current.driver.coverageRadiusMiles==null?"Not provided":current.driver.coverageRadiusMiles+" miles"}</dd></div><div><dt>Services</dt><dd>{current.driver.services.join(", ")||"Not provided"}</dd></div></dl>
-   {current.message&&<p>{current.message}</p>}
+   <h3>About</h3><p>{current.driver.about||"No company description provided."}</p>{current.message&&<p>{current.message}</p>}
    <button type="button" className="uk-offer-primary" disabled={working||accepted||current.status!=="pending"} onClick={choose}>{accepted?"Driver selected":working?"Confirming…":"Choose This Driver"}</button>
    <p className="uk-offer-hint">A booking is only confirmed when the server accepts your selection.</p>
   </article></>:<><h2>Driver Offers</h2><p>Compare offers from approved recovery drivers and choose the best option for you.</p>
