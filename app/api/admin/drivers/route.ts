@@ -1,3 +1,4 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 import {serverDb} from "@/src/lib/guest-access";
@@ -12,7 +13,7 @@ async function admin(){
  return {db,user};
 }
 export async function GET(){
- if(isClientReviewDemo())return send({error:"Admin actions are paused for client review"},503);
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return send({error:"Admin actions are paused for client review"},503);
  try{
   const access=await admin();if(!access)return send({error:"Admin authentication required"},403);
   const {data,error}=await access.db.from("driver_profiles").select("id,company_name,truck_type,services,coverage_postcode,coverage_radius_miles,approval_status,created_at").order("created_at",{ascending:false}).limit(100);
@@ -25,7 +26,7 @@ export async function GET(){
  }catch{return send({error:"Driver review unavailable"},503);}
 }
 export async function POST(req:Request){
- if(isClientReviewDemo())return send({error:"Admin actions are paused for client review"},503);
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return send({error:"Admin actions are paused for client review"},503);
  try{
   const access=await admin();if(!access)return send({error:"Admin authentication required"},403);
   const b=await req.json() as Record<string,unknown>,driverId=b.driverId,status=b.status;
