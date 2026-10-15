@@ -342,3 +342,6 @@ body:has(.uk-offers) .global-public-header .header-install{display:none!importan
 .uk-booking-panel .uk-booking-footer{font-size:12px;color:#73808b;margin-top:23px}
 @media(max-width:600px){.uk-booking-page{padding:15px 10px 35px}.uk-booking-panel{padding:27px 17px;border-radius:14px;box-shadow:0 5px 18px #15202a0b}.uk-booking-symbol{width:72px;height:72px;font-size:46px}.uk-booking-info,.uk-booking-placeholder{padding:14px}.uk-booking-info dl>div{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.uk-booking-page *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Isolate inherited desktop-header overflow from the SS6 viewport. */
+html:has(.uk-booking-page),body:has(.uk-booking-page){overflow-x:clip}
