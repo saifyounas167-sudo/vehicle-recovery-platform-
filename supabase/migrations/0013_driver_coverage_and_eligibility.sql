@@ -94,3 +94,8 @@ end $$;
 -- An existing offer cannot be accepted after coverage/availability is lost.
 -- Keep 0010 atomic offer acceptance until a separately reviewed transaction migration
 -- adds the above eligibility check to the acceptance RPC.
+
+-- Documents must never be available via public Storage URLs.
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values ('driver-verification-private','driver-verification-private',false,5242880,array['application/pdf','image/jpeg','image/png'])
+on conflict (id) do update set public=false,file_size_limit=5242880,allowed_mime_types=array['application/pdf','image/jpeg','image/png'];
