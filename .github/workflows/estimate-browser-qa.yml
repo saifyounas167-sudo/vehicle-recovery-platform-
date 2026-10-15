@@ -4,7 +4,7 @@ on:
     branches: [main]
 jobs:
   estimate-browser:
-    if: github.head_ref == 'feature/client-screenshot-3-estimate-result'
+    if: github.head_ref == 'feature/client-screenshot-3-estimate-result' || github.head_ref == 'feature/ss3-ss4-ss5-dynamic-marketplace'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
