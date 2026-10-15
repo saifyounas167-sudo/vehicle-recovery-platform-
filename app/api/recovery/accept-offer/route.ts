@@ -1,6 +1,9 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {serverDb,validGuestProof} from "@/src/lib/guest-access";
 export async function POST(req:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Client review is read-only. Live marketplace operations are paused."},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
   const b=await req.json();if(typeof b.jobId!=="string"||typeof b.reference!=="string"||typeof b.proof!=="string"||typeof b.offerId!=="string"||!validGuestProof(b.jobId,b.reference,b.proof))return NextResponse.json({error:"Not authorised"},{status:403});
   const db=serverDb();const {data:job}=await db.from("recovery_jobs").select("id").eq("id",b.jobId).eq("guest_reference",b.reference).maybeSingle();
