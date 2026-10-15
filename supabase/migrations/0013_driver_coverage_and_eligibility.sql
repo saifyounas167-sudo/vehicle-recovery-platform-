@@ -99,3 +99,24 @@ end $$;
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('driver-verification-private','driver-verification-private',false,5242880,array['application/pdf','image/jpeg','image/png'])
 on conflict (id) do update set public=false,file_size_limit=5242880,allowed_mime_types=array['application/pdf','image/jpeg','image/png'];
+
+-- Harden existing broad self-update policy from 0002: authenticated drivers may
+-- change availability but cannot silently alter approved identity, capabilities
+-- or verified geocoordinates. Server-side service-role updates remain possible.
+create or replace function public.guard_driver_sensitive_fields()
+returns trigger language plpgsql set search_path=public as $$
+begin
+ if auth.uid() is not null and public.current_user_role()<>'admin' then
+  if (to_jsonb(new)-'availability'-'updated_at') is distinct from
+     (to_jsonb(old)-'availability'-'updated_at') then
+   raise exception 'Driver profile changes require server verification';
+  end if;
+  if new.availability='available' and old.approval_status<>'approved' then
+   raise exception 'Driver must be approved before becoming available';
+  end if;
+ end if;
+ return new;
+end $$;
+drop trigger if exists guard_driver_sensitive_fields_trigger on public.driver_profiles;
+create trigger guard_driver_sensitive_fields_trigger
+ before update on public.driver_profiles for each row execute function public.guard_driver_sensitive_fields();
