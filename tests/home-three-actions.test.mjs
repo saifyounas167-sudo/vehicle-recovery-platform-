@@ -17,5 +17,5 @@ test("nearby postcode/GPS search reuses existing map and makes no private DB que
 });
 test("existing form remains 5 steps in read-only client demo",()=>{
  assert.ok(form.includes('const steps=["Location","Vehicle","Recovery","Customer","Review"]'));
- assert.ok(form.includes("const clientReview=true"));
+ assert.ok(form.includes("const [clientReview,setClientReview]=useState(true)"));
 });
