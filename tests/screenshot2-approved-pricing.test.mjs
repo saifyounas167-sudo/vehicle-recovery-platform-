@@ -17,7 +17,7 @@ test("staging-only approved initial configuration; no unapproved surcharges",()=
 test("route estimate remains server-authoritative, no fabricated miles or client-demo prices",()=>{
  const api=read("app/api/recovery/open-estimate/route.ts");
  assert.match(api,/previewDrivingRoute\(origin,end\)/);
- assert.match(api,/if\(isClientReviewDemo\(\)\)return unavailable/);
+ assert.match(api,/if\(isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)\)return unavailable/);
  assert.match(api,/calculateRecoveryPrice\(cfg,route.distanceMiles/);
  assert.match(api,/Price to be confirmed by recovery drivers/);
  const guard=read("proxy.ts");
