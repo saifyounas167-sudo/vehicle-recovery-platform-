@@ -1,3 +1,4 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 import {serverDb} from "@/src/lib/guest-access";
@@ -9,7 +10,7 @@ const error=(message:string,status:number)=>NextResponse.json({error:message},{s
 const postcode=/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
 export async function POST(req:Request){
  // This route is deliberately unavailable in current client-review Production.
- if(isClientReviewDemo())return error("Driver registration is not active during client review",503);
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return error("Driver registration is not active during client review",503);
  try{
   if(Number(req.headers.get("content-length")||0)>8192)return error("Request too large",413);
   const auth=await createClient();
