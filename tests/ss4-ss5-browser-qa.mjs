@@ -31,6 +31,7 @@ async function complete(page){
  await page.getByRole("heading",{name:"Estimated Price"}).waitFor();
  await page.getByRole("button",{name:/Submit Recovery Request & Continue/}).click();
  await page.getByRole("heading",{name:"Driver Offers"}).waitFor();
+ if(await page.getByRole("heading",{name:"Recovery request received"}).count())throw Error("Duplicate receipt heading appears above offers");
 }
 for(const width of widths){
  const ctx=await browser.newContext({viewport:{width,height:844}}),page=await ctx.newPage();
@@ -46,6 +47,7 @@ for(const width of widths){
   if(!(await page.locator(".uk-offer-card h3").first().textContent()).includes("Alpha"))throw Error("Price sorting incorrect");
   await page.getByRole("button",{name:"View Details"}).first().click();
   await page.getByRole("heading",{name:"Driver Details"}).waitFor();
+  if(await page.locator("[aria-current=step]").textContent()!=="4 Choose")throw Error("Choose stage incorrect");
   await page.getByText("No reviews yet").first().waitFor();
   await page.screenshot({path:`qa-dynamic-marketplace/SS5-MOCKED-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:"Choose This Driver"}).click();
