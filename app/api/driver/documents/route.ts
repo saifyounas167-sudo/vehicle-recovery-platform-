@@ -1,3 +1,4 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 import {serverDb} from "@/src/lib/guest-access";
@@ -6,7 +7,7 @@ import {randomUUID} from "node:crypto";
 export const dynamic="force-dynamic";
 const json=(x:unknown,status=200)=>NextResponse.json(x,{status,headers:{"Cache-Control":"no-store"}});
 export async function POST(req:Request){
- if(isClientReviewDemo())return json({error:"Uploads are paused in client-review mode"},503);
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return json({error:"Uploads are paused in client-review mode"},503);
  try{
   const dbAuth=await createClient(),{data:{user}}=await dbAuth.auth.getUser();
   if(!user||!user.email_confirmed_at)return json({error:"Verified sign-in required"},401);
