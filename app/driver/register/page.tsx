@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useState,type FormEvent} from "react";
 import {createClient} from "@/lib/supabase/client";
 import {recoveryServices} from "@/src/lib/recovery-service-rules";
+import DriverDocuments from "./driver-documents";
 const vehicleTypes=["Car","Van","Motorbike","4x4","Other"];
 export default function DriverRegisterPage(){
  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[fullName,setFullName]=useState(""),[phone,setPhone]=useState(""),[companyName,setCompanyName]=useState(""),[truckType,setTruckType]=useState(""),[coveragePostcode,setCoveragePostcode]=useState(""),[coverageRadiusMiles,setRadius]=useState("25"),[services,setServices]=useState<string[]>([]),[vehicleCapabilities,setVehicles]=useState<string[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
@@ -40,6 +41,7 @@ export default function DriverRegisterPage(){
    <button className="button primary button-large" disabled={busy||services.length===0||vehicleCapabilities.length===0}>{busy?"Saving application…":"Submit for Admin Review →"}</button>
    <p role="status">{message}</p>
   </form>
+  <DriverDocuments/>
   <p><Link href="/login?role=driver&next=/driver/register">Already have a verified account? Sign in</Link></p>
  </div></main>;
 }
