@@ -19,7 +19,7 @@ test("postcode locations survive unavailable routing but fabricated miles and pr
  const wizard=src("app/recovery/request/page.tsx");
  assert.match(api,/locations=\{pickup:origin,destination:end\}/);
  assert.match(api,/unavailable\(stage,route,locations\)/);
- assert.match(api,/if\(isClientReviewDemo\(\)\)return unavailable\(stage,route,locations\)/);
+ assert.match(api,/if\(isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)\)return unavailable\(stage,route,locations\)/);
  assert.match(wizard,/<EstimateResult estimate=\{estimate\}/);
  assert.match(src("app/components/estimate-result.tsx"),/No driver has been booked/);
  assert.match(src("app/api/recovery/jobs/route.ts"),/isClientReviewDemo\(\)/);
