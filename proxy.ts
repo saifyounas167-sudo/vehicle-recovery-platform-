@@ -1,8 +1,9 @@
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isClientReviewDemo } from "@/src/lib/client-review";
 export async function proxy(request:NextRequest){
- if(isClientReviewDemo()){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging()){
   const path=request.nextUrl.pathname, method=request.method;
   // Prevent Next.js Server Actions and any page-origin POST/PUT/PATCH/DELETE.
   if(!path.startsWith("/api/") && method!=="GET" && method!=="HEAD")
