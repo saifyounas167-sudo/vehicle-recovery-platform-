@@ -16,6 +16,7 @@ async function setup(page,empty=false){
  await page.route("**/api/recovery/jobs",r=>fulfill(r,{job:{id:"UKR-QATEST",status:"submitted"},guestAccess:{jobId:"99999999-9999-4999-8999-999999999999",reference:"UKR-QATEST",proof:"a".repeat(64)}},201));
  await page.route("**/api/recovery/guest-offers",r=>fulfill(r,{job:{reference:"UKR-QATEST",status:"submitted"},offers:empty?[]:fixtureOffers}));
  await page.route("**/api/recovery/accept-offer",r=>fulfill(r,{accepted:true}));
+ await page.route("**/api/recovery/booking-confirmation",r=>fulfill(r,{confirmed:true,booking:{reference:"UKR-QATEST",status:"assigned",companyName:"QA Provider Alpha",companyLogoUrl:null,priceGbp:110,etaMinutes:45,service:"Accident Recovery",paymentMethod:"Pay your recovery driver directly."}}));
 }
 async function complete(page){
  await page.getByRole("button",{name:/Get Estimate/}).click();
@@ -51,7 +52,9 @@ for(const width of widths){
   await page.getByText("No reviews yet").first().waitFor();
   await page.screenshot({path:`qa-dynamic-marketplace/SS5-MOCKED-${width}.png`,fullPage:true,animations:"disabled"});
   await page.getByRole("button",{name:"Choose This Driver"}).click();
-  await page.getByText("Your driver has been selected.").waitFor();
+  await page.getByRole("heading",{name:"Recovery Booked!"}).waitFor();
+  await page.getByText("QA Provider Alpha").first().waitFor();
+  if(!page.url().includes("/recovery/booking"))throw Error("SS5 did not navigate to SS6");
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   if(overflow>2)throw Error("Horizontal overflow "+overflow);
   if(page.url().includes("07123456789"))throw Error("Private contact leaked into URL");
