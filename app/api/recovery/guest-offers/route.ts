@@ -1,9 +1,12 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {serverDb,validGuestProof} from "@/src/lib/guest-access";
 export const dynamic="force-dynamic";
 const response=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"no-store"}});
 type Input={jobId?:unknown;reference?:unknown;proof?:unknown};
 export async function POST(req:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Client review is read-only. Live marketplace operations are paused."},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
   if(Number(req.headers.get("content-length")||0)>2048)return response({error:"Invalid request"},413);
   const body=await req.json() as Input;
