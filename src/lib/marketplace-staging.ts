@@ -7,6 +7,8 @@ export function isIsolatedMarketplaceStaging():boolean{
  if(process.env.MARKETPLACE_STAGING_MODE!=="enabled")return false;
  const configured=process.env.NEXT_PUBLIC_SUPABASE_URL,staging=process.env.STAGING_SUPABASE_URL,production=process.env.PRODUCTION_SUPABASE_URL;
  if(!configured||!staging||!production||configured!==staging||configured===production)return false;
+ const key=process.env.SUPABASE_SERVICE_ROLE_KEY,stagingKey=process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY,productionKey=process.env.PRODUCTION_SUPABASE_SERVICE_ROLE_KEY;
+ if(!key||!stagingKey||!productionKey||key!==stagingKey||key===productionKey)return false;
  try{
   const url=new URL(configured);
   return url.protocol==="https:"&&url.hostname.endsWith(".supabase.co");
