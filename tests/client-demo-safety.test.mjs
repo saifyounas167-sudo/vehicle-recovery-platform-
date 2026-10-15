@@ -10,12 +10,12 @@ test("client demo cannot send any live request, offer, upload or admin mutation"
   assert.ok(!p.includes('"'+endpoint+'"'),endpoint+" must not be allowlisted");
  }
  assert.match(file("src/lib/client-review.ts"),/return true/);
- assert.match(file("lib/supabase/env.ts"),/if\(isClientReviewDemo\(\)\)return null/);
+ assert.match(file("lib/supabase/env.ts"),/if\(isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)\)return null/);
 });
 test("safe demo quote never reads Supabase or publishes test prices",()=>{
  const p=file("app/api/recovery/open-estimate/route.ts");
- assert.match(p,/if\(isClientReviewDemo\(\)\)return unavailable\(stage,route,locations\)/);
- assert.ok(p.indexOf("if(isClientReviewDemo())")<p.indexOf("createAdminClient(url,key"));
+ assert.match(p,/if\(isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)\)return unavailable\(stage,route,locations\)/);
+ assert.ok(p.indexOf("if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())")<p.indexOf("createAdminClient(url,key"));
  assert.match(p,/Price to be confirmed by recovery drivers/);
 });
 test("five-step form and ten services preserved with visible map",()=>{
