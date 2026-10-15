@@ -1,10 +1,12 @@
 "use client";
 import {useCallback,useEffect,useMemo,useState} from "react";
+import {useRouter} from "next/navigation";
 type Driver={name:string;verified:boolean;imageUrl:string|null;truckType:string|null;services:string[];coverageRadiusMiles:number|null;rating:number|null;reviewCount:number;about:string|null};
 type Offer={id:string;priceGbp:number;etaMinutes:number;message:string;status:string;driver:Driver};
 type Guest={jobId:string;reference:string;proof:string};
 type Sort="price"|"eta"|"rating";
 export default function CustomerDriverOffers({access}:{access:Guest}){
+ const router=useRouter();
  const [offers,setOffers]=useState<Offer[]>([]),[sort,setSort]=useState<Sort>("price"),[selected,setSelected]=useState<string|null>(null),[status,setStatus]=useState<"loading"|"ready"|"error">("loading"),[notice,setNotice]=useState(""),[working,setWorking]=useState(false),[accepted,setAccepted]=useState(false);
  const refresh=useCallback(async()=>{
   setStatus("loading");
@@ -26,8 +28,9 @@ export default function CustomerDriverOffers({access}:{access:Guest}){
    if(!res.ok)throw Error("This offer could not be accepted. Please refresh offers.");
    const result=await res.json();
    if(result.accepted!==true)throw Error("Acceptance was not confirmed.");
-   setAccepted(true);setNotice("Your driver has been selected. Booking confirmation can now be viewed.");
-   await refresh();
+   setAccepted(true);setNotice("Your selection was accepted. Verifying booking details…");
+   sessionStorage.setItem("ukr-ss6-guest-access",JSON.stringify(access));
+   router.push("/recovery/booking");
   }catch(e){setNotice(e instanceof Error?e.message:"Unable to select driver");}finally{setWorking(false);}
  }
  return <section className="uk-offers" aria-label={selected?"Driver details":"Driver offers"}>
