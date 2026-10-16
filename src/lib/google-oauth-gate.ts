@@ -28,7 +28,7 @@ export function googleOAuthEnabled(){
    &&live.username===""&&live.password===""
    &&configured.search===""&&configured.hash===""
    &&approved.search===""&&approved.hash===""&&live.search===""&&live.hash===""
-   &&STAGING_PROJECT!==PRODUCTION_PROJECT;
+;
  }catch{return false}
 }
 export type LoginRole="driver"|"customer"|"admin";
