@@ -345,3 +345,8 @@ body:has(.uk-offers) .global-public-header .header-install{display:none!importan
 
 /* Isolate inherited desktop-header overflow from the SS6 viewport. */
 html:has(.uk-booking-page),body:has(.uk-booking-page){overflow-x:clip}
+
+/* Keep all desktop header actions within the viewport at 1440px without clipping content. */
+@media (min-width: 1200px) and (max-width: 1500px) {
+ .global-public-header .public-actions { gap: 3px; }
+}
