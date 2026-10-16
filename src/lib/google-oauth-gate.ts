@@ -1,7 +1,35 @@
-import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
+/**
+ * Auth-only staging gate. Never call marketplace staging gate here:
+ * that gate requires service-role secrets and may enable marketplace writes.
+ * Project IDs are public identifiers, NOT credentials.
+ */
+const STAGING_PROJECT="ozphvosiqbzvkthlppkd";
+const PRODUCTION_PROJECT="eosprarfgrydnykekcn";
 export function googleOAuthEnabled(){
- // Never allow Google OAuth in Production or ordinary preview.
- return isIsolatedMarketplaceStaging() && process.env.ENABLE_GOOGLE_OAUTH_STAGING==="enabled";
+ if(process.env.VERCEL_ENV!=="preview")return false;
+ if(process.env.VERCEL_GIT_COMMIT_REF!=="feature/google-oauth-secure-staging")return false;
+ if(process.env.MARKETPLACE_STAGING_MODE!=="enabled"||process.env.ENABLE_GOOGLE_OAUTH_STAGING!=="enabled")return false;
+ const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+ const expected=process.env.STAGING_SUPABASE_URL;
+ const production=process.env.PRODUCTION_SUPABASE_URL;
+ const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY??process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+ const expectedKey=process.env.STAGING_SUPABASE_PUBLISHABLE_KEY;
+ if(!url||!expected||!production||!key||!expectedKey||key!==expectedKey)return false;
+ try{
+  const stagingHost=STAGING_PROJECT+".supabase.co";
+  const productionHost=PRODUCTION_PROJECT+".supabase.co";
+  const configured=new URL(url),approved=new URL(expected),live=new URL(production);
+  return configured.protocol==="https:"&&approved.protocol==="https:"&&live.protocol==="https:"
+   &&configured.hostname===stagingHost&&approved.hostname===stagingHost
+   &&live.hostname===productionHost&&configured.origin===approved.origin
+   &&configured.pathname==="/"&&approved.pathname==="/"&&live.pathname==="/"
+   &&configured.username===""&&configured.password===""
+   &&approved.username===""&&approved.password===""
+   &&live.username===""&&live.password===""
+   &&configured.search===""&&configured.hash===""
+   &&approved.search===""&&approved.hash===""&&live.search===""&&live.hash===""
+   &&STAGING_PROJECT!==PRODUCTION_PROJECT;
+ }catch{return false}
 }
 export type LoginRole="driver"|"customer"|"admin";
 export function validLoginRole(role:string|null):LoginRole|null{

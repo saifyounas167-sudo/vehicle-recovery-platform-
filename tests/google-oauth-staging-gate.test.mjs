@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const code=readFileSync("src/lib/google-oauth-gate.ts","utf8");
+test("auth-only gate uses no service-role keys or marketplace gate",()=>{assert.doesNotMatch(code,/SERVICE_ROLE_KEY|isIsolatedMarketplaceStaging/);assert.match(code,/VERCEL_ENV/);assert.match(code,/VERCEL_GIT_COMMIT_REF/);assert.match(code,/STAGING_SUPABASE_PUBLISHABLE_KEY/);});
+test("auth-only gate pins identities and remains fail-closed",()=>{assert.match(code,/ozphvosiqbzvkthlppkd/);assert.match(code,/eosprarfgrydnykekcn/);assert.match(code,/configured.origin===approved.origin/);assert.match(code,/MARKETPLACE_STAGING_MODE/);assert.match(code,/ENABLE_GOOGLE_OAUTH_STAGING/);});
+test("marketplace gating and role callback remain separate",()=>{const marketplace=readFileSync("src/lib/marketplace-staging.ts","utf8"),callback=readFileSync("app/auth/callback/route.ts","utf8");assert.match(marketplace,/STAGING_SUPABASE_SERVICE_ROLE_KEY/);assert.match(callback,/exchangeCodeForSession/);assert.match(callback,/profile.role!==role/);assert.match(callback,/driver.approval_status==="suspended"/);});
