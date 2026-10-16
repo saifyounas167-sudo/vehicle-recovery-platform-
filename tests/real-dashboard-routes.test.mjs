@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";const get=p=>readFileSync(p,"utf8");
+test("read-only public pages do not redirect to demo and marketplace APIs remain blocked",()=>{const p=get("proxy.ts");assert.doesNotMatch(p,/\["\/driver","\/demo\/driver"\]/);assert.doesNotMatch(p,/\["\/login","\/demo"\]/);assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);assert.match(p,/method!=="GET"/);});
+test("real role-specific login and protected role redirects",()=>{const l=get("app/login/login-form.tsx");for(const role of ["customer","driver","admin"])assert.ok(l.includes('"'+role+'"'));assert.match(l,/profile\.role!==role/);assert.match(l,/window\.location\.assign\("\/403"\)/);assert.match(l,/safeNext/);});
+test("language selectors removed",()=>{const h=get("app/components/public-header.tsx");assert.doesNotMatch(h,/language-control|mobile-language|>English</);});
+test("dashboard role protection unchanged",()=>{for(const role of ["driver","customer","admin"])assert.match(get("app/"+role+"/page.tsx"),new RegExp('requireRole\\("'+role+'"\\)'));});
