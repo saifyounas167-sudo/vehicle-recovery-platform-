@@ -43,8 +43,9 @@ export default function LoginForm(){
    {mode!=="forgot"&&mode!=="recovery"&&<Link className="premium-login-forgot" href={"/login?role="+role+"&mode=forgot"}>Forgot Password?</Link>}
    <button className="premium-login-submit" disabled={busy}>{busy?"Please wait…":mode==="forgot"?"Send Reset Link":mode==="recovery"?"Update Password":"Sign In →"}</button>
   </form>}
-  {!mode&&<><div className="premium-login-divider"><span>Secure account access</span></div>
-   <p className="premium-login-oauth-note">Google Sign In is unavailable until the provider and allowed callback URLs are verified.</p>
+  {!mode&&<><div className="premium-login-divider"><span>or continue with</span></div>
+   <button type="button" className="premium-login-google" disabled aria-describedby="premium-google-unavailable"><span className="premium-google-g" aria-hidden="true">G</span> Sign in with Google</button>
+   <p id="premium-google-unavailable" className="premium-login-oauth-note">Google login is unavailable until Supabase Google OAuth and redirect URLs are verified.</p>
    {role!=="admin"&&<p className="premium-login-footer">New here? <Link href={role==="driver"?"/driver/register":"/login?role=customer&mode=signup"}>{role==="driver"?"Create Driver Account":"Create Account"}</Link></p>}
   </>}
   {mode&&mode!=="signup"&&<p className="premium-login-footer"><Link href={"/login?role="+role}>Back to Sign In</Link></p>}
