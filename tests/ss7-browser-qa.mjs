@@ -17,6 +17,7 @@ for(const width of [320,375,390,430,768,1024,1440]){
   let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   // Existing public header has a shared desktop overflow baseline; detect SS7 regressions above it.
   const baseline=await page.evaluate(async()=>{const frame=document.createElement("iframe");frame.style.cssText="position:absolute;left:-9999px;width:"+innerWidth+"px;height:800px;border:0";frame.src="/";document.body.append(frame);await new Promise(resolve=>{frame.onload=resolve});const excess=frame.contentDocument.documentElement.scrollWidth-frame.contentWindow.innerWidth;frame.remove();return excess});
+  if(overflow>Math.max(0,baseline)+2){const offenders=await page.evaluate(()=>[...document.querySelectorAll("body *")].map(e=>({tag:e.tagName,cls:typeof e.className==="string"?e.className:"",left:Math.round(e.getBoundingClientRect().left),right:Math.round(e.getBoundingClientRect().right),scrollWidth:e.scrollWidth,clientWidth:e.clientWidth})).filter(e=>e.right>innerWidth+2||e.left< -2).slice(0,25));console.error("OVERFLOW ELEMENTS",JSON.stringify(offenders));}
   assert.ok(overflow<=Math.max(0,baseline)+2,"Preview horizontal overflow over homepage baseline "+width+": "+overflow+" baseline "+baseline);
   await page.screenshot({path:`qa-ss7-screenshots/preview-${width}.png`,fullPage:true,animations:"disabled"});
   await page.route("**/api/client-review-status",r=>reply(r,{clientDemo:false,writesEnabled:true,isolatedStaging:true}));
