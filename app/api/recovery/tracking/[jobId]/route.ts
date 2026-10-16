@@ -25,7 +25,7 @@ async function load(jobId:string,customerId?:string,reference?:string){
  const {data:contact,error:contactError}=await db.from("profiles").select("phone").eq("id",driver.id).maybeSingle();
  // Fail closed: don't expose partial private driver data on profile read errors.
  if(contactError)return json({error:"Driver details unavailable"},503);
- const phone=typeof contact?.phone==="string"&&/^\\+?[0-9 ()-]{7,22}$/.test(contact.phone)?contact.phone:null;
+ const phone=typeof contact?.phone==="string"&&/^\+?[0-9 ()-]{7,22}$/.test(contact.phone)?contact.phone:null;
  return json({bookingConfirmed:true,status:job.status,service:job.recovery_type,reference:job.guest_reference||null,
   driver:{companyName:driver.company_name?.trim()||"Independent recovery provider",truckType:driver.truck_type||null,avatarUrl:driver.profile_image_url||null,verified:driver.approval_status==="approved",phone},
   offeredEtaMinutes:Number.isInteger(offer.eta_minutes)&&offer.eta_minutes>0?offer.eta_minutes:null,
