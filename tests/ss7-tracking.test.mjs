@@ -24,3 +24,10 @@ test("SS7 keeps production read-only proxy unchanged",()=>{
  const clientReview=read("src/lib/client-review.ts");
  assert.match(clientReview,/return true/);
 });
+
+test("SS6 links to SS7 only after accepted verified booking",()=>{
+ const source=read("app/recovery/booking/page.tsx");
+ assert.match(source,/setTrackingJobId\(data\.jobId\)/);
+ assert.match(source,/state==="confirmed"&&booking&&trackingJobId/);
+ assert.match(source,/\/recovery\/tracking\//);
+});
