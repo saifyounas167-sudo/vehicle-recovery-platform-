@@ -26,6 +26,10 @@ export async function POST(req:Request){
   const {data:existing,error:profileError}=await db.from("profiles").select("id,role").eq("id",user.id).maybeSingle();
   if(profileError)return error("Profile service temporarily unavailable",503);
   if(existing&&existing.role!=="driver")return error("This account belongs to another role",403);
+  // Check current approval before changing even the basic profile fields.
+  const {data:current,error:currentError}=await db.from("driver_profiles").select("id,approval_status").eq("id",user.id).maybeSingle();
+  if(currentError)return error("Unable to verify application status",503);
+  if(current&&current.approval_status!=="pending"&&current.approval_status!=="rejected")return error("Approved or suspended profiles require admin-assisted updates",409);
   if(!existing){
    const {error:createError}=await db.from("profiles").insert({id:user.id,role:"driver",full_name:name,phone,email:user.email});
    if(createError)return error("Unable to create driver account",503);
@@ -33,9 +37,6 @@ export async function POST(req:Request){
    const {error:updateError}=await db.from("profiles").update({full_name:name,phone}).eq("id",user.id).eq("role","driver");
    if(updateError)return error("Unable to update account profile",503);
   }
-  const {data:current,error:currentError}=await db.from("driver_profiles").select("id,approval_status").eq("id",user.id).maybeSingle();
-  if(currentError)return error("Unable to verify application status",503);
-  if(current&&current.approval_status!=="pending"&&current.approval_status!=="rejected")return error("Approved or suspended profiles require admin-assisted updates",409);
   const details={
    id:user.id,company_name:company||null,about:about||null,truck_type:truck,services:[...new Set(services)],vehicle_capabilities:[...new Set(vehicles)],
    coverage_postcode:pc,coverage_radius_miles:radius,coverage_latitude:coords.latitude,coverage_longitude:coords.longitude,

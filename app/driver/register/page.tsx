@@ -13,6 +13,8 @@ export default function DriverRegisterPage(){
  function goNext(e:FormEvent){e.preventDefault();setMessage("");if(step===1){if(!/^(?:\+447\d{9}|07\d{9})$/.test(phone.replace(/[\s-]/g,""))){setMessage("Please enter a valid UK mobile number.");return;}setStep(2);}else if(step===2){if(!truckType||!services.length||!vehicles.length){setMessage("Select a recovery truck, service and supported vehicle.");return;}setStep(3);}}
  async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setMessage("");
  try{
+  const review=await fetch("/api/client-review-status",{cache:"no-store"}).then(r=>r.json());
+  if(review.clientDemo!==false||review.writesEnabled!==true)throw Error("Driver registration is paused during client review. No account has been created.");
   const supabase=createClient();
   let {data:{user}}=await supabase.auth.getUser();
   if(!user){
