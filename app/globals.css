@@ -350,3 +350,5 @@ html:has(.uk-booking-page),body:has(.uk-booking-page){overflow-x:clip}
 @media (min-width: 1200px) and (max-width: 1500px) {
  .global-public-header .public-actions { gap: 3px; }
 }
+
+.account-nav-desktop{display:flex;align-items:center;gap:12px}.account-nav-mobile{display:flex;flex-direction:column;gap:9px}.account-nav-desktop button,.account-nav-mobile button{background:transparent;border:1px solid #ff6600;border-radius:8px;padding:9px 12px;color:#ff6600;font-weight:700;cursor:pointer}.account-auth-loading{min-width:100px}

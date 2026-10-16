@@ -5,10 +5,13 @@ import {googleOAuthEnabled,validLoginRole,roleDestination} from "@/src/lib/googl
 export const dynamic="force-dynamic";
 export async function GET(request:NextRequest){
  const origin=request.nextUrl.origin;
+ // Fixed same-origin callback: never accept a redirect destination from URL parameters.
  const target=(reason:string)=>new URL("/login?role="+(role??"customer")+"&reason="+encodeURIComponent(reason),origin);
  const role=validLoginRole(request.nextUrl.searchParams.get("role"));
  const code=request.nextUrl.searchParams.get("code");
+ const oauthError=request.nextUrl.searchParams.has("error");
  if(!googleOAuthEnabled())return NextResponse.redirect(target("google_disabled"));
+ if(oauthError)return NextResponse.redirect(target("oauth_denied"));
  if(!role||!code||code.length>2048)return NextResponse.redirect(target("oauth_invalid"));
  const env=getSupabaseEnv();
  if(!env)return NextResponse.redirect(target("auth_unavailable"));
