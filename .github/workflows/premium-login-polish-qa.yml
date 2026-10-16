@@ -1,0 +1,36 @@
+name: Premium Login Polish QA
+on:
+  push:
+    branches: [feature/premium-login-ui-polish-readonly]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Unit tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start built app
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/premium-login.log 2>&1 &
+          for i in $(seq 1 45); do curl -sf 'http://127.0.0.1:3000/login?role=driver' >/dev/null && exit 0; sleep 2; done
+          cat /tmp/premium-login.log
+          exit 1
+      - name: Responsive login QA
+        run: node tests/premium-login-browser.mjs
