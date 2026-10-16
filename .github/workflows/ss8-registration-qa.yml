@@ -1,0 +1,42 @@
+name: SS8 Driver Registration QA
+on:
+  push:
+    branches: [feature/ss8-driver-registration-readonly]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Unit tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Browser setup
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/ss8.log 2>&1 &
+          for i in $(seq 1 45); do curl -sf http://127.0.0.1:3000/driver/register >/dev/null && exit 0; sleep 2; done
+          cat /tmp/ss8.log
+          exit 1
+      - name: SS8 responsive and read-only QA
+        run: node tests/ss8-browser-qa.mjs
+      - name: SS6 regression
+        if: success() || failure()
+        run: node tests/ss6-browser-qa.mjs
+      - name: SS7 regression
+        if: success() || failure()
+        run: node tests/ss7-browser-qa.mjs
