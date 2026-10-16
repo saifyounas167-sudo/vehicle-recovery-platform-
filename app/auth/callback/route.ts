@@ -5,7 +5,7 @@ import {googleOAuthEnabled,validLoginRole,roleDestination} from "@/src/lib/googl
 export const dynamic="force-dynamic";
 export async function GET(request:NextRequest){
  const origin=request.nextUrl.origin;
- const target=(reason:string)=>new URL("/login?reason="+encodeURIComponent(reason),origin);
+ const target=(reason:string)=>new URL("/login?role="+(role??"customer")+"&reason="+encodeURIComponent(reason),origin);
  const role=validLoginRole(request.nextUrl.searchParams.get("role"));
  const code=request.nextUrl.searchParams.get("code");
  if(!googleOAuthEnabled())return NextResponse.redirect(target("google_disabled"));
@@ -27,6 +27,16 @@ export async function GET(request:NextRequest){
    await client.auth.signOut({scope:"local"});
    response.headers.set("Location",new URL("/403",origin).toString());
    return response;
+  }
+  // A driver must already have a genuine application; OAuth never creates one.
+  // Pending/rejected applications can still view the restricted driver dashboard.
+  if(role==="driver"){
+   const {data:driver,error:driverError}=await client.from("driver_profiles").select("approval_status").eq("id",identity.user.id).maybeSingle();
+   if(driverError||!driver||driver.approval_status==="suspended"){
+    await client.auth.signOut({scope:"local"});
+    response.headers.set("Location",new URL("/403",origin).toString());
+    return response;
+   }
   }
   return response;
  }catch{

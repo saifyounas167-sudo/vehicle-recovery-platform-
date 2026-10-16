@@ -1,0 +1,5 @@
+import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";
+const callback=readFileSync("app/auth/callback/route.ts","utf8"),gate=readFileSync("src/lib/google-oauth-gate.ts","utf8"),proxy=readFileSync("proxy.ts","utf8");
+test("OAuth callback refuses unregistered or suspended driver and never creates profiles",()=>{assert.match(callback,/from\("driver_profiles"\)/);assert.match(callback,/approval_status==="suspended"/);assert.match(callback,/!driver/);assert.doesNotMatch(callback,/\.insert\(|\.upsert\(/)});
+test("OAuth callback denies wrong-role and does not use external next URL",()=>{assert.match(callback,/profile.role!==role/);assert.match(callback,/new URL\("\/403",origin\)/);assert.match(callback,/exchangeCodeForSession\(code\)/);assert.match(callback,/client.auth.getUser\(\)/);assert.doesNotMatch(callback,/searchParams.get\("next"\)/)});
+test("isolation gate and production marketplace guard intact",()=>{assert.match(gate,/isIsolatedMarketplaceStaging\(\)/);assert.match(gate,/ENABLE_GOOGLE_OAUTH_STAGING/);assert.match(proxy,/if\(!allowedGet&&!allowedEstimate\)/)});
