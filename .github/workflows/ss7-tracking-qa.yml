@@ -1,0 +1,51 @@
+name: SS7 Customer Tracking QA
+on:
+  push:
+    branches: [feature/ss7-customer-tracking-readonly]
+  workflow_dispatch:
+jobs:
+  ss7:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Unit tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start production server
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/ss7.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:3000/recovery/booking >/dev/null && exit 0; sleep 2; done
+          cat /tmp/ss7.log
+          exit 1
+      - name: SS7 responsive and access browser QA
+        run: node tests/ss7-browser-qa.mjs
+      - name: SS6 browser regression
+        run: node tests/ss6-browser-qa.mjs
+      - name: SS4 SS5 browser regression
+        run: node tests/ss4-ss5-browser-qa.mjs
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ss7-qa-screenshots
+          path: |
+            qa-ss7-screenshots/
+            qa-ss6-screenshots/
+            qa-dynamic-marketplace/
+          if-no-files-found: ignore
