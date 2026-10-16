@@ -10,7 +10,7 @@ export async function proxy(request:NextRequest){
    return NextResponse.json({error:"Client demo read-only.",clientDemo:true},{status:503});
   if(path.startsWith("/api/")){
    const allowedGet=method==="GET" && [
-    "/api/build-info","/api/client-review-status","/api/recovery/postcode",
+    "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/recovery/postcode",
     "/api/recovery/location-suggest"
    ].includes(path);
    // Estimates may only resolve postcodes/ORS; the quote handler is read-only.
