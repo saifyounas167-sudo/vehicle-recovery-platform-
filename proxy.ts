@@ -20,17 +20,11 @@ export async function proxy(request:NextRequest){
    if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
-   return NextResponse.next({request}); // Never refresh Supabase sessions.
+   return NextResponse.next({request}); // Marketplace APIs stay read-only.
   }
-  const redirects:[string,string][]=[
-   ["/admin","/demo/admin"],["/driver","/demo/driver"],
-   ["/customer","/demo/customer"],["/login","/demo"],
-   ["/settings","/demo"],["/notifications","/demo"]
-  ];
-  for(const [prefix,destination] of redirects)
-   if(path===prefix||path.startsWith(prefix+"/"))
-    return NextResponse.redirect(new URL(destination,request.url),{status:307});
-  return NextResponse.next({request});
+  // Permit only safe page GETs; role checks remain in server components.
+  // Session refresh may set auth cookies, but cannot enable marketplace writes.
+  return updateSession(request);
  }
  return updateSession(request);
 }
