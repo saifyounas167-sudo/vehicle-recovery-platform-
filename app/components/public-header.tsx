@@ -17,6 +17,7 @@ export default function PublicHeader(){
   <Link href="/" className="uk-logo" aria-label="UK Recovery home"><span>UK</span><b>Recovery</b></Link>
   <nav className="public-main-nav" aria-label="Main navigation">{nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""}>{label}</Link>)}</nav>
   <div className="public-actions">
+   <Link href="/recovery/request" className="get-started">GET STARTED</Link>
    <AccountNavigation/>
    <InstallAppButton className="header-install"/>
   </div>
