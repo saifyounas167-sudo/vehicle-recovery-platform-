@@ -36,8 +36,10 @@ jobs:
       - name: SS7 responsive and access browser QA
         run: node tests/ss7-browser-qa.mjs
       - name: SS6 browser regression
+        if: success() || failure()
         run: node tests/ss6-browser-qa.mjs
       - name: SS4 SS5 browser regression
+        if: success() || failure()
         run: node tests/ss4-ss5-browser-qa.mjs
       - name: Upload QA screenshots
         if: always()
