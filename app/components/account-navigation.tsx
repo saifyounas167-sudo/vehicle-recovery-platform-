@@ -22,6 +22,15 @@ export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boo
   const {data:{subscription}}=supabase.auth.onAuthStateChange(()=>{void refresh()});
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
+ async function switchAccount(){
+  if(busy)return;setBusy(true);
+  try{
+   const {error}=await createClient().auth.signOut({scope:"local"});
+   if(error)throw error;
+   const destination=role??"customer";
+   window.location.assign("/login?role="+destination+"&switch=1");
+  }catch{setBusy(false)}
+ }
  async function logout(){
   if(busy)return;setBusy(true);
   try{const {error}=await createClient().auth.signOut({scope:"local"});if(error)throw error;setRole(null);setSignedIn(false);onNavigate?.();window.location.replace("/");}
@@ -30,6 +39,8 @@ export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boo
  if(!ready)return <span className="account-auth-loading" aria-label="Checking account session"/>;
  if(signedIn)return <span className={mobile?"account-nav-mobile":"account-nav-desktop"}>
    {role?<Link href={"/"+role} onClick={onNavigate}>My Dashboard</Link>:<Link href="/login?reason=auth" onClick={onNavigate}>Account access pending</Link>}
+   <Link href={role?"/"+role:"/login"} onClick={onNavigate}>Account / Profile</Link>
+   <button type="button" disabled={busy} onClick={()=>void switchAccount()}>Switch Account</button>
    <button type="button" disabled={busy} onClick={()=>void logout()}>{busy?"Logging out…":"Logout"}</button>
  </span>;
  return <span className={mobile?"account-nav-mobile":"account-nav-desktop"}>

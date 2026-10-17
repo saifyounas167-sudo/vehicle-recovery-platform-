@@ -18,7 +18,7 @@ export default function LoginForm(){
  async function googleSignIn(){if(!googleEnabled||busy)return;setBusy(true);setError("");try{
   const supabase=createClient();
   const redirectTo=window.location.origin+"/auth/callback?role="+role;
-  const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo}});
+  const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo,queryParams:{prompt:"select_account"}}});
   if(error)throw error;
  }catch(e){setError(e instanceof Error?e.message:"Google sign in is unavailable");setBusy(false)}
  }
