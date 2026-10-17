@@ -36,17 +36,14 @@ export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boo
   try{const {error}=await createClient().auth.signOut({scope:"local"});if(error)throw error;setRole(null);setSignedIn(false);onNavigate?.();window.location.replace("/");}
   catch{setBusy(false)}
  }
- if(!ready)return <span className="account-auth-loading" aria-label="Checking account session"/>;
- if(signedIn)return <span className={mobile?"account-nav-mobile":"account-nav-desktop"}>
+ if(!ready||!signedIn)return null;
+ return <details className={"account-menu "+(mobile?"account-menu-mobile":"")}>
+  <summary aria-label="Open account menu">Account <span aria-hidden="true">⌄</span></summary>
+  <div className="account-menu-items">
    {role?<Link href={"/"+role} onClick={onNavigate}>My Dashboard</Link>:<Link href="/login?reason=auth" onClick={onNavigate}>Account access pending</Link>}
    <Link href={role?"/"+role:"/login"} onClick={onNavigate}>Account / Profile</Link>
-   <button type="button" disabled={busy} onClick={()=>void switchAccount()}>Switch Account</button>
+   <button type="button" disabled={busy} onClick={()=>void switchAccount()}>Switch Google Account</button>
    <button type="button" disabled={busy} onClick={()=>void logout()}>{busy?"Logging out…":"Logout"}</button>
- </span>;
- return <span className={mobile?"account-nav-mobile":"account-nav-desktop"}>
-   <Link href="/login?role=customer" onClick={onNavigate}>Customer Login</Link>
-   <Link href="/login?role=driver" onClick={onNavigate}>Business Login</Link>
-   <Link href="/login?role=driver" onClick={onNavigate}>Driver Login</Link>
-   <Link href="/login?role=admin" onClick={onNavigate}>Admin Login</Link>
- </span>;
+  </div>
+ </details>;
 }

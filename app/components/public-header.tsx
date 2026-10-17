@@ -17,17 +17,24 @@ export default function PublicHeader(){
   <Link href="/" className="uk-logo" aria-label="UK Recovery home"><span>UK</span><b>Recovery</b></Link>
   <nav className="public-main-nav" aria-label="Main navigation">{nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""}>{label}</Link>)}</nav>
   <div className="public-actions">
-   <Link href="/recovery/request" className="get-started">GET STARTED</Link>
-   <AccountNavigation/>
-   <InstallAppButton className="header-install"/>
+    <Link href="/login?role=customer" className="account-link customer-login"><Icon type="user"/>Customer Login</Link>
+   <Link href="/login?mode=signup&role=customer" className="get-started">GET STARTED</Link>
+   <Link href="/login?role=driver" className="role-login"><Icon type="business"/>Business Login</Link>
+   <Link href="/login?role=driver" className="role-login"><Icon type="truck"/>Driver Login</Link>
+   <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
+   <InstallAppButton className="header-install"/><AccountNavigation/>
   </div>
   <div className="public-mobile-actions"><InstallAppButton className="header-install" hideWhenInstalled/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
  </div>
  <div id="public-mobile-menu" className={"public-mobile-menu "+(open?"open":"")}>
   {nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""} onClick={close}>{label}</Link>)}
   <div className="mobile-account-group">
-   <AccountNavigation mobile onNavigate={close}/>
+   <Link href="/login?role=customer" onClick={close}><Icon type="user"/>Customer Login</Link>
    <Link href="/recovery/request" className="get-started" onClick={close}>GET STARTED</Link>
+   <Link href="/login?role=business" className="role-login" onClick={close}><Icon type="business"/>Business Login</Link>
+   <Link href="/login?role=driver" className="role-login" onClick={close}><Icon type="truck"/>Driver Login</Link>
+   <Link href="/login?role=admin" onClick={close}><Icon type="shield"/>Admin Login</Link>
+   <AccountNavigation mobile onNavigate={close}/>
   </div>
  </div>
  </header>
