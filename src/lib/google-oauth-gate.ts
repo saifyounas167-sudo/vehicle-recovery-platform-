@@ -6,6 +6,14 @@
 const STAGING_PROJECT="ozphvosiqbzvkthlppkd";
 const PRODUCTION_PROJECT="eosprarfgrydnykekcn";
 export function googleOAuthEnabled(){
+ if(process.env.VERCEL_ENV==="production"){
+  if(process.env.ENABLE_GOOGLE_OAUTH_PRODUCTION!=="enabled"||
+     process.env.GOOGLE_OAUTH_PRODUCTION_APPROVED!=="approved")return false;
+  const expected="https://"+PRODUCTION_PROJECT+".supabase.co";
+  if(process.env.NEXT_PUBLIC_SUPABASE_URL!==expected)return false;
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY??process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+ }
+
  if(process.env.VERCEL_ENV!=="preview")return false;
  if(process.env.VERCEL_GIT_COMMIT_REF!=="feature/google-oauth-secure-staging")return false;
  if(process.env.MARKETPLACE_STAGING_MODE!=="enabled"||process.env.ENABLE_GOOGLE_OAUTH_STAGING!=="enabled")return false;

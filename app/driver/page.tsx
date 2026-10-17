@@ -1,3 +1,4 @@
+import AccountNavigation from "../components/account-navigation";
 import OpenRoutePreview from "../components/open-route-preview";
 import DriverAvailability from "./driver-availability";
 import Link from "next/link";
@@ -15,7 +16,7 @@ export default async function DriverPage() {
   const { data: jobs } = approved ? await supabase.from("recovery_jobs").select("id,recovery_type,pickup_postcode,destination_postcode,is_urgent,status").in("status", ["submitted","matching","offered"]).order("created_at", { ascending: false }) : { data: [] };
 
   return <main className="dashboard-shell">
-    <header className="dashboard-header"><div className="container dashboard-nav"><div><p className="dashboard-kicker">Recovery professional</p><h1>Driver dashboard</h1></div><Link href="/driver/register" className="button primary">Manage profile</Link></div></header>
+    <header className="dashboard-header"><div className="container dashboard-nav"><div><p className="dashboard-kicker">Recovery professional</p><h1>Driver dashboard</h1></div><div className="dashboard-account-actions"><AccountNavigation/><Link href="/driver/register" className="button primary">Manage profile</Link></div></div></header>
     <section className="container dashboard-content">
       <div className="dashboard-grid"><div className="metric-card"><span className="metric-label">Marketplace jobs</span><strong className="metric-value">{approved ? jobs?.length ?? 0 : "—"}</strong><span className="badge">{approved ? "Live database" : "Approval required"}</span></div><div className="metric-card"><span className="metric-label">Driver status</span><strong className="metric-value">{driver?.approval_status ?? "Pending"}</strong><span className="badge dark">Admin review</span></div><div className="metric-card"><span className="metric-label">Account</span><strong className="metric-value">Protected</strong><span className="badge dark">Authenticated</span></div></div>
       <div className="dashboard-card"><div className="dashboard-card-heading"><div><p className="dashboard-kicker">Job feed</p><h2>{approved ? "Available recovery requests" : "Marketplace access is pending approval"}</h2></div><span className="badge">{approved ? "Live" : "Restricted"}</span></div>

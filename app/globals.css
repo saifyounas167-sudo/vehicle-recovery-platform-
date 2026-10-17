@@ -352,3 +352,5 @@ html:has(.uk-booking-page),body:has(.uk-booking-page){overflow-x:clip}
 }
 
 .account-nav-desktop{display:flex;align-items:center;gap:12px}.account-nav-mobile{display:flex;flex-direction:column;gap:9px}.account-nav-desktop button,.account-nav-mobile button{background:transparent;border:1px solid #ff6600;border-radius:8px;padding:9px 12px;color:#ff6600;font-weight:700;cursor:pointer}.account-auth-loading{min-width:100px}
+
+.dashboard-account-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.dashboard-account-actions .account-nav-desktop{display:flex;gap:10px;align-items:center;flex-wrap:wrap}@media(max-width:768px){.dashboard-account-actions{justify-content:flex-start}.dashboard-nav{flex-wrap:wrap}}
