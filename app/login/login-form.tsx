@@ -6,6 +6,13 @@ import {createClient} from "@/lib/supabase/client";
 import "./login.css";
 const destination={driver:"/driver",customer:"/customer",admin:"/admin"} as const;
 type Role=keyof typeof destination;
+function readableAuthError(error:unknown):string{
+ const message=error instanceof Error?error.message:String(error??"");
+ if(/failed to fetch|networkerror|network request failed|load failed/i.test(message)){
+  return "Cannot connect to the authentication server. Check your internet connection, disable VPN/ad blockers temporarily, then try again. If it continues, contact support; your password has not been changed.";
+ }
+ return message||"Authentication is temporarily unavailable. Please try again.";
+}
 function Icon({name}:{name:"email"|"lock"|"shield"}){return <span aria-hidden="true" className="premium-login-icon">{name==="email"?"✉":name==="lock"?"◈":"◆"}</span>}
 export default function LoginForm(){
  const params=useSearchParams(),asked=params.get("role");
@@ -20,7 +27,7 @@ export default function LoginForm(){
   const redirectTo=window.location.origin+"/auth/callback?role="+role;
   const {error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo,queryParams:{prompt:"select_account"}}});
   if(error)throw error;
- }catch(e){setError(e instanceof Error?e.message:"Google sign in is unavailable");setBusy(false)}
+ }catch(e){setError(readableAuthError(e));setBusy(false)}
  }
  async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");setNotice("");
  try{
@@ -35,7 +42,7 @@ export default function LoginForm(){
   const next=params.get("next");
   const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")&&!next.includes("\\")&&(next===destination[role]||next.startsWith(destination[role]+"/"))?next:destination[role];
   window.location.assign(safeNext);
- }catch(e){setError(e instanceof Error?e.message:"Authentication unavailable");}finally{setBusy(false)}
+ }catch(e){setError(readableAuthError(e));}finally{setBusy(false)}
  }
  const heading=mode==="forgot"?"Forgot Password":mode==="recovery"?"Choose New Password":mode==="signup"?"Create Customer Account":role==="driver"?"Driver Login":role==="admin"?"Admin Login":"Customer Login";
  return <section className="premium-login-card" aria-labelledby="premium-login-heading"><div className="premium-login-brand"><span className="premium-login-mark">╱</span> UK <strong>RECOVERY</strong></div>
