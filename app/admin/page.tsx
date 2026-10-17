@@ -1,3 +1,4 @@
+import AccountNavigation from "../components/account-navigation";
 import { requireRole } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export default async function AdminPage() {
   await requireRole("admin");
   return (
     <main className="dashboard-shell">
-      <header className="dashboard-header"><div className="container dashboard-nav"><div><p className="dashboard-kicker">Platform operations</p><h1>Admin dashboard</h1></div><span className="badge dark">Protected area foundation</span></div></header>
+      <header className="dashboard-header"><div className="container dashboard-nav"><div><p className="dashboard-kicker">Platform operations</p><h1>Admin dashboard</h1></div><div className="dashboard-account-actions"><AccountNavigation/><span className="badge dark">Protected area foundation</span></div></div></header>
       <section className="container dashboard-content">
         <div className="dashboard-grid">
           <div className="metric-card"><span className="metric-label">Driver approvals</span><strong className="metric-value">Pending</strong><span className="badge">Review queue</span></div>

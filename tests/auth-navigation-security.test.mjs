@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const r=p=>readFileSync(p,"utf8");
+test("server callback rejects OAuth errors and keeps relative redirects",()=>{const s=r("app/auth/callback/route.ts");assert.match(s,/exchangeCodeForSession/);assert.match(s,/oauth_denied/);assert.match(s,/profile.role!==role/);assert.match(s,/driver.approval_status==="suspended"/);assert.doesNotMatch(s,/searchParams.get\("next"\)/);});
+test("Account header supports session state and logout",()=>{const s=r("app/components/account-navigation.tsx");assert.match(s,/auth.getUser/);assert.match(s,/onAuthStateChange/);assert.match(s,/signOut/);assert.match(s,/scope:"local"/);assert.match(s,/My Dashboard/);});
+test("UI preserves role login and marketplace read-only protections",()=>{const h=r("app/components/public-header.tsx"),p=r("proxy.ts");assert.match(h,/AccountNavigation/);assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);});

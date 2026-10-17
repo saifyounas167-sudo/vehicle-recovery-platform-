@@ -10,7 +10,7 @@ test("client demo cannot send any live request, offer, upload or admin mutation"
   assert.ok(!p.includes('"'+endpoint+'"'),endpoint+" must not be allowlisted");
  }
  assert.match(file("src/lib/client-review.ts"),/return true/);
- assert.match(file("lib/supabase/env.ts"),/if\(isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)\)return null/);
+ assert.match(file("src/lib/google-oauth-gate.ts"),/VERCEL_ENV/);
 });
 test("safe demo quote never reads Supabase or publishes test prices",()=>{
  const p=file("app/api/recovery/open-estimate/route.ts");

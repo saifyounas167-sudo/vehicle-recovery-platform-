@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import InstallAppButton from "../install-app-button";
+import AccountNavigation from "./account-navigation";
 
 const nav=[["Home","/"],["Get a Quote","/recovery/request"],["How It Works","/how-it-works"],["About","/about"]] as const;
 const Icon=({type}:{type:"globe"|"user"|"business"|"truck"|"shield"})=>{
@@ -21,7 +22,7 @@ export default function PublicHeader(){
    <Link href="/login?role=driver" className="role-login"><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login"><Icon type="truck"/>Driver Login</Link>
    <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
-   <InstallAppButton className="header-install"/>
+   <InstallAppButton className="header-install"/><AccountNavigation/>
   </div>
   <div className="public-mobile-actions"><InstallAppButton className="header-install" hideWhenInstalled/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
  </div>
@@ -33,6 +34,7 @@ export default function PublicHeader(){
    <Link href="/login?role=business" className="role-login" onClick={close}><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login" onClick={close}><Icon type="truck"/>Driver Login</Link>
    <Link href="/login?role=admin" onClick={close}><Icon type="shield"/>Admin Login</Link>
+   <AccountNavigation mobile onNavigate={close}/>
   </div>
  </div>
  </header>
