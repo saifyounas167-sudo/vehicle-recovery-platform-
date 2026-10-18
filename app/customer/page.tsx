@@ -8,7 +8,7 @@ export const dynamic="force-dynamic";
 
 type Job={
  id:string;recovery_type:string;pickup_postcode:string;
- destination_postcode:string|null;status:string;estimated_quote_gbp:number|null;created_at:string;
+ destination_postcode:string|null;status:string;created_at:string;
 };
 type Offer={id:string;job_id:string;status:string;offer_amount_gbp:number|null;eta_minutes:number|null};
 
@@ -45,7 +45,7 @@ export default async function CustomerPage(){
  const supabase=await createClient();
  // Server-side role guard + Supabase RLS; never query another customer's records.
  const {data:rows,error:jobsError}=await supabase.from("recovery_jobs")
-  .select("id,recovery_type,pickup_postcode,destination_postcode,status,estimated_quote_gbp,created_at")
+  .select("id,recovery_type,pickup_postcode,destination_postcode,status,created_at")
   .eq("customer_id",user.id).order("created_at",{ascending:false}).limit(60);
  const jobs=(rows??[]) as Job[];
  const pending=jobs.filter(j=>currentStatuses.has(j.status)||j.status==="draft");
