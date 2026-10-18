@@ -11,7 +11,7 @@ test("atomic RPC handles replay and stale events with service role only",()=>{
  const s=get("supabase/migrations/0016_driver_billing_foundation.sql");
  assert.match(s,/apply_verified_driver_billing_event/);
  assert.match(s,/auth\.role\(\) IS DISTINCT FROM 'service_role'/);
- assert.match(s,/ON CONFLICT DO NOTHING RETURNING event_id/);
+ assert.match(s,/ON CONFLICT\(event_id\) DO NOTHING RETURNING event_id/);
  assert.match(s,/RETURN 'duplicate'/);
  assert.match(s,/RETURN 'stale'/);
  assert.match(s,/DROP POLICY IF EXISTS "admin manages membership"/);
