@@ -29,12 +29,12 @@ export default async function DriverMembershipPage(){
      <div className="ss9-plan-head"><span className="ss9-plan-mark"><Icon kind="calendar"/></span><span>MONTHLY MEMBERSHIP</span></div>
      <div className="ss9-plan-body"><h2 id="ss9-plan-title">Monthly Plan</h2>
       <div className="ss9-price"><span className="ss9-currency">£</span><strong>{amountLabel}</strong><span>/ month</span></div>
-      {<p className="ss9-provisional">Provisional price — awaiting client approval. No charges will be made.</p>}
+      <p className="ss9-provisional">Provisional price — awaiting client approval. No charges will be made.</p>
       <p className="ss9-plan-description">One simple plan for recovery professionals. Driver verification and active membership are both required before receiving jobs.</p>
       <ul className="ss9-perks">{perks.map(text=><li key={text}><span className="ss9-check"><Icon kind="check"/></span><span>{text}</span></li>)}</ul>
       <button type="button" className="ss9-stripe-btn" disabled aria-disabled="true">Subscribe with Stripe <Icon kind="arrow"/></button>
       <p className="ss9-pay-note"><Icon kind="shield"/> Secure billing by Stripe when activated</p>
-      <div className="ss9-notice" role="status"><strong>Stripe payments are not active yet.</strong><p>"Subscriptions cannot be purchased or renewed yet. This is a read-only preview until Stripe and pricing receive separate approval."</p></div>
+      <div className="ss9-notice" role="status"><strong>Stripe payments are not active yet.</strong><p>Subscriptions cannot be purchased or renewed yet. This is a read-only preview until Stripe and pricing receive separate approval.</p></div>
      </div>
     </section>
     <aside className="ss9-side" aria-label="Membership status and guidance">
