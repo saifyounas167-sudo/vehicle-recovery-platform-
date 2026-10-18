@@ -28,8 +28,14 @@ BEGIN
  VALUES(d,'00000000-0000-0000-0000-000000000000',
   'authenticated','authenticated','ss9-synthetic-'||suffix||'@example.invalid',
   '',now(),now(),now(),'{}'::jsonb);
+ -- Some staging projects automatically create a profile on auth.users INSERT.
+ -- Update only this newly generated synthetic ID; all work is rolled back.
  INSERT INTO public.profiles(id,role,email,full_name)
- VALUES(d,'driver','ss9-synthetic-'||suffix||'@example.invalid','SS9 Synthetic Test');
+ VALUES(d,'driver','ss9-synthetic-'||suffix||'@example.invalid','SS9 Synthetic Test')
+ ON CONFLICT (id) DO UPDATE SET
+   role=EXCLUDED.role,
+   email=EXCLUDED.email,
+   full_name=EXCLUDED.full_name;
  INSERT INTO public.driver_profiles(id,approval_status)
  VALUES(d,'pending');
  -- No real Stripe API call: made-up test event/price/customer strings.
