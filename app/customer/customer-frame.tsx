@@ -12,6 +12,7 @@ const links:Nav[]=[
  {key:"bookings",label:"Active Bookings",href:"/customer#bookings",icon:"bookings"},
  {key:"tracking",label:"Track My Recovery",href:"/customer#tracking",icon:"tracking"},
  {key:"history",label:"Booking History",href:"/customer#history",icon:"history"},
+ {key:"quote",label:"Get Recovery Quote",href:"/recovery/request",icon:"quote"},
  {key:"account",label:"My Profile / Settings",href:"/customer/account",icon:"account"}
 ];
 export default function CustomerFrame({children,active="home"}:{children:ReactNode;active?:"home"|"account"}){
@@ -36,5 +37,13 @@ export default function CustomerFrame({children,active="home"}:{children:ReactNo
    </aside>
    <main id="customer-main" className="customer-main">{children}</main>
   </div>
+  <nav className="customer-mobile-bottom" aria-label="Customer mobile menu">
+   {[
+    {name:"Home",href:"/customer",icon:"home" as CustomerIconName},
+    {name:"Requests",href:"/customer#requests",icon:"requests" as CustomerIconName},
+    {name:"Track",href:"/customer#tracking",icon:"tracking" as CustomerIconName},
+    {name:"Account",href:"/customer/account",icon:"account" as CustomerIconName}
+   ].map(link=><Link key={link.name} href={link.href} aria-current={(link.name==="Home"&&active==="home")||(link.name==="Account"&&active==="account")?"page":undefined}><CustomerIcon name={link.icon} size={20}/><span>{link.name}</span></Link>)}
+  </nav>
  </div>;
 }
