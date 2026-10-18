@@ -105,7 +105,7 @@ export default async function CustomerPage(){
     <div className="customer-section-heading"><div><span className="customer-section-kicker">COMPARE OPTIONS</span><h2 id="customer-offers-title">Driver Offers</h2></div></div>
     <div className="customer-panel customer-small-panel"><span className="customer-soft-icon"><CustomerIcon name="offers" size={24}/></span>
      {jobsError||offersError?<><h3>Offers temporarily unavailable</h3><p>We could not load your offer information.</p></>:
-      <><h3>{offers.length?offers.length+" recorded offer"+(offers.length===1?"":"s"):"No driver offers yet"}</h3>
+      <><h3>{offers.length?offers.length+(offers.length===60?"+":"")+" recorded offer"+(offers.length===1?"":"s"):"No driver offers yet"}</h3>
        <p>{offers.length?"Your real offer records are available. Comparing and accepting offers is currently paused.":"Offers will appear when this marketplace feature becomes available."}</p></>}
      <span className="customer-pause-label">Offers temporarily paused</span>
     </div>
@@ -125,7 +125,7 @@ export default async function CustomerPage(){
     <span className="customer-tracking-marker"><CustomerIcon name="tracking" size={27}/></span>
     <div><h3>Recovery tracking</h3>
      <p>Live tracking is not enabled during the current client review. We will only show verified booking and driver information when it becomes available.</p>
-     {active.length>0&&<p className="customer-tracking-note">You have a booking in progress. The tracking screen currently shows a read-only preview.</p>}
+     {active.length>0&&<><p className="customer-tracking-note">You have a booking in progress. The tracking screen currently shows a read-only preview.</p><Link href={"/recovery/tracking/"+encodeURIComponent(active[0].id)} className="customer-text-link customer-tracking-link">Open tracking preview <CustomerIcon name="arrow" size={16}/></Link></>}
     </div>
     <span className="customer-pause-label">Live tracking unavailable</span>
    </div>

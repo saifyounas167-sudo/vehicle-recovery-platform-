@@ -157,3 +157,5 @@
  .customer-header-account .account-menu summary{padding:8px 7px}
 }
 @media(prefers-reduced-motion:reduce){.customer-action-card{transition:none}.customer-action-card:hover{transform:none}}
+
+.customer-tracking-link{margin-top:10px}
