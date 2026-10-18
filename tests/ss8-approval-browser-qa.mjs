@@ -36,7 +36,7 @@ try{
  await page.getByRole("heading",{name:"Coverage & verification"}).waitFor();
  await page.getByLabel("UK coverage postcode").fill("M1 1AA");
  await page.getByRole("button",{name:"Submit for Admin Review"}).click();
- await page.getByText("Driver registration is paused during client review.",{exact:false}).waitFor();
+ await page.getByText("Driver registration is not enabled.",{exact:false}).waitFor();
  assert.equal(signupCalls,0,"Production-style client review attempted a real Supabase signup");
  console.log("PASS no signup/auth write while review guard enabled");
 }catch(error){errors.push("review safety: "+error.message)}

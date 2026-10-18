@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useState,type FormEvent} from "react";
 import "./registration.css";
 type Doc={id:string;type:string;uploadedAt:string};
-const labels:Record<string,string>={insurance:"Insurance",driving_licence:"Driving Licence",business:"Business Registration",other:"Other Verification"};
+const labels:Record<string,string>={insurance:"Insurance",valid_id:"Valid ID",profile_photo:"Driver Profile Picture",truck_photo:"Recovery Truck Photo",driving_licence:"Legacy Driving Licence",business:"Legacy Business Document",other:"Legacy Document"};
 export default function DriverDocuments({readOnly=false}:{readOnly?:boolean}){
  const [kind,setKind]=useState("insurance"),[file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
  const [docs,setDocs]=useState<Doc[]>([]),[loading,setLoading]=useState(true);
@@ -42,12 +42,12 @@ export default function DriverDocuments({readOnly=false}:{readOnly?:boolean}){
  }
  return <section className="ss8-docs" aria-labelledby="ss8-docs-title">
   <h2 id="ss8-docs-title">Private verification documents</h2>
-  <p className="form-help">Insurance and driving licence are required. If you registered a company, upload business documents too. Only you and authorised administrators can access these documents.</p>
+  <p className="form-help">Insurance and valid ID verification are required. Upload a driver profile picture and recovery truck photos for your profile. Only you and authorised administrators can access these documents.</p>
   {loading?<p role="status">Checking your documents…</p>:
    docs.length?<ul className="ss8-docs-list">{docs.map(d=><li key={d.id}><span>{labels[d.type]||"Verification document"} <small>{new Date(d.uploadedAt).toLocaleDateString("en-GB")}</small></span><button type="button" className="button secondary" onClick={()=>void view(d.id)}>View securely</button></li>)}</ul>:
    <p>No verification documents have been uploaded yet.</p>}
   {!readOnly&&<form className="ss8-form" onSubmit={upload}>
-   <label>Document type<select value={kind} onChange={e=>setKind(e.target.value)}><option value="insurance">Insurance</option><option value="driving_licence">Driving licence</option><option value="business">Business registration</option><option value="other">Other verification document</option></select></label>
+   <label>Document type<select value={kind} onChange={e=>setKind(e.target.value)}><option value="insurance">Insurance</option><option value="valid_id">Valid ID Verification</option><option value="profile_photo">Driver Profile Picture</option><option value="truck_photo">Recovery Truck Photo</option></select></label>
    <label>Private document (PDF, JPG, PNG; max 5 MB)<input required type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={e=>setFile(e.target.files?.[0]||null)}/></label>
    <button type="submit" className="ss8-primary" disabled={busy||!file}>{busy?"Uploading…":"Upload securely"}</button>
   </form>}

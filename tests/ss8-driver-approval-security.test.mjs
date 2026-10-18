@@ -5,7 +5,7 @@ const src=path=>readFileSync(path,"utf8");
 test("Driver signup requires staging and keeps role assignment server-side",()=>{
  const form=src("app/driver/register/page.tsx");
  const apply=src("app/api/driver/apply/route.ts");
- assert.ok(form.indexOf('fetch("/api/client-review-status"')<form.indexOf("supabase.auth.signUp"));
+ assert.ok(form.indexOf('fetch("/api/driver/registration-status"')<form.indexOf("supabase.auth.signUp"));
  assert.match(form,/registration_flow:"driver_application_v1"/);
  assert.match(form,/Pending Admin Approval/);
  assert.match(apply,/existing&&existing.role!=="driver"/);
@@ -34,8 +34,8 @@ test("Admin approval validates required documents, capability and current status
  const api=src("app/api/admin/drivers/route.ts");
  assert.match(api,/profile\?\.role!=="admin"/);
  assert.match(api,/b.reviewConfirmed!==true/);
- assert.match(api,/\["insurance","driving_licence","business"\]/);
- assert.match(api,/driver.company_name\?\.trim\(\)/);
+ assert.match(api,/\["insurance","valid_id"\]/);
+ assert.doesNotMatch(api,/driver.company_name\?\.trim\(\)\?\["insurance"/);
  assert.match(api,/coverage_latitude==null/);
  assert.match(api,/\.eq\("approval_status",driver.approval_status\)/);
  assert.match(api,/availability:"offline"/);
@@ -48,7 +48,7 @@ test("Private documents are never exposed through public paths",()=>{
  assert.match(api,/createSignedUrl\(doc.storage_path,60\)/);
  assert.match(api,/doc.storage_path.startsWith\(user.id\+"\/"\)/);
  assert.match(api,/file.size>5242880/);
- assert.match(api,/isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)/);
+ assert.match(api,/!isDriverRegistrationEnabled\(\)/);
 });
 test("Application remains in private staging and production OAuth and offers unchanged",()=>{
  assert.match(src("src/lib/client-review.ts"),/return true/);
