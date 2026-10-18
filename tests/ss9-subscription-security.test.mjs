@@ -1,0 +1,8 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const get=p=>readFileSync(p,"utf8");
+test("SS9 driver only route and no live paid CTA",()=>{const s=get("app/driver/membership/page.tsx");assert.match(s,/requireRole\("driver"\)/);assert.match(s,/disabled aria-disabled="true"/);assert.match(s,/39\.99/);});
+test("Production cannot enable Stripe checkout or webhook via env flags",()=>{const s=get("src/lib/driver-billing-gate.ts");assert.match(s,/VERCEL_ENV!=="preview"/);assert.match(s,/sk_test_/);assert.match(s,/ozphvosiqbzvkthlppkd/);});
+test("Stripe webhook validates HMAC, event refetch and server billing guard",()=>{assert.match(get("src/lib/stripe-billing.ts"),/timingSafeEqual/);assert.match(get("app/api/stripe/webhook/route.ts"),/verifyStripeSignature/);assert.match(get("app/api/stripe/webhook/route.ts"),/stripeRequest\("GET","events\//);});
+test("only server-selected price and customer-specific portal",()=>{assert.match(get("app/api/driver/billing/checkout/route.ts"),/eq\("active_for_new",true\)/);assert.match(get("app/api/driver/billing/portal/route.ts"),/eq\("driver_id",user\.id\)/);});
+test("membership schema RLS and no client writes to billing",()=>{const s=get("supabase/migrations/0016_driver_billing_foundation.sql");assert.match(s,/ENABLE ROW LEVEL SECURITY/g);assert.match(s,/REVOKE ALL/);assert.match(s,/pending','active','past_due','cancelled','expired/);assert.doesNotMatch(s,/GRANT UPDATE ON public.driver_billing/);});
+test("existing marketplace write gate remains",()=>{const s=get("proxy.ts");assert.match(s,/if\(!allowedGet&&!allowedEstimate\)/);assert.match(get("src/lib/client-review.ts"),/return true/);});
