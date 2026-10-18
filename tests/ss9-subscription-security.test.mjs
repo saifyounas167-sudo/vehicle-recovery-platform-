@@ -26,3 +26,26 @@ test("cancel, failed invoice and renewal use latest verified Stripe subscription
  assert.match(s,/db\.rpc\("apply_verified_driver_billing_event"/);
  assert.doesNotMatch(s,/db\.from\("driver_memberships"\)\.upsert/);
 });
+
+test("migration has intact PostgreSQL dollar quoting and no injected verification comments",()=>{
+ const sql=get("supabase/migrations/0016_driver_billing_foundation.sql");
+ assert.match(sql,/AS \$\$\nDECLARE/);
+ assert.match(sql,/END;\n\$\$;/);
+ assert.ok(!sql.includes(" (READ ONLY):\n-- SELECT"));
+ assert.match(sql,/COMMIT;/);
+});
+test("membership changes are atomic and browser accounts cannot invoke reconciliation",()=>{
+ const sql=get("supabase/migrations/0016_driver_billing_foundation.sql");
+ assert.match(sql,/IF auth\.role\(\) IS DISTINCT FROM 'service_role'/);
+ assert.match(sql,/REVOKE INSERT, UPDATE, DELETE ON public\.driver_memberships/);
+ assert.match(sql,/ON CONFLICT\(event_id\) DO NOTHING RETURNING/);
+ assert.match(sql,/RETURN 'duplicate'/);
+ assert.match(sql,/RETURN 'stale'/);
+ assert.match(sql,/current_period_end/);
+});
+test("billing webhook derives active membership from current paid invoice only",()=>{
+ const hook=get("app/api/stripe/webhook/route.ts");
+ assert.match(hook,/stripeStatus==="active"&&paid&&period/);
+ assert.match(hook,/db\.rpc\("apply_verified_driver_billing_event"/);
+ assert.doesNotMatch(hook,/from\("driver_memberships"\)\.upsert/);
+});
