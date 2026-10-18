@@ -40,3 +40,9 @@
  .uk-home .ukr-btn:not(.ukr-btn--primary){min-height:58px}
 }
 @media(max-width:350px){.uk-home .ukr-title{max-width:100%}}
+
+/* Mobile only: stack all three hero actions in one vertical column. */
+@media(max-width:600px){
+ .uk-home .ukr-actions{grid-template-columns:minmax(0,1fr);gap:10px}
+ .uk-home .ukr-actions>.ukr-btn{grid-column:1 / -1;width:100%;min-height:62px}
+}
