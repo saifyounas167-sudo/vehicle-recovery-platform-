@@ -25,10 +25,10 @@ try{
  await page.getByLabel("Full Name").fill("QA Driver");
  await page.getByLabel("Email Address").fill("driver-qa@example.invalid");
  await page.getByLabel("Phone Number").fill("07123456789");
- await page.getByLabel("Vehicle Type",{exact:true}).selectOption("Flatbed");
+ await page.locator("form select").first().selectOption("Flatbed");
  await page.getByLabel("Password").fill("TestPassword123!");
  await page.getByRole("button",{name:"Continue →"}).click();
- await page.getByLabel("Recovery truck type").selectOption("Flatbed");
+ await page.locator("form select").first().selectOption("Flatbed");
  await page.getByText("Services you provide").waitFor();
  await page.locator("fieldset").first().locator('input[type="checkbox"]').first().check();
  await page.locator("fieldset").nth(1).locator('input[type="checkbox"]').first().check();
