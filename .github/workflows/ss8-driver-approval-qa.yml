@@ -36,4 +36,4 @@ jobs:
           cat /tmp/ss8-approval.log
           exit 1
       - name: Responsive registration and read-only redirect QA
-        run: node tests/ss8-browser-qa.mjs
+        run: node tests/ss8-approval-browser-qa.mjs
