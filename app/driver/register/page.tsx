@@ -19,15 +19,15 @@ export default function DriverRegisterPage(){
   let {data:{user}}=await supabase.auth.getUser();
   if(!user){
    if(!email||password.length<10)throw Error("Enter a valid email and password of at least 10 characters.");
-   const signup=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+"/login?role=driver&next=/driver/register"}});
+   const signup=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+"/login?role=driver&next=/driver/register",data:{registration_flow:"driver_application_v1",full_name:fullName.trim()}}});
    if(signup.error)throw signup.error;
    if(!signup.data.session){setMessage("Check your email, verify your account, then sign in and return here to complete your application. No application has been submitted yet.");return;}
    user=signup.data.user;
   }
-  if(!user?.email_confirmed_at)throw Error("Please verify your email before submitting your driver application.");
+  if(!user?.email_confirmed_at)throw Error("Email confirmation is required by the current Supabase settings. Verify your email, then complete the application.");
   const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,about,coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services,vehicleCapabilities:vehicles})});
   const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable");
-  setSaved(true);setStep(4);setMessage("Application received. Your account is pending admin review; jobs are unavailable until approved and eligible.");
+  setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Upload insurance, driving licence and business documents where applicable. Jobs are locked.");
  }catch(error){setMessage(error instanceof Error?error.message:"Application unavailable");}
  finally{setBusy(false)}
  }
@@ -54,9 +54,9 @@ export default function DriverRegisterPage(){
   <h2>Coverage & verification</h2>
   <label>UK coverage postcode<input required placeholder="M1 1AA" value={postcode} onChange={e=>setPostcode(e.target.value.toUpperCase())}/></label>
   <label>Coverage radius (miles)<input required type="number" min="1" max="300" value={radius} onChange={e=>setRadius(e.target.value)}/></label>
-  <p className="ss8-notice">Email verification and admin approval are required. You will remain Pending and Offline until checked. Insurance and identity documents are uploaded privately after your application is saved.</p>
+  <p className="ss8-notice">Email verification and admin approval are required. You will remain Pending and Offline until checked. Insurance, driving licence and company documents (where applicable) must be uploaded privately before admin approval. When Supabase email confirmation is switched OFF, verified email sessions can submit immediately.</p>
   <div className="ss8-controls"><button type="button" onClick={()=>setStep(2)} disabled={busy}>Back</button><button className="ss8-primary" type="submit" disabled={busy}>{busy?"Submitting…":"Submit for Admin Review"}</button></div>
- </form>:<div className="ss8-confirmed"><h2>Application Pending Review</h2><p>Registration does not grant access to recovery jobs. Complete private document uploads below and wait for admin approval.</p>{saved&&<DriverDocuments/>}</div>}
+ </form>:<div className="ss8-confirmed"><h2>Application Pending Review</h2><p>Registration does not grant access to recovery jobs. Complete private document uploads below and wait for admin approval.</p>{saved&&<><DriverDocuments/><p className="ss8-login"><Link href="/driver" className="ss8-primary">Open Driver Dashboard →</Link></p></>}</div>}
  <p className="ss8-status" role="status">{message}</p>
  {step===1&&<p className="ss8-login">Already have an account? <Link href="/login?role=driver&next=/driver/register">Login</Link></p>}
  </div></section></main>;
