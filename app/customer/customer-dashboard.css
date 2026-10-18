@@ -3,7 +3,7 @@
 .customer-app *{box-sizing:border-box}
 .customer-skip-link{position:absolute;left:-10000px;top:8px;z-index:999;background:#fff;padding:12px 18px}
 .customer-skip-link:focus{left:12px}
-.customer-app-header{height:74px;background:#111b27;color:#fff;border-bottom:1px solid #273240;position:sticky;top:0;z-index:45}
+.customer-app-header{height:74px;background:#07131d;color:#fff;border-bottom:1px solid #18303f;position:sticky;top:0;z-index:45}
 .customer-header-inner{max-width:1600px;padding:0 clamp(16px,2.7vw,42px);margin:auto;height:100%;display:flex;align-items:center;gap:32px}
 .customer-brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:18px;letter-spacing:-.055em;white-space:nowrap;color:#fff}
 .customer-brand strong{color:#ff760e;font-weight:900}

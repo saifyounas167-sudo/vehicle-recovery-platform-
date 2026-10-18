@@ -12,7 +12,6 @@ type Job={
 };
 type Offer={id:string;job_id:string;status:string;offer_amount_gbp:number|null;eta_minutes:number|null};
 
-const currentStatuses=new Set(["submitted","matching","offered"]);
 const bookedStatuses=new Set(["assigned","in_progress"]);
 const historyStatuses=new Set(["completed","cancelled"]);
 const prettyStatus=(status:string)=>({
@@ -48,8 +47,7 @@ export default async function CustomerPage(){
   .select("id,recovery_type,pickup_postcode,destination_postcode,status,created_at")
   .eq("customer_id",user.id).order("created_at",{ascending:false}).limit(60);
  const jobs=(rows??[]) as Job[];
- const pending=jobs.filter(j=>currentStatuses.has(j.status)||j.status==="draft");
- const active=jobs.filter(j=>bookedStatuses.has(j.status));
+  const active=jobs.filter(j=>bookedStatuses.has(j.status));
  const history=jobs.filter(j=>historyStatuses.has(j.status));
  // Offers are read-only, selected only for the signed-in customer's existing jobs.
  const ids=jobs.map(j=>j.id);
@@ -96,7 +94,7 @@ export default async function CustomerPage(){
     <Link href="/recovery/request" className="customer-text-link">New request <CustomerIcon name="arrow" size={16}/></Link></div>
    <div className="customer-panel">
     {jobsError?<Empty heading="Requests temporarily unavailable" description="Your information could not be loaded. Please try again later."/>:
-    pending.length?<JobList jobs={pending}/>:<Empty heading="No recovery requests yet" description="When you make a request, it will appear here."/>}
+    jobs.length?<JobList jobs={jobs}/>:<Empty heading="No recovery requests yet" description="When you make a request, it will appear here."/>}
    </div>
   </section>
 
