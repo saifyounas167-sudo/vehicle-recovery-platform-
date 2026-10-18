@@ -10,18 +10,14 @@ export async function proxy(request:NextRequest){
    return NextResponse.json({error:"Client demo read-only.",clientDemo:true},{status:503});
   if(path.startsWith("/api/")){
    const allowedGet=method==="GET" && [
-    "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/driver/registration-status","/api/recovery/postcode",
+    "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/recovery/postcode",
     "/api/recovery/location-suggest"
    ].includes(path);
    // Estimates may only resolve postcodes/ORS; the quote handler is read-only.
    const allowedEstimate=method==="POST" && [
     "/api/recovery/open-estimate","/api/recovery/estimate"
    ].includes(path);
-   const onboarding=isDriverRegistrationEnabled()&&(
-      (method==="POST"&&["/api/driver/apply","/api/driver/documents","/api/admin/drivers"].includes(path))||
-      (method==="GET"&&["/api/driver/documents","/api/admin/drivers","/api/admin/drivers/document-access"].includes(path))
-   );
-   if(!allowedGet&&!allowedEstimate&&!onboarding)
+   if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
    return NextResponse.next({request}); // Marketplace APIs stay read-only.
