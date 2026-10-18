@@ -11,7 +11,7 @@ export default function CustomerSignup(){
   e.preventDefault();if(busy)return;setError("");
   if(name.trim().length<2||name.trim().length>100){setError("Enter your full name (2–100 characters).");return}
   if(phone.trim()&&!UK_PHONE.test(phone.replace(/[()\-]/g,"").trim())){setError("Enter a valid UK phone number or leave it blank.");return}
-  if(password.length<10||!/[A-Z]/.test(password)||!/[a-z]/.test(password)||!/[0-9]/.test(password)){setError("Password needs at least 10 characters with upper/lowercase letters and a number.");return}
+  if(password.length<6){setError("Password must have at least 6 characters.");return}
   if(password!==confirm){setError("Passwords do not match.");return}
   if(!agreed){setError("Accept the Terms and Privacy Policy to continue.");return}
   setBusy(true);
@@ -45,10 +45,10 @@ export default function CustomerSignup(){
    <label>Full Name<div className="premium-login-field"><input autoComplete="name" required maxLength={100} value={name} onChange={e=>setName(e.target.value)} placeholder="Full name"/></div></label>
    <label>Email Address<div className="premium-login-field"><input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></div></label>
    <label>UK Phone Number (optional)<div className="premium-login-field"><input type="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="07123 456789"/></div></label>
-   <label>Password<div className="premium-login-field"><input type={show?"text":"password"} autoComplete="new-password" required minLength={10} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Create a strong password"/></div></label>
-   <label>Confirm Password<div className="premium-login-field"><input type={show?"text":"password"} autoComplete="new-password" required minLength={10} value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Repeat password"/></div></label>
+   <label>Password<div className="premium-login-field"><input type={show?"text":"password"} autoComplete="new-password" required minLength={6} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Create a strong password"/></div></label>
+   <label>Confirm Password<div className="premium-login-field"><input type={show?"text":"password"} autoComplete="new-password" required minLength={6} value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Repeat password"/></div></label>
    <label className="customer-signup-checkbox"><input type="checkbox" checked={show} onChange={e=>setShow(e.target.checked)}/> Show passwords</label>
-   <p className="premium-login-safety">Use 10+ characters, upper/lowercase letters and a number.</p>
+   <p className="premium-login-safety">Use 6 or more characters. Any mix of letters, numbers or symbols is allowed. A longer password is safer.</p>
    <label className="customer-signup-checkbox"><input type="checkbox" checked={agreed} required onChange={e=>setAgreed(e.target.checked)}/> I agree to the <Link href="/terms" target="_blank">Terms</Link> and <Link href="/privacy" target="_blank">Privacy Policy</Link>.</label>
    <button className="premium-login-submit" disabled={busy} type="submit">{busy?"Creating account…":"Create Account"}</button>
   </form>
