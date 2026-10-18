@@ -6,6 +6,12 @@ CREATE OR REPLACE FUNCTION public.create_customer_profile_on_signup()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = '' AS $$
 BEGIN
+  -- Only the customer registration flow provisions a Customer profile.
+  -- This metadata is untrusted: it grants ONLY customer, never driver/admin.
+  -- Other Auth signups (e.g. Driver Registration) keep their established
+  -- trusted, admin-gated profile-creation flow.
+  IF COALESCE(NEW.raw_user_meta_data->>'registration_flow','') <> 'customer_public_v1'
+  THEN RETURN NEW; END IF;
   -- Existing account roles are never overwritten by this function.
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id = NEW.id) THEN RETURN NEW; END IF;
   INSERT INTO public.profiles(id, role, full_name, email, phone)

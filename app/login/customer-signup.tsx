@@ -20,7 +20,7 @@ export default function CustomerSignup(){
    const result=await client.auth.signUp({
     email:email.trim().toLowerCase(),password,
     options:{emailRedirectTo:window.location.origin+"/auth/confirm?type=signup",
-      data:{full_name:name.trim(),phone:phone.trim()||null}}
+      data:{registration_flow:"customer_public_v1",full_name:name.trim(),phone:phone.trim()||null}}
    });
    if(result.error)throw result.error;
    // A secure database trigger assigns 'customer'; the browser cannot set role.
