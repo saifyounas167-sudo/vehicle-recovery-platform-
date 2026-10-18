@@ -24,7 +24,7 @@ export default async function AdminPage() {
       <section className="container dashboard-content">
       <div className="dashboard-card" role="status"><div className="dashboard-card-heading"><div><p className="dashboard-kicker">In-app admin notification · Real registrations</p><h2>Driver Approval Inbox</h2></div><Link href="/admin/drivers" className="button primary">Review Drivers</Link></div><p>{pendingError?"Driver registration alerts temporarily unavailable.":pendingCount===0?"No new driver approval requests.":`${pendingCount} driver registration request${pendingCount===1?"":"s"} awaiting document review and an admin decision.`}</p><p>Only applications actually saved in the database are counted. No email, SMS or push notifications are sent.</p></div>
         <div className="dashboard-grid">
-          <div className="metric-card"><span className="metric-label">Driver approvals</span><strong className="metric-value">Pending</strong><span className="badge">Review queue</span></div>
+          <div className="metric-card"><span className="metric-label">Driver approvals</span><strong className="metric-value">{pendingError?"—":pendingCount??0}</strong><span className="badge">Review queue</span></div>
           <div className="metric-card"><span className="metric-label">Jobs</span><strong className="metric-value">Marketplace</strong><span className="badge dark">Operational view</span></div>
           <div className="metric-card"><span className="metric-label">Pricing</span><strong className="metric-value">Configurable</strong><span className="badge dark">Rules engine</span></div>
         </div>

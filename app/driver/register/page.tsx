@@ -27,7 +27,8 @@ export default function DriverRegisterPage(){
   if(!user?.email_confirmed_at)throw Error("Email confirmation is required by the current Supabase settings. Verify your email, then complete the application.");
   const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,about,coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services,vehicleCapabilities:vehicles})});
   const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable");
-  setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Upload insurance, driving licence and business documents where applicable. Jobs are locked.");
+  setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Redirecting to your Driver Dashboard.");
+  window.location.assign("/driver?application=pending");
  }catch(error){setMessage(error instanceof Error?error.message:"Application unavailable");}
  finally{setBusy(false)}
  }
