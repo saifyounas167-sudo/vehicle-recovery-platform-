@@ -31,3 +31,29 @@ export async function POST(req:Request){
   return json({stored:true,message:"Document uploaded privately for admin review"},201);
  }catch{return json({error:"Document upload failed"},503);}
 }
+
+/** Driver may list/view ONLY their own private uploaded documents. Never expose storage paths. */
+export async function GET(req:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return json({error:"Document review is available only in isolated Staging"},503);
+ try{
+  const auth=await createClient(),{data:{user}}=await auth.auth.getUser();
+  if(!user)return json({error:"Login required"},401);
+  const db=serverDb();
+  const {data:profile,error:profileError}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
+  if(profileError||profile?.role!=="driver")return json({error:"Driver role required"},403);
+  const {data:driver,error:driverError}=await db.from("driver_profiles").select("id").eq("id",user.id).maybeSingle();
+  if(driverError||!driver)return json({error:"Driver application required"},404);
+  const id=new URL(req.url).searchParams.get("documentId");
+  if(id){
+   if(!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(id))return json({error:"Invalid document ID"},400);
+   const {data:doc,error}=await db.from("driver_verification_documents").select("storage_path").eq("id",id).eq("driver_id",user.id).maybeSingle();
+   if(error||!doc||!doc.storage_path.startsWith(user.id+"/"))return json({error:"Document not found"},404);
+   const {data:signed,error:signErr}=await db.storage.from("driver-verification-private").createSignedUrl(doc.storage_path,60);
+   if(signErr||!signed?.signedUrl)return json({error:"Document temporarily unavailable"},503);
+   return json({url:signed.signedUrl,expiresInSeconds:60});
+  }
+  const {data,error}=await db.from("driver_verification_documents").select("id,document_type,created_at").eq("driver_id",user.id).order("created_at",{ascending:false}).limit(50);
+  if(error)return json({error:"Documents temporarily unavailable"},503);
+  return json({documents:(data??[]).map(d=>({id:d.id,type:d.document_type,uploadedAt:d.created_at}))});
+ }catch{return json({error:"Unable to access documents"},503)}
+}
