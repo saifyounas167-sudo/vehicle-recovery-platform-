@@ -69,9 +69,11 @@ CREATE POLICY "driver sees own invoices" ON public.driver_billing_payments FOR S
 DROP POLICY IF EXISTS "admin sees planned changes" ON public.driver_billing_price_changes;
 CREATE POLICY "admin sees planned changes" ON public.driver_billing_price_changes FOR SELECT TO authenticated
  USING(public.current_user_role()='admin' OR affected_driver_id=auth.uid());
--- Existing 'admin manages membership' policy from 0009 permits admins writing
--- driver_memberships. DO NOT use it for Stripe-backed state transitions:
--- live billing launch requires replacing it with service-role-only writes.
+-- Restrict membership activation to service-role billing reconciliation.
+DROP POLICY IF EXISTS "admin manages membership" ON public.driver_memberships;
+REVOKE INSERT, UPDATE, DELETE ON public.driver_memberships FROM authenticated, anon;
+GRANT SELECT ON public.driver_memberships TO authenticated;
+CREATE POLICY "admin reads memberships" ON public.driver_memberships FOR SELECT TO authenticated USING (public.current_user_role()='admin');
 COMMIT;
 -- VERIFY (READ ONLY):
 -- SELECT tablename,policyname,cmd FROM pg_policies WHERE tablename LIKE 'driver_billing_%';
