@@ -16,3 +16,5 @@
 .premium-login-oauth-note{font-size:11px;margin-top:7px}
 .premium-login-footer{margin-top:14px;font-size:13px}.premium-login-safety{margin-top:15px;font-size:10px;line-height:1.45}
 @media(max-width:480px){.auth-shell{padding:11px 9px}.premium-login-card{padding:20px 17px}.premium-login-field{min-height:46px}}
+
+.customer-signup-checkbox{display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:9px!important;line-height:1.5;font-size:12px!important}.customer-signup-checkbox input{width:17px;height:17px;flex:none;accent-color:#ff6600}.customer-signup-checkbox a{text-decoration:underline;color:#ff6600}
