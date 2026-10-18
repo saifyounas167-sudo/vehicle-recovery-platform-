@@ -8,7 +8,9 @@ import CustomerSignup from "./customer-signup";
 const destination={driver:"/driver",customer:"/customer",admin:"/admin"} as const;
 type Role=keyof typeof destination;
 function readableAuthError(error:unknown):string{
- const message=error instanceof Error?error.message:String(error??"");
+ const message=error instanceof Error?error.message:
+   error&&typeof error==="object"&&"message" in error&&typeof error.message==="string"
+    ?error.message:"Authentication is temporarily unavailable. Please try again.";
  if(/failed to fetch|networkerror|network request failed|load failed/i.test(message)){
   return "Cannot connect to the authentication server. Check your internet connection, disable VPN/ad blockers temporarily, then try again. If it continues, contact support; your password has not been changed.";
  }
@@ -46,7 +48,9 @@ export default function LoginForm(){
 
   const {data,error:loginError}=await supabase.auth.signInWithPassword({email,password});if(loginError)throw loginError;
   if(!data.user)throw Error("Unable to verify your session.");
-  const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",data.user.id).maybeSingle();if(profileError)throw profileError;
+  const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",data.user.id).maybeSingle();
+  if(profileError){console.error("Customer login profile lookup failed",profileError.code);
+   throw new Error("Account profile could not be loaded. Please try again. If it continues, contact support (reference "+(profileError.code||"profile") +").");}
   if(!profile||profile.role!==role){await supabase.auth.signOut({scope:"local"});window.location.assign("/403");return;}
   const next=params.get("next");
   const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")&&!next.includes("\\")&&(next===destination[role]||next.startsWith(destination[role]+"/"))?next:destination[role];
