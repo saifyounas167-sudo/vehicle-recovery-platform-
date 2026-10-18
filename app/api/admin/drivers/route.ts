@@ -19,10 +19,12 @@ export async function GET(){
   const {data,error}=await access.db.from("driver_profiles").select("id,company_name,business_address,company_registration_number,experience_years,truck_type,recovery_truck_details,vehicle_registration_details,operating_areas,services,coverage_postcode,coverage_radius_miles,approval_status,created_at").order("created_at",{ascending:false}).limit(100);
   if(error)return send({error:"Driver records unavailable"},503);
   const ids=(data||[]).map(x=>x.id);
+  const {data:people,error:peopleError}=ids.length?await access.db.from("profiles").select("id,full_name,email,phone").in("id",ids):{data:[],error:null};
+  if(peopleError)return send({error:"Driver account details unavailable"},503);
   const {data:docs,error:docError}=ids.length?await access.db.from("driver_verification_documents").select("id,driver_id,document_type").in("driver_id",ids):{data:[],error:null};
   if(docError)return send({error:"Verification documents unavailable"},503);
   // No public URLs. Only metadata so reviewers can verify document presence.
-  return send({drivers:(data||[]).map(d=>({...d,documents:(docs||[]).filter(x=>x.driver_id===d.id).map(x=>({id:x.id,type:x.document_type}))}))});
+  return send({drivers:(data||[]).map(d=>({...d,account:(people||[]).find(p=>p.id===d.id)||null,documents:(docs||[]).filter(x=>x.driver_id===d.id).map(x=>({id:x.id,type:x.document_type}))}))});
  }catch{return send({error:"Driver review unavailable"},503);}
 }
 export async function POST(req:Request){

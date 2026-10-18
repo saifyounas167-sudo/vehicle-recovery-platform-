@@ -5,13 +5,12 @@ import {createClient} from "@/lib/supabase/client";
 import {recoveryServices} from "@/src/lib/recovery-service-rules";
 import DriverDocuments from "./driver-documents";
 import "./registration.css";
-const capabilities=["Car","Van","Motorbike","4x4","Other"];
 const truckTypes=["Flatbed","Wheel-lift","Spec-lift","Heavy recovery","Motorbike recovery","Other"];
 export default function DriverRegisterPage(){
  const [businessAddress,setBusinessAddress]=useState(""),[companyRegistrationNumber,setCompanyRegistrationNumber]=useState(""),[recoveryExperience,setRecoveryExperience]=useState(""),[truckDetails,setTruckDetails]=useState(""),[vehicleRegistration,setVehicleRegistration]=useState(""),[operatingAreas,setOperatingAreas]=useState("");
- const [step,setStep]=useState(1),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[fullName,setFullName]=useState(""),[phone,setPhone]=useState(""),[companyName,setCompanyName]=useState(""),[truckType,setTruckType]=useState(""),[about,setAbout]=useState(""),[postcode,setPostcode]=useState(""),[radius,setRadius]=useState("25"),[services,setServices]=useState<string[]>([]),[vehicles,setVehicles]=useState<string[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
+ const [step,setStep]=useState(1),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[fullName,setFullName]=useState(""),[phone,setPhone]=useState(""),[companyName,setCompanyName]=useState(""),[truckType,setTruckType]=useState(""),[about,setAbout]=useState(""),[postcode,setPostcode]=useState(""),[radius,setRadius]=useState("25"),[services,setServices]=useState<string[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
  const toggle=(v:string,list:string[],setter:(a:string[])=>void)=>setter(list.includes(v)?list.filter(x=>x!==v):[...list,v]);
- function goNext(e:FormEvent){e.preventDefault();setMessage("");if(step===1){if(!/^(?:\+447\d{9}|07\d{9})$/.test(phone.replace(/[\s-]/g,""))){setMessage("Please enter a valid UK mobile number.");return;}setStep(2);}else if(step===2){if(!truckType||!services.length||!vehicles.length){setMessage("Select a recovery truck, service and supported vehicle.");return;}setStep(3);}}
+ function goNext(e:FormEvent){e.preventDefault();setMessage("");if(step===1){if(!/^(?:\+447\d{9}|07\d{9})$/.test(phone.replace(/[\s-]/g,""))){setMessage("Please enter a valid UK mobile number.");return;}setStep(2);}else if(step===2){if(!truckType||!services.length){setMessage("Select a recovery truck and service.");return;}setStep(3);}}
  async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setMessage("");
  try{
   const review=await fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.json());
@@ -26,7 +25,7 @@ export default function DriverRegisterPage(){
    user=signup.data.user;
   }
   // Supabase Auth settings determine whether email confirmation is required. A valid session is sufficient here.
-  const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,businessAddress,companyRegistrationNumber,recoveryExperience,recoveryTruckDetails:truckDetails,vehicleRegistrationDetails:vehicleRegistration,operatingAreas:operatingAreas.split(",").map(x=>x.trim()).filter(Boolean),coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services,vehicleCapabilities:vehicles})});
+  const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,businessAddress,companyRegistrationNumber,recoveryExperience,recoveryTruckDetails:truckDetails,vehicleRegistrationDetails:vehicleRegistration,operatingAreas:operatingAreas.split(",").map(x=>x.trim()).filter(Boolean),coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services})});
   const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable");
   setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Redirecting to your Driver Dashboard.");
   window.location.assign("/driver?application=pending");
@@ -49,7 +48,6 @@ export default function DriverRegisterPage(){
   <h2>Recovery business details</h2>
   <label>Recovery truck type<select required value={truckType} onChange={e=>setTruckType(e.target.value)}>{truckTypes.map(t=><option key={t}>{t}</option>)}</select></label>
   <fieldset className="ss8-options"><legend>Services you provide</legend>{recoveryServices.map(s=><label key={s}><input type="checkbox" checked={services.includes(s)} onChange={()=>toggle(s,services,setServices)}/>{s}</label>)}</fieldset>
-  <fieldset className="ss8-options"><legend>Vehicles you can recover</legend>{capabilities.map(v=><label key={v}><input type="checkbox" checked={vehicles.includes(v)} onChange={()=>toggle(v,vehicles,setVehicles)}/>{v}</label>)}</fieldset>
   <label>Business Address<input maxLength={400} value={businessAddress} onChange={e=>setBusinessAddress(e.target.value)}/></label>
   <label>Company Registration Number (where applicable)<input maxLength={120} value={companyRegistrationNumber} onChange={e=>setCompanyRegistrationNumber(e.target.value)}/></label>
   <label>Recovery Experience (years)<input type="number" min="0" max="80" value={recoveryExperience} onChange={e=>setRecoveryExperience(e.target.value)}/></label>

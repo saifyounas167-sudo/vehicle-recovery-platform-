@@ -31,7 +31,6 @@ try{
  await page.locator("form select").first().selectOption("Flatbed");
  await page.getByText("Services you provide").waitFor();
  await page.locator("fieldset").first().locator('input[type="checkbox"]').first().check();
- await page.locator("fieldset").nth(1).locator('input[type="checkbox"]').first().check();
  await page.getByRole("button",{name:"Continue →"}).click();
  await page.getByRole("heading",{name:"Coverage & verification"}).waitFor();
  await page.getByLabel("UK coverage postcode").fill("M1 1AA");

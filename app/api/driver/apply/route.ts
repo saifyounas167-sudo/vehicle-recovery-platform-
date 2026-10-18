@@ -18,14 +18,14 @@ export async function POST(req:Request){
   if(authError||!user)return error("Verified email sign-in required",401);
   const b=await req.json() as Record<string,unknown>;
   const name=typeof b.fullName==="string"?b.fullName.trim():"",phone=typeof b.phone==="string"?b.phone.replace(/[\s-]/g,""):"",company=typeof b.companyName==="string"?b.companyName.trim():"",truck=typeof b.truckType==="string"?b.truckType.trim():"",pc=typeof b.coveragePostcode==="string"?b.coveragePostcode.trim().toUpperCase():"";
-  const radius=Number(b.coverageRadiusMiles),services=b.services,vehicles=b.vehicleCapabilities;
+  const radius=Number(b.coverageRadiusMiles),services=b.services;
   const address=typeof b.businessAddress==="string"?b.businessAddress.trim():"";
   const registration=typeof b.companyRegistrationNumber==="string"?b.companyRegistrationNumber.trim():"";
   const experience=b.recoveryExperience===null||b.recoveryExperience===""?null:Number(b.recoveryExperience);
   const truckDetails=typeof b.recoveryTruckDetails==="string"?b.recoveryTruckDetails.trim():"";
   const vehicleRegistration=typeof b.vehicleRegistrationDetails==="string"?b.vehicleRegistrationDetails.trim():"";
   const operatingAreas=Array.isArray(b.operatingAreas)?b.operatingAreas:[];
-  if(address.length>400||registration.length>120||truckDetails.length>1000||vehicleRegistration.length>150||(experience!==null&&(!Number.isInteger(experience)||experience<0||experience>80))||operatingAreas.length>30||!operatingAreas.every(x=>typeof x==="string"&&x.trim().length>0&&x.length<=100)||name.length<2||name.length>120||company.length>120||truck.length<2||truck.length>120||!/^(?:\+447\d{9}|07\d{9})$/.test(phone)||!postcode.test(pc)||!Number.isFinite(radius)||radius<=0||radius>300||!Array.isArray(services)||services.length===0||services.length>10||!services.every(isRecoveryService)||!Array.isArray(vehicles)||vehicles.length>5||!vehicles.every(v=>typeof v==="string"&&["Car","Van","Motorbike","4x4","Other"].includes(v)))return error("Check your driver application details",400);
+  if(address.length>400||registration.length>120||truckDetails.length>1000||vehicleRegistration.length>150||(experience!==null&&(!Number.isInteger(experience)||experience<0||experience>80))||operatingAreas.length>30||!operatingAreas.every(x=>typeof x==="string"&&x.trim().length>0&&x.length<=100)||name.length<2||name.length>120||company.length>120||truck.length<2||truck.length>120||!/^(?:\+447\d{9}|07\d{9})$/.test(phone)||!postcode.test(pc)||!Number.isFinite(radius)||radius<=0||radius>300||!Array.isArray(services)||services.length===0||services.length>10||!services.every(isRecoveryService))return error("Check your driver application details",400);
   let coords;
   try{coords=await resolvePostcode(pc)}catch{return error("Coverage postcode could not be verified. Please try again.",422);}
   const db=serverDb();
@@ -44,7 +44,7 @@ export async function POST(req:Request){
    if(updateError)return error("Unable to update account profile",503);
   }
   const details={
-   id:user.id,company_name:company||null,business_address:address||null,company_registration_number:registration||null,experience_years:experience,truck_type:truck,recovery_truck_details:truckDetails||null,vehicle_registration_details:vehicleRegistration||null,operating_areas:[...new Set(operatingAreas.map((x:string)=>x.trim()))],services:[...new Set(services)],vehicle_capabilities:[...new Set(vehicles)],
+   id:user.id,company_name:company||null,business_address:address||null,company_registration_number:registration||null,experience_years:experience,truck_type:truck,recovery_truck_details:truckDetails||null,vehicle_registration_details:vehicleRegistration||null,operating_areas:[...new Set(operatingAreas.map((x:string)=>x.trim()))],services:[...new Set(services)],
    coverage_postcode:pc,coverage_radius_miles:radius,coverage_latitude:coords.latitude,coverage_longitude:coords.longitude,
    availability:"offline",updated_at:new Date().toISOString()
   };
