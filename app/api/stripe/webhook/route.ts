@@ -43,7 +43,7 @@ export async function POST(request:Request){
   }
   if(!customer||!subscriptionId||!driverId||!code.test(customer)||!code.test(subscriptionId))return new Response("Invalid identity",{status:400});
   // Fetch CURRENT subscription and latest invoice. Never promote state from a delayed event snapshot.
-  const current=await stripeRequest("GET","subscriptions/"+encodeURIComponent(subscriptionId),new URLSearchParams());
+  const current=await stripeRequest("GET","subscriptions/"+encodeURIComponent(subscriptionId));
   if(current.customer!==customer)return new Response("Subscription identity mismatch",{status:409});
   const items=current.items as {data?:Array<{price?:{id?:unknown}}>}|undefined;
   const priceId=text(items?.data?.[0]?.price?.id);
