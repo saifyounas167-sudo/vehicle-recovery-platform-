@@ -8,13 +8,14 @@ import "./registration.css";
 const capabilities=["Car","Van","Motorbike","4x4","Other"];
 const truckTypes=["Flatbed","Wheel-lift","Spec-lift","Heavy recovery","Motorbike recovery","Other"];
 export default function DriverRegisterPage(){
+ const [businessAddress,setBusinessAddress]=useState(""),[companyRegistrationNumber,setCompanyRegistrationNumber]=useState(""),[recoveryExperience,setRecoveryExperience]=useState(""),[truckDetails,setTruckDetails]=useState(""),[vehicleRegistration,setVehicleRegistration]=useState(""),[operatingAreas,setOperatingAreas]=useState(""),
  const [step,setStep]=useState(1),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[fullName,setFullName]=useState(""),[phone,setPhone]=useState(""),[companyName,setCompanyName]=useState(""),[truckType,setTruckType]=useState(""),[about,setAbout]=useState(""),[postcode,setPostcode]=useState(""),[radius,setRadius]=useState("25"),[services,setServices]=useState<string[]>([]),[vehicles,setVehicles]=useState<string[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false);
  const toggle=(v:string,list:string[],setter:(a:string[])=>void)=>setter(list.includes(v)?list.filter(x=>x!==v):[...list,v]);
  function goNext(e:FormEvent){e.preventDefault();setMessage("");if(step===1){if(!/^(?:\+447\d{9}|07\d{9})$/.test(phone.replace(/[\s-]/g,""))){setMessage("Please enter a valid UK mobile number.");return;}setStep(2);}else if(step===2){if(!truckType||!services.length||!vehicles.length){setMessage("Select a recovery truck, service and supported vehicle.");return;}setStep(3);}}
  async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setMessage("");
  try{
-  const review=await fetch("/api/client-review-status",{cache:"no-store"}).then(r=>r.json());
-  if(review.clientDemo!==false||review.writesEnabled!==true)throw Error("Driver registration is paused during client review. No account has been created.");
+  const review=await fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.json());
+  if(review.registrationEnabled!==true)throw Error("Driver registration is not enabled. No account has been created.");
   const supabase=createClient();
   let {data:{user}}=await supabase.auth.getUser();
   if(!user){
@@ -24,8 +25,8 @@ export default function DriverRegisterPage(){
    if(!signup.data.session){setMessage("Check your email, verify your account, then sign in and return here to complete your application. No application has been submitted yet.");return;}
    user=signup.data.user;
   }
-  if(!user?.email_confirmed_at)throw Error("Email confirmation is required by the current Supabase settings. Verify your email, then complete the application.");
-  const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,about,coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services,vehicleCapabilities:vehicles})});
+  // Supabase Auth settings determine whether email confirmation is required. A valid session is sufficient here.
+  const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,businessAddress,companyRegistrationNumber,recoveryExperience,recoveryTruckDetails:truckDetails,vehicleRegistrationDetails:vehicleRegistration,operatingAreas:operatingAreas.split(",").map(x=>x.trim()).filter(Boolean),coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services,vehicleCapabilities:vehicles})});
   const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable");
   setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Redirecting to your Driver Dashboard.");
   window.location.assign("/driver?application=pending");
@@ -49,13 +50,18 @@ export default function DriverRegisterPage(){
   <label>Recovery truck type<select required value={truckType} onChange={e=>setTruckType(e.target.value)}>{truckTypes.map(t=><option key={t}>{t}</option>)}</select></label>
   <fieldset className="ss8-options"><legend>Services you provide</legend>{recoveryServices.map(s=><label key={s}><input type="checkbox" checked={services.includes(s)} onChange={()=>toggle(s,services,setServices)}/>{s}</label>)}</fieldset>
   <fieldset className="ss8-options"><legend>Vehicles you can recover</legend>{capabilities.map(v=><label key={v}><input type="checkbox" checked={vehicles.includes(v)} onChange={()=>toggle(v,vehicles,setVehicles)}/>{v}</label>)}</fieldset>
-  <label>About your company (optional)<textarea maxLength={1200} value={about} onChange={e=>setAbout(e.target.value)}/></label>
+  <label>Business Address<input maxLength={400} value={businessAddress} onChange={e=>setBusinessAddress(e.target.value)}/></label>
+  <label>Company Registration Number (where applicable)<input maxLength={120} value={companyRegistrationNumber} onChange={e=>setCompanyRegistrationNumber(e.target.value)}/></label>
+  <label>Recovery Experience (years)<input type="number" min="0" max="80" value={recoveryExperience} onChange={e=>setRecoveryExperience(e.target.value)}/></label>
+  <label>Recovery Truck Details<textarea maxLength={1000} value={truckDetails} onChange={e=>setTruckDetails(e.target.value)}/></label>
+  <label>Vehicle Registration Details<input maxLength={150} value={vehicleRegistration} onChange={e=>setVehicleRegistration(e.target.value)}/></label>
   <div className="ss8-controls"><button type="button" onClick={()=>setStep(1)}>Back</button><button className="ss8-primary" type="submit">Continue →</button></div>
  </form>:step===3?<form className="ss8-form" onSubmit={submit}>
   <h2>Coverage & verification</h2>
   <label>UK coverage postcode<input required placeholder="M1 1AA" value={postcode} onChange={e=>setPostcode(e.target.value.toUpperCase())}/></label>
+  <label>Operating Areas (comma separated)<input value={operatingAreas} onChange={e=>setOperatingAreas(e.target.value)} placeholder="Manchester, Salford"/></label>
   <label>Coverage radius (miles)<input required type="number" min="1" max="300" value={radius} onChange={e=>setRadius(e.target.value)}/></label>
-  <p className="ss8-notice">Email verification and admin approval are required. You will remain Pending and Offline until checked. Insurance, driving licence and company documents (where applicable) must be uploaded privately before admin approval. When Supabase email confirmation is switched OFF, verified email sessions can submit immediately.</p>
+  <p className="ss8-notice">Email verification and admin approval are required. You will remain Pending and Offline until checked. Insurance and valid ID must be uploaded privately before admin approval. Driver profile picture and recovery truck photos can also be uploaded privately. When Supabase email confirmation is switched OFF, verified email sessions can submit immediately.</p>
   <div className="ss8-controls"><button type="button" onClick={()=>setStep(2)} disabled={busy}>Back</button><button className="ss8-primary" type="submit" disabled={busy}>{busy?"Submitting…":"Submit for Admin Review"}</button></div>
  </form>:<div className="ss8-confirmed"><h2>Application Pending Review</h2><p>Registration does not grant access to recovery jobs. Complete private document uploads below and wait for admin approval.</p>{saved&&<><DriverDocuments/><p className="ss8-login"><Link href="/driver" className="ss8-primary">Open Driver Dashboard →</Link></p></>}</div>}
  <p className="ss8-status" role="status">{message}</p>
