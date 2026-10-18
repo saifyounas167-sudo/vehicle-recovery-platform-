@@ -1,0 +1,39 @@
+name: Driver Registration and Approval Security QA
+on:
+  push:
+    branches: [feature/ss8-driver-approval-inbox-secure]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - name: Security and regression tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Production build (no deployment)
+        run: npm run build
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start isolated local build
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/ss8-approval.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/demo/driver >/dev/null && exit 0
+            sleep 2
+          done
+          cat /tmp/ss8-approval.log
+          exit 1
+      - name: Responsive registration and read-only redirect QA
+        run: node tests/ss8-browser-qa.mjs
