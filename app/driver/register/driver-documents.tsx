@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useState,type FormEvent} from "react";
+import "./registration.css";
 type Doc={id:string;type:string;uploadedAt:string};
 const labels:Record<string,string>={insurance:"Insurance",driving_licence:"Driving Licence",business:"Business Registration",other:"Other Verification"};
 export default function DriverDocuments({readOnly=false}:{readOnly?:boolean}){

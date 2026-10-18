@@ -29,6 +29,9 @@ export async function POST(req:Request){
  if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return send({error:"Admin actions are paused for client review"},503);
  try{
   const access=await admin();if(!access)return send({error:"Admin authentication required"},403);
+  if(Number(req.headers.get("content-length")||0)>4096)return send({error:"Request too large"},413);
+  const origin=req.headers.get("origin");
+  if(origin&&origin!==new URL(req.url).origin)return send({error:"Invalid request origin"},403);
   const b=await req.json() as Record<string,unknown>,driverId=b.driverId,status=b.status;
   if(typeof driverId!=="string"||!/^[a-f\d-]{36}$/i.test(driverId)||!["approved","rejected","suspended"].includes(String(status))||driverId===access.user.id)return send({error:"Invalid approval request"},400);
   const {data:driver,error:driverError}=await access.db.from("driver_profiles").select("id,company_name,approval_status,services,truck_type,coverage_postcode,coverage_latitude,coverage_longitude,vehicle_capabilities").eq("id",driverId).maybeSingle();
@@ -42,7 +45,7 @@ export async function POST(req:Request){
    if(!required.every(kind=>docs?.some(d=>d.document_type===kind)))return send({error:"Insurance, driving licence and company business documents (when applicable) are required before approval"},409);
    if(!driver.services?.length||!driver.truck_type||!driver.coverage_postcode||driver.coverage_latitude==null||driver.coverage_longitude==null||!driver.vehicle_capabilities?.length)return send({error:"Driver capability and verified coverage details incomplete"},409);
   }
-  const {data:changed,error:changeError}=await access.db.from("driver_profiles").update({approval_status:status,availability:status==="approved"?"offline":"offline",updated_at:new Date().toISOString()}).eq("id",driverId).eq("approval_status",driver.approval_status).select("id").maybeSingle();
+  const {data:changed,error:changeError}=await access.db.from("driver_profiles").update({approval_status:status,availability:"offline",updated_at:new Date().toISOString()}).eq("id",driverId).eq("approval_status",driver.approval_status).select("id").maybeSingle();
   if(changeError||!changed)return send({error:"Approval status changed. Refresh before deciding again."},409);
   return send({updated:true,status});
  }catch{return send({error:"Unable to complete review"},503);}
