@@ -5,7 +5,10 @@ const f=p=>readFileSync(p,"utf8");
 test("each protected dashboard exposes account controls",()=>{
  for(const role of ["driver","customer","admin"]){
   const s=f("app/"+role+"/page.tsx");
-  assert.match(s,/AccountNavigation/);
+  if(role==="customer"){
+   assert.match(s,/CustomerFrame/);
+   assert.match(f("app/customer/customer-frame.tsx"),/AccountNavigation/);
+  }else assert.match(s,/AccountNavigation/);
   assert.ok(s.includes('requireRole("'+role+'")'));
  }
 });
