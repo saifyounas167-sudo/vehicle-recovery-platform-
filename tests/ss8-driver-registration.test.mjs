@@ -4,3 +4,14 @@ test("SS8 cannot self-approve or overwrite approved profile",()=>{const s=read("
 test("SS8 keeps private documents and production guard",()=>{const d=read("app/api/driver/documents/route.ts"),g=read("src/lib/client-review.ts");assert.match(d,/driver-verification-private/);assert.match(d,/\["pending","rejected"\]/);assert.match(g,/return true/)});
 
 test("SS8 checks client review before any client-side Auth signup",()=>{const s=read("app/driver/register/page.tsx");assert.ok(s.indexOf('fetch("/api/driver/registration-status"')<s.indexOf("supabase.auth.signUp"));assert.match(s,/review.registrationEnabled!==true/)});
+
+test("Screenshot 8 first screen has exactly five fields, password only on step two",()=>{
+ const s=read("app/driver/register/page.tsx");
+ const first=s.split('{step===1?<form className="ss8-form" onSubmit={goNext}>')[1]?.split('</form>:step===2?')[0];
+ const second=s.split('step===2?<form className="ss8-form" onSubmit={goNext}>')[1]?.split('</form>:step===3?')[0];
+ assert.ok(first&&second,"Expected first and second steps");
+ const labels=[...first.matchAll(/<label>([^<]+)</g)].map(x=>x[1]);
+ assert.deepEqual(labels,["Full Name","Email Address","Phone Number","Vehicle Type","Company Name (optional)"]);
+ assert.doesNotMatch(first, /Password|type="password"/);
+ assert.match(second,/<label>Password<input type="password"/);
+});

@@ -42,10 +42,10 @@ export default function DriverRegisterPage(){
   <label>Phone Number<input required type="tel" autoComplete="tel" placeholder="UK Phone Number" value={phone} onChange={e=>setPhone(e.target.value)}/></label>
   <label>Vehicle Type<select required value={truckType} onChange={e=>setTruckType(e.target.value)}><option value="">Select vehicle type</option>{truckTypes.map(t=><option key={t} value={t}>{t}</option>)}</select></label>
   <label>Company Name (optional)<input maxLength={120} placeholder="Company Name (optional)" value={companyName} onChange={e=>setCompanyName(e.target.value)}/></label>
-  <label>Password<input type="password" autoComplete="new-password" minLength={10} placeholder="At least 10 characters (new accounts)" value={password} onChange={e=>setPassword(e.target.value)}/></label>
   <button className="ss8-primary" type="submit">Continue →</button>
  </form>:step===2?<form className="ss8-form" onSubmit={goNext}>
   <h2>Recovery business details</h2>
+  <label>Password<input type="password" autoComplete="new-password" minLength={10} placeholder="At least 10 characters (new accounts)" value={password} onChange={e=>setPassword(e.target.value)}/></label>
   <label>Recovery truck type<select required value={truckType} onChange={e=>setTruckType(e.target.value)}>{truckTypes.map(t=><option key={t}>{t}</option>)}</select></label>
   <fieldset className="ss8-options"><legend>Services you provide</legend>{recoveryServices.map(s=><label key={s}><input type="checkbox" checked={services.includes(s)} onChange={()=>toggle(s,services,setServices)}/>{s}</label>)}</fieldset>
   <label>Business Address<input maxLength={400} value={businessAddress} onChange={e=>setBusinessAddress(e.target.value)}/></label>

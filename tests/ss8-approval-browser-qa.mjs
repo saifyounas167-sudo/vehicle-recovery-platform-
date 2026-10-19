@@ -10,6 +10,10 @@ for(const width of [320,375,390,430,768,1024,1440]){
   const response=await page.goto(base+"/driver/register",{waitUntil:"domcontentloaded"});
   assert.equal(response?.status(),200);
   await page.getByRole("heading",{name:"Join as a Recovery Driver"}).waitFor();
+  const expected=["Full Name","Email Address","Phone Number","Vehicle Type","Company Name (optional)"];
+  const labels=await page.locator("main form > label").allTextContents();
+  assert.deepEqual(labels.map(v=>v.trim()),expected,"First screen must show exactly 5 client fields");
+  assert.equal(await page.locator("main form input[type=password]").count(),0,"Password must not be on first screen");
   let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   assert.ok(overflow<=2,"SS8 registration horizontal overflow: "+overflow+"px");
   // All breakpoints render the real registration form without horizontal scrolling.
@@ -26,8 +30,9 @@ try{
  await page.getByLabel("Email Address").fill("driver-qa@example.invalid");
  await page.getByLabel("Phone Number").fill("07123456789");
  await page.locator("form select").first().selectOption("Flatbed");
- await page.getByLabel("Password").fill("TestPassword123!");
  await page.getByRole("button",{name:"Continue →"}).click();
+ await page.getByRole("heading",{name:"Recovery business details"}).waitFor();
+ await page.getByLabel("Password").fill("TestPassword123!");
  await page.locator("form select").first().selectOption("Flatbed");
  await page.getByText("Services you provide").waitFor();
  await page.locator("fieldset").first().locator('input[type="checkbox"]').first().check();
