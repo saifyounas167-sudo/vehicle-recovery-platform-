@@ -11,8 +11,8 @@ for(const width of [320,375,390,430,768,1024,1440]){
   assert.equal(response?.status(),200);
   await page.getByRole("heading",{name:"Join as a Recovery Driver"}).waitFor();
   const expected=["Full Name","Email Address","Phone Number","Vehicle Type","Company Name (optional)"];
-  const labels=await page.locator("main form > label").allTextContents();
-  assert.deepEqual(labels.map(v=>v.trim()),expected,"First screen must show exactly 5 client fields");
+  const labels=await page.locator("main form > label").evaluateAll(nodes=>nodes.map(node=>node.firstChild?.textContent?.trim()||""));
+  assert.deepEqual(labels,expected,"First screen must show exactly 5 client fields");
   assert.equal(await page.locator("main form input[type=password]").count(),0,"Password must not be on first screen");
   let overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   assert.ok(overflow<=2,"SS8 registration horizontal overflow: "+overflow+"px");
