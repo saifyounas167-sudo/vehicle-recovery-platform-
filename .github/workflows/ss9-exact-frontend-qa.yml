@@ -1,0 +1,33 @@
+name: SS9 Exact Frontend Browser QA
+on:
+  push:
+    branches: [feature/ss9-exact-client-frontend]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start local QA build
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/ss9.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/ss9-visual-qa >/dev/null && exit 0
+            sleep 2
+          done
+          cat /tmp/ss9.log
+          exit 1
+      - run: node tests/ss9-exact-browser-qa.mjs
