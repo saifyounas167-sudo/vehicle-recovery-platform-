@@ -15,6 +15,8 @@ export async function POST(request:Request){
   const original=new Request("https://internal.invalid/api/recovery/open-estimate",{
    method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({
+    recoveryType:b.recoveryType,
+    destinationMode:b.destinationMode,
     pickupPostcode:b.pickupPostcode,
     destinationPostcode:b.destinationPostcode,
     vehicleType:b.vehicleType,
