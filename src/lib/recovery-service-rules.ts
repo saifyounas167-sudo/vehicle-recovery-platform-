@@ -39,3 +39,18 @@ export function validateRecoveryDetails(input:Record<string,unknown>):string|nul
  if(value(input.email)&&!/^\S+@\S+\.\S+$/.test(value(input.email)))return "Enter a valid email address or leave it blank.";
  return null;
 }
+
+/** UI-only service switching. Retain location/vehicle/contact details and valid
+ * transport destination, but never re-use questions from another service. */
+export function resetAnswersForService<T extends Record<string,string>>(current:T, service:RecoveryService):T{
+ const newRules=getServiceRules(service)!;
+ const destinationMode=newRules.destination==="required"?"transport":
+  newRules.destination==="none"?"Roadside Assistance Without Transport":"";
+ const keepDestination=requiresDestination(current.recoveryType,current.destinationMode)
+  &&requiresDestination(service,destinationMode);
+ return {...current,recoveryType:service,destinationMode,
+  destinationPostcode:keepDestination?current.destinationPostcode:"",
+  destinationAddress:keepDestination?current.destinationAddress:"",
+  runningStatus:"",rollingStatus:"",lockedWheels:"",damagedWheels:"",
+  passengerCount:"",accident:"",equipment:"",difficulty:"",problemDescription:""};
+}
