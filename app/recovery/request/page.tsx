@@ -76,6 +76,16 @@ const [pickupSearch,setPickupSearch]=useState("");const [destinationSearch,setDe
    if(raw){const saved=JSON.parse(raw) as Record<string,unknown>;setV(current=>{
     const next={...current};
     for(const key of draftKeys)if(typeof saved[key]==="string"&&saved[key].length<120&&(key!=="recoveryType"||!new URLSearchParams(window.location.search).has("service")))next[key]=saved[key] as string;
+    // Restore a safe mode for each persisted service; never restore stale loading
+    // answers for roadside services, nor an old Breakdown transport choice.
+    const restored=getServiceRules(next.recoveryType);
+    next.destinationMode=restored?.destination==="required"?"transport":
+      restored?.destination==="none"?"Roadside Assistance Without Transport":"";
+    if(!requiresDestination(next.recoveryType,next.destinationMode)){
+      for(const key of ["runningStatus","rollingStatus","passengerCount","lockedWheels","damagedWheels"])next[key]="";
+    }
+    if(!restored?.accident)next.accident="";
+    if(!restored?.passengers)next.passengerCount="";
     return next;
    });}
   }catch{}
