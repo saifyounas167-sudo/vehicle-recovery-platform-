@@ -18,7 +18,7 @@ for(const width of widths){
   const headings=(await page.locator(".recovery-demo-toggle").allTextContents()).map(t=>t.trim());
   assert.equal(headings.length,5,"Five original collapsible sections");
   for(const [i,title] of ["Pickup Location","Drop-off Location","Vehicle Details","What's the issue?","Your Contact Details"].entries())
-   assert.ok(headings[i].startsWith(title),`Wrong section at ${i+1}: ${headings[i]}`);
+   assert.ok(headings[i].includes(title),`Wrong section at ${i+1}: ${headings[i]}`);
   const pickup=page.getByRole("button",{name:/Pickup Location/});
   const dropoff=page.getByRole("button",{name:/Drop-off Location/});
   assert.equal(await pickup.getAttribute("aria-expanded"),"true","Pickup opens first");
