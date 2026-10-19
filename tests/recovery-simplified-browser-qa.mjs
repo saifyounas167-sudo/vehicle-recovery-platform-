@@ -15,7 +15,7 @@ for(const width of [320,375,390,430,768,1024,1440]){
    await panel.getByRole("button",{name:service,exact:true}).click();
    assert.equal(await panel.getByRole("button",{name:service,exact:true}).getAttribute("aria-pressed"),"true");
    const needsDestination=!["Breakdown Recovery","Jump Start / Flat Battery Assistance","Flat Tyre Assistance"].includes(service);
-   assert.equal(await page.getByRole("button",{name:/Drop-off Location/}).count(),needsDestination);
+   assert.equal(await page.getByRole("button",{name:/Drop-off Location/}).count(),Number(needsDestination));
    if(service==="Breakdown Recovery"){
     await panel.getByRole("button",{name:"Roadside assistance",exact:true}).click();
     assert.equal(await page.getByRole("button",{name:/Drop-off Location/}).count(),0);
