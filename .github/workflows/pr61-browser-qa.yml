@@ -1,0 +1,42 @@
+name: PR61 Actual Playwright Browser QA
+on:
+  push:
+    branches: [fix/route-preview-estimate-contract]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start local production build (read-only)
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/pr61-browser.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/recovery/request >/dev/null && exit 0
+            sleep 2
+          done
+          cat /tmp/pr61-browser.log
+          exit 1
+      - name: Seven viewport pickup, drop-off and service QA
+        run: node tests/recovery-simplified-browser-qa.mjs
+      - name: Seven viewport estimate success and unavailable QA (mocked)
+        run: node tests/estimate-browser-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr61-browser-screenshots
+          path: qa-estimate-screenshots/
+          if-no-files-found: ignore
