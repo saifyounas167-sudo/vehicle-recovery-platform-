@@ -1,0 +1,33 @@
+name: SS59 Recovery Form Browser QA
+on:
+  push:
+    branches: [fix/recovery-form-location-order-schedule-ux]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start application
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/ss59.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/recovery/request >/dev/null && exit 0
+            sleep 2
+          done
+          cat /tmp/ss59.log
+          exit 1
+      - run: node tests/recovery-simplified-browser-qa.mjs
