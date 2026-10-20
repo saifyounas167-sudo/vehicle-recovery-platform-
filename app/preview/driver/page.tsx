@@ -1,0 +1,3 @@
+import PreviewFrame from "../preview-frame";
+import DriverPreviewTabs from "./preview-tabs";
+export default function DriverPreview(){return <PreviewFrame role="driver"><div className="pv-intro"><span className="pv-eyebrow">RECOVERY PROFESSIONAL · SAMPLE</span><div className="pv-driver-heading"><div><h1>Driver Dashboard</h1><p>Sample Recovery Company · No real job access</p></div><span className="pv-chip">○ Offline · Preview</span><span className="pv-chip" aria-label="Notifications disabled">♧ Notifications unavailable</span></div></div><DriverPreviewTabs/><p className="pv-muted">Driver approval, membership and offer permissions are not simulated as real access. All actions are disabled.</p></PreviewFrame>}
