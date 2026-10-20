@@ -46,3 +46,8 @@
  .uk-home .ukr-actions{grid-template-columns:minmax(0,1fr);gap:10px}
  .uk-home .ukr-actions>.ukr-btn{grid-column:1 / -1;width:100%;min-height:62px}
 }
+
+/* Slightly taller homepage hero; retain existing copy, controls and photograph. */
+@media(min-width:981px){.uk-home .ukr-hero{padding-top:94px;padding-bottom:75px}}
+@media(min-width:601px) and (max-width:980px){.uk-home .ukr-hero{padding-top:64px;padding-bottom:59px}}
+@media(max-width:600px){.uk-home .ukr-hero{padding-top:49px;padding-bottom:43px}}
