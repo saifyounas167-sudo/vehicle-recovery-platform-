@@ -1,0 +1,40 @@
+name: Combined Dashboard Release QA
+on:
+  push:
+    branches: [qa/combined-dashboard-release-62-63-64]
+  workflow_dispatch:
+jobs:
+  combined:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [enabled, disabled]
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
+      VERCEL_ENV: preview
+      DASHBOARD_PREVIEW_MODE: ${{ matrix.mode }}
+      NEXT_PUBLIC_DASHBOARD_PREVIEW_MODE: ${{ matrix.mode }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start app
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/combined.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3000/ >/dev/null && exit 0; sleep 2; done
+          cat /tmp/combined.log; exit 1
+      - name: Preview and protected routes browser QA
+        run: node tests/dashboard-preview-browser.mjs
+      - name: Driver protected route browser QA
+        run: node tests/ss10-driver-auth-browser-qa.mjs
+      - name: Admin protected route browser QA
+        run: node tests/ss11-admin-browser-qa.mjs
