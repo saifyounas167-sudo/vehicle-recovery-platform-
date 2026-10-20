@@ -1,10 +1,11 @@
-/** Public, synthetic dashboard previews. Both explicit flags are required.
- * Vercel Production is never eligible, even if a flag is accidentally set.
- * No authentication/session/database/service-role calls are allowed in previews.
+/** Public design previews: isolated static sample UI only.
+ * Deliberately enabled during client review, including Production.
+ * Set this code flag to false to retire all public previews without touching
+ * Supabase, auth, Vercel secrets, or real dashboard routes.
+ * An optional DASHBOARD_PREVIEW_MODE=disabled environment value also shuts
+ * them off (used by ON/OFF CI). No environment changes are needed to enable.
  */
+export const DASHBOARD_PREVIEW_PUBLIC_ENABLED = true;
 export function isDashboardPreviewEnabled(): boolean {
-  if (process.env.VERCEL_ENV === "production") return false;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") return false;
-  return process.env.DASHBOARD_PREVIEW_MODE === "enabled"
-    && process.env.NEXT_PUBLIC_DASHBOARD_PREVIEW_MODE === "enabled";
+  return DASHBOARD_PREVIEW_PUBLIC_ENABLED && process.env.DASHBOARD_PREVIEW_MODE !== "disabled";
 }
