@@ -1,0 +1,53 @@
+/* About → How We Are Different: design-only improvement; retain existing copy/order. */
+.about-page .about-market{gap:clamp(32px,6vw,76px)}
+.about-page .about-market h2{text-wrap:balance}
+.about-page .about-flow{display:grid;gap:17px;align-content:center}
+.about-page .about-flow article{
+ position:relative;display:grid;grid-template-columns:54px minmax(0,1fr);
+ align-items:center;gap:18px;min-height:96px;padding:18px 23px;
+ border:1px solid #e1e5e6;border-radius:16px;
+ background:linear-gradient(117deg,#fff 45%,#fff9f4);
+ box-shadow:0 11px 27px rgba(19,29,35,.065);
+ transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.about-page .about-flow article::before{
+ content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;
+ border-radius:0 5px 5px 0;background:#ff6600;
+}
+.about-page .about-flow article:not(:last-child)::after{
+ content:"";position:absolute;left:48px;bottom:-20px;z-index:2;
+ width:2px;height:20px;background:linear-gradient(#ffa86e,#ff6600);
+ border-radius:2px;
+}
+.about-page .about-flow article>b{
+ display:grid;place-items:center;width:52px;height:52px;
+ background:#192128;color:#ff883d;border:1px solid #29343c;
+ border-radius:15px;font-size:17px;font-weight:900;letter-spacing:-.045em;
+ box-shadow:0 5px 14px rgba(18,27,34,.13);
+}
+.about-page .about-flow article>span{
+ min-width:0;font-size:clamp(15px,1.5vw,18px);
+ color:#192128;font-weight:850;line-height:1.45;letter-spacing:-.015em;
+}
+.about-page .about-flow article>em{display:none}
+@media(hover:hover){
+ .about-page .about-flow article:hover{
+  transform:translateX(4px);border-color:#ffb387;
+  box-shadow:0 17px 36px rgba(19,29,35,.11);
+ }
+}
+@media(max-width:900px){
+ .about-page .about-market{grid-template-columns:1fr;gap:30px}
+ .about-page .about-flow{max-width:690px;width:100%}
+}
+@media(max-width:640px){
+ .about-page .about-flow{gap:14px}
+ .about-page .about-flow article{grid-template-columns:45px minmax(0,1fr);min-height:81px;gap:14px;padding:14px 15px;border-radius:13px}
+ .about-page .about-flow article>b{width:43px;height:43px;border-radius:12px;font-size:15px}
+ .about-page .about-flow article:not(:last-child)::after{left:36px;bottom:-17px;height:17px}
+ .about-page .about-flow article>span{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){
+ .about-page .about-flow article{transition:none}
+ .about-page .about-flow article:hover{transform:none}
+}

@@ -1,3 +1,4 @@
+import "./about-flow.css";
 import Link from "next/link";
 import InstallAppButton from "../install-app-button";
 import PublicHeader from "../components/public-header";
