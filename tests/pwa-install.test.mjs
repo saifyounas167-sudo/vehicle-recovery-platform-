@@ -38,10 +38,10 @@ test("iPhone quick guidance includes actual Share icon and Safari fallback",()=>
 });
 
 test("mobile header hides installed PWA CTA without affecting other buttons",()=>{
- const button=file("app/install-app-button.tsx");const header=file("app/components/public-header.tsx");
+ const button=file("app/install-app-button.tsx");const header=file("app/components/public-header.tsx");const mobile=file("app/components/public-mobile-menu.tsx");
  assert.ok(button.includes("hideWhenInstalled=false"));
  assert.ok(button.includes("if(hideWhenInstalled&&standalone)return null"));
  assert.ok(header.includes('<InstallAppButton className="header-install" hideWhenInstalled/>'));
  assert.ok(header.includes('<InstallAppButton className="header-install"/>'));
- assert.ok(header.includes('href="/recovery/request" className="get-started"'));
+ assert.ok(mobile.includes('href="/recovery/request" onClick={onClose}>Get Started'));
 });

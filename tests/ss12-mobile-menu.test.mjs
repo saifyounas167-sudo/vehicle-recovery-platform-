@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import {readFileSync} from "node:fs";
+const menu=readFileSync("app/components/public-mobile-menu.tsx","utf8"),header=readFileSync("app/components/public-header.tsx","utf8");
+test("client menu order and expandable driver submenu",()=>{const expected=['label:"Home"','label:"Get Recovery Quote"','label:"Services"','label:"How It Works"','label:"Pricing"','label:"About"','label:"FAQ"','label:"Contact"'];let last=-1;for(const x of expected){const p=menu.indexOf(x);assert.ok(p>last,x);last=p;}assert.match(menu,/For Drivers/);assert.match(menu,/aria-expanded=\{driversOpen\}/);});
+test("preserve account navigation and PWA installation",()=>{assert.match(header,/InstallAppButton/);for(const role of ["customer","driver","admin"])assert.ok(header.includes('/login?role='+role));assert.match(menu,/Business Login/);assert.match(menu,/Dashboard Preview Mode/);});
+test("no invented FAQ/contact routes and previews stay separate",()=>{assert.match(menu,/Coming soon/);assert.doesNotMatch(menu,/href="\/faq"|href="\/contact"/);assert.match(menu,/isDashboardPreviewEnabled/);});
+test("keyboard focus and close behavior",()=>{assert.match(menu,/Escape/);assert.match(menu,/e.key==="Tab"/);assert.match(menu,/previous.current\?\.focus/);assert.match(menu,/onClose/);});
