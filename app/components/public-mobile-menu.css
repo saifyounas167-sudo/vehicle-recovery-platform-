@@ -22,3 +22,13 @@
 .ss12-menu a:focus-visible,.ss12-menu button:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
 }
 @media(prefers-reduced-motion:reduce){.ss12-menu,.ss12-chevron{transition:none!important}}
+
+/* Approved mobile navigation: clear account roles, single registration action. */
+@media(max-width:1160px){
+.ss12-section-label{padding:15px 14px 5px;color:#a8b6c2;font-size:10px;font-weight:850;letter-spacing:.13em}
+.ss12-account-links{border-top:1px solid #34404a;margin:7px 0 0;padding:5px 0 0}
+.ss12-account-links .ss12-link{min-height:47px}
+.ss12-preview{display:flex;align-items:center;gap:10px;text-align:left;background:#202d37;border-radius:9px;min-height:48px;margin:8px 0 12px;padding:12px 14px;font-size:13px;font-weight:700}
+.ss12-login{padding:0 12px;text-align:center}
+.ss12-bottom .ss12-account-state{margin-top:10px}
+}

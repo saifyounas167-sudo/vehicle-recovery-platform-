@@ -23,7 +23,7 @@ export async function getCurrentProfile() {
 
 export async function requireRole(role: UserRole) {
   const { user, profile } = await getCurrentProfile();
-  if (!user || !profile) redirect("/login?reason=auth");
+  if (!user || !profile) redirect("/login?reason=auth&role="+role);
   if (profile.role !== role) redirect("/403");
   return { user, profile };
 }

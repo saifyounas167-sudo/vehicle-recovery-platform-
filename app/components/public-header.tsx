@@ -22,7 +22,6 @@ export default function PublicHeader(){
   <div className="public-actions">
     <Link href="/login?role=customer" className="account-link customer-login"><Icon type="user"/>Customer Login</Link>
    <Link href="/login?mode=signup&role=customer" className="get-started">GET STARTED</Link>
-   <Link href="/login?role=driver" className="role-login"><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login"><Icon type="truck"/>Driver Login</Link>
    <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
    {isDashboardPreviewEnabled()&&<Link href="/preview" className="role-login" aria-label="Dashboard Preview Mode">Preview Mode</Link>}
