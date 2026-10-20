@@ -1,0 +1,24 @@
+/* Screenshot 12: isolated mobile overlay; desktop navigation remains unchanged. */
+.ss12-menu{display:none}
+@media(max-width:1160px){
+.ss12-menu{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;background:#11181e;color:#fff;overflow-y:auto;overscroll-behavior:contain;visibility:hidden;pointer-events:none;transform:translateX(102%);transition:transform .22s ease,visibility .22s;min-height:100dvh;max-height:100dvh}
+.ss12-menu.ss12-open{visibility:visible;pointer-events:auto;transform:translateX(0)}
+.ss12-head{display:flex;align-items:center;justify-content:space-between;min-height:70px;padding:15px 22px;border-bottom:1px solid #283039;flex-shrink:0}
+.ss12-logo{font-size:22px;font-weight:900;color:#fff;text-decoration:none}.ss12-logo span{color:#ff6600}
+.ss12-head button{font-size:30px;background:transparent;border:0;color:#fff;width:44px;height:44px;cursor:pointer}
+.ss12-links{padding:12px 18px;display:grid;align-content:start;gap:2px}
+.ss12-link{display:flex;align-items:center;gap:16px;min-height:49px;width:100%;padding:9px 13px;color:#f0f3f5;text-decoration:none;background:transparent;border:0;border-radius:8px;text-align:left;font-size:14px;font-weight:650;cursor:pointer}
+.ss12-link svg,.ss12-login svg{width:21px;height:21px;flex:0 0 21px}
+.ss12-link:hover,.ss12-link:focus-visible,.ss12-link.ss12-current{background:#212c35;color:#ff6600}
+.ss12-chevron{margin-left:auto;font-size:22px;transition:transform .2s}.ss12-rotated{transform:rotate(180deg)}
+.ss12-submenu{display:grid;gap:1px;margin:0 0 5px 38px;padding:4px 0 4px 11px;border-left:2px solid #ff6600}
+.ss12-submenu .ss12-link{font-size:12px;min-height:43px}
+.ss12-unavailable{opacity:.56;cursor:default}.ss12-unavailable small{margin-left:auto;font-size:10px}
+.ss12-bottom{margin-top:auto;padding:15px 20px max(22px,env(safe-area-inset-bottom));border-top:1px solid #29323a}
+.ss12-login{display:flex;align-items:center;justify-content:center;gap:10px;min-height:49px;border-radius:9px;background:#ff6600;color:white;font-weight:850;text-decoration:none;font-size:14px}
+.ss12-preview{display:block;text-align:center;color:#ffad77;font-size:12px;padding:10px;text-decoration:none}
+.ss12-secondary{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:14px}
+.ss12-secondary a{color:#c2cbd2;text-decoration:none;font-size:11px;padding:6px 0}
+.ss12-menu a:focus-visible,.ss12-menu button:focus-visible{outline:3px solid #ff6600;outline-offset:2px}
+}
+@media(prefers-reduced-motion:reduce){.ss12-menu,.ss12-chevron{transition:none!important}}
