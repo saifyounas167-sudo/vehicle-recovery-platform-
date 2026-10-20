@@ -27,7 +27,7 @@ export default async function DriverPage(){
    <Link href="/" className="ss10-brand" aria-label="UK Recovery home"><span aria-hidden="true">◢</span> UK <b>Recovery</b></Link>
    <div className="ss10-header-actions">
     <span className="ss10-status" aria-label={"Availability: "+(driver?.availability||"offline")}>{driver?.availability==="available"?"● Online":driver?.availability==="busy"?"● Busy":"○ Offline"}</span>
-    <Link href="/notifications" className="ss10-bell" aria-label="Notifications (delivery currently unavailable)">♧<span className="ss10-bell-icon" aria-hidden="true">♧</span></Link>
+    <Link href="/notifications" className="ss10-bell" aria-label="Notifications (delivery currently unavailable)"><span aria-hidden="true">🔔</span></Link>
     <details className="ss10-menu"><summary aria-label="Driver menu">☰</summary><div><Link href="/driver">Dashboard</Link><Link href="/driver/membership">Membership</Link><Link href="/driver/register">Manage Profile</Link><AccountNavigation/></div></details>
    </div>
   </div></header>
