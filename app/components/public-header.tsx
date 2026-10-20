@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import InstallAppButton from "../install-app-button";
 import AccountNavigation from "./account-navigation";
+import {isDashboardPreviewEnabled} from "@/src/lib/dashboard-preview";
 
 const nav=[["Home","/"],["Get a Quote","/recovery/request"],["How It Works","/how-it-works"],["About","/about"]] as const;
 const Icon=({type}:{type:"globe"|"user"|"business"|"truck"|"shield"})=>{
@@ -22,6 +23,7 @@ export default function PublicHeader(){
    <Link href="/login?role=driver" className="role-login"><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login"><Icon type="truck"/>Driver Login</Link>
    <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
+   {isDashboardPreviewEnabled()&&<Link href="/preview" className="role-login" aria-label="Dashboard Preview Mode">Preview Mode</Link>}
    <InstallAppButton className="header-install"/><AccountNavigation/>
   </div>
   <div className="public-mobile-actions"><InstallAppButton className="header-install" hideWhenInstalled/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
@@ -29,6 +31,7 @@ export default function PublicHeader(){
  <div id="public-mobile-menu" className={"public-mobile-menu "+(open?"open":"")}>
   {nav.map(([label,href])=><Link key={href} href={href} className={active(href)?"active":""} onClick={close}>{label}</Link>)}
   <div className="mobile-account-group">
+   {isDashboardPreviewEnabled()&&<Link href="/preview" onClick={close}>Dashboard Preview Mode</Link>}
    <Link href="/login?role=customer" onClick={close}><Icon type="user"/>Customer Login</Link>
    <Link href="/recovery/request" className="get-started" onClick={close}>GET STARTED</Link>
    <Link href="/login?role=business" className="role-login" onClick={close}><Icon type="business"/>Business Login</Link>
