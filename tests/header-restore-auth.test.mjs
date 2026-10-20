@@ -9,7 +9,8 @@ test("approved desktop role logins preserve order and Install App",()=>{
 test("approved mobile account access and signed-in dropdown remain visible",()=>{
  for(const role of ["customer","driver","admin"])assert.ok(mobile.includes('/login?role='+role));
  assert.doesNotMatch(header,/>Business Login</);
- assert.match(mobile,/Create Customer Account/);\n assert.match(header,/<PublicMobileMenu open={open} onClose={close}\/>/);
+ assert.match(mobile,/Create Customer Account/);
+ assert.match(header,/<PublicMobileMenu open={open} onClose={close}\/>/);
  assert.match(mobile,/AccountNavigation mobile onNavigate={onClose}/);
  assert.match(nav,/if\(!ready\|\|!signedIn\)return null/);
  assert.match(nav,/<details className=/);
