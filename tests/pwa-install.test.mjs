@@ -43,5 +43,7 @@ test("mobile header hides installed PWA CTA without affecting other buttons",()=
  assert.ok(button.includes("if(hideWhenInstalled&&standalone)return null"));
  assert.ok(header.includes('<InstallAppButton className="header-install" hideWhenInstalled/>'));
  assert.ok(header.includes('<InstallAppButton className="header-install"/>'));
- assert.ok(mobile.includes('href="/recovery/request" onClick={onClose}>Get Started'));
+ assert.ok(header.includes('href="/login?mode=signup&role=customer"'));
+ assert.ok(mobile.includes('href:"/recovery/request"'));
+ assert.ok(mobile.includes('Create Customer Account'));
 });
