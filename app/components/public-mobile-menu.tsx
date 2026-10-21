@@ -2,7 +2,6 @@
 import Link from "next/link";
 import {useEffect,useRef,useState} from "react";
 import {usePathname} from "next/navigation";
-import AccountNavigation from "./account-navigation";
 import {isDashboardPreviewEnabled} from "@/src/lib/dashboard-preview";
 
 type MenuIcon="home"|"quote"|"services"|"how"|"drivers"|"pricing"|"about"|"login"|"user"|"shield"|"preview";
@@ -60,7 +59,6 @@ export default function PublicMobileMenu({open,onClose}:{open:boolean;onClose:()
   <div className="ss12-bottom">
    {isDashboardPreviewEnabled()&&<Link href="/preview" className="ss12-preview" onClick={onClose}><Icon name="preview"/>Dashboard Preview Mode →</Link>}
    <Link href="/login?role=customer&mode=signup" className="ss12-login" onClick={onClose}><Icon name="user"/>Create Customer Account</Link>
-   <div className="ss12-account-state"><AccountNavigation mobile onNavigate={onClose}/></div>
   </div>
  </div>;
 }
