@@ -1,4 +1,5 @@
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
+import {isDriverRegistrationEnabled} from "@/src/lib/driver-registration-gate";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isClientReviewDemo } from "@/src/lib/client-review";
@@ -17,6 +18,16 @@ export async function proxy(request:NextRequest){
    const allowedEstimate=method==="POST" && [
     "/api/recovery/open-estimate","/api/recovery/estimate"
    ].includes(path);
+   // PR #56: isolated driver onboarding only; no general marketplace writes.
+   const onboardingGet=method==="GET"&&[
+    "/api/driver/registration-status","/api/driver/documents",
+    "/api/admin/drivers","/api/admin/drivers/document-access"
+   ].includes(path);
+   const onboardingWrite=method==="POST"&&[
+    "/api/driver/apply","/api/driver/documents","/api/admin/drivers"
+   ].includes(path);
+   if((onboardingGet||onboardingWrite)&&await isDriverRegistrationEnabled())
+    return NextResponse.next({request});
    if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
