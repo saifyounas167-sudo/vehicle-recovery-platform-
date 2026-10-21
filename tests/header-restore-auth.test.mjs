@@ -11,7 +11,7 @@ test("approved mobile account access and signed-in dropdown remain visible",()=>
  assert.doesNotMatch(header,/>Business Login</);
  assert.match(mobile,/Create Customer Account/);
  assert.match(header,/<PublicMobileMenu open={open} onClose={close}\/>/);
- assert.match(mobile,/AccountNavigation mobile onNavigate={onClose}/);
+ assert.doesNotMatch(mobile,/AccountNavigation/);
  assert.match(nav,/if\(!ready\|\|!signedIn\)return null/);
  assert.match(nav,/<details className=/);
 });
