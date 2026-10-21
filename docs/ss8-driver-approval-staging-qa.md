@@ -5,7 +5,7 @@ Scope: **Only uk-recovery-staging**. No production credentials, migrations, or m
 ## Prerequisites
 - Use the existing isolated Supabase project with private bucket `driver-verification-private` and the existing tables `profiles`, `driver_profiles`, `driver_verification_documents` and `driver_memberships`. Do not create a replacement database.
 - Test with disposable Driver and Admin test accounts and staging-only Next.js/Vercel Preview deployment.
-- The existing staging guard must return `{"isolatedStaging":true,"writesEnabled":true}` at `/api/client-review-status`. If false, **STOP**; do not bypass the guard.
+- The dedicated onboarding status must return `{"clientDemo":true,"writesEnabled":false,"isolatedStaging":false,"driverRegistrationEnabled":true}` at `/api/client-review-status`, and `/api/driver/registration-status` must return `{"registrationEnabled":true}`. Broad marketplace writes intentionally stay OFF. If either registration value is false, **STOP**; do not bypass the gate.
 - Verify the bucket remains private and existing role/approval triggers and RLS policies are enabled. Do not loosen them.
 - Supabase Auth confirm-email setting is provider-controlled. With Confirm Email OFF, Auth creates an immediate session; with it ON, use verified email before application. Neither mode grants driver approval.
 
@@ -34,4 +34,13 @@ SELECT id, name, public FROM storage.buckets WHERE id='driver-verification-priva
 Only synthetic test users/documents are permitted for mutations; follow staging test-data retention policy. Never run against Production.
 
 ## New schema dependency
-Migration `supabase/migrations/0017_driver_client_requirements_staging.sql` must be reviewed and applied to isolated Staging before testing new fields or `valid_id`/photo document types. Production SQL must not be run without separate approval. Production driver signup stays blocked by existing marketplace proxy until a separately reviewed, minimal account-only exception is approved. Keep jobs, offers and billing blocked.
+Migration `supabase/migrations/0017_driver_client_requirements_staging.sql` is already reported verified on isolated Staging. Do NOT rerun blindly; inspect read-only metadata first if any schema error appears. Production SQL must not be run without separate approval. Production driver signup stays blocked by existing marketplace proxy until a separately reviewed, minimal account-only exception is approved. Keep jobs, offers and billing blocked.
+
+
+## PR #56 isolated onboarding deployment settings (never reveal values)
+- Scope all registration permissions to the Vercel **Preview** target for branch `feature/ss8-driver-approval-inbox-secure` only. An automatic Vercel redeploy must not be initiated until owner approves.
+- Required: `VERCEL_ENV=preview` and `VERCEL_GIT_COMMIT_REF=feature/ss8-driver-approval-inbox-secure` (provided by Vercel), `MARKETPLACE_STAGING_MODE=enabled`.
+- `NEXT_PUBLIC_SUPABASE_URL` and `STAGING_SUPABASE_URL` must point to the existing `ozphvosiqbzvkthlppkd` project. `PRODUCTION_SUPABASE_URL` must point to `eosrparfgrycdnykekcn`. No Production service-role secret is needed in Preview.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` must be the **Staging** publishable key; `SUPABASE_SERVICE_ROLE_KEY` and `STAGING_SUPABASE_SERVICE_ROLE_KEY` must both be the existing **Staging** server credential. The server validates both against the pinned staging Supabase Auth settings endpoint before allowing onboarding routes. If verification fails, everything stays blocked.
+- Keep real recovery bookings, offers, pricing updates, payments, emails, SMS and notifications disabled. `isolatedStaging:false` intentionally indicates the broader marketplace gate is OFF, **not** that scoped onboarding is disabled.
+- Production project identifiers in source and supplied metadata should be reconciled independently before general marketplace launch; this PR pins the project identity supplied for PR #56 only.
