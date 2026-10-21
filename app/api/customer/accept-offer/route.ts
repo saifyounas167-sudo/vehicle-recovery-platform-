@@ -1,6 +1,9 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 export async function POST(req:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Marketplace writes are paused for client review"},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
  const b=await req.json();if(typeof b.offerId!=="string"||!/^[0-9a-f-]{36}$/i.test(b.offerId))return NextResponse.json({error:"Invalid offer"},{status:400});
  const db=await createClient(),{data:{user}}=await db.auth.getUser();if(!user)return NextResponse.json({error:"Login required"},{status:401});
