@@ -27,15 +27,14 @@ export default function DriverRegisterPage(){
   // Supabase Auth settings determine whether email confirmation is required. A valid session is sufficient here.
   const response=await fetch("/api/driver/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fullName,phone,companyName,truckType,businessAddress,companyRegistrationNumber,recoveryExperience,recoveryTruckDetails:truckDetails,vehicleRegistrationDetails:vehicleRegistration,operatingAreas:operatingAreas.split(",").map(x=>x.trim()).filter(Boolean),coveragePostcode:postcode,coverageRadiusMiles:Number(radius),services})});
   const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable");
-  setSaved(true);setStep(4);setMessage("Application saved with Pending Admin Approval status. Redirecting to your Driver Dashboard.");
-  window.location.assign("/driver?application=pending");
+  setSaved(true);setStep(4);setMessage("Application saved as Pending Admin Approval. Upload your verification documents below before opening your Driver Dashboard.");
  }catch(error){setMessage(error instanceof Error?error.message:"Application unavailable");}
  finally{setBusy(false)}
  }
  return <main className="ss8-page"><section className="ss8-shell" aria-labelledby="ss8-title">
  <div className="ss8-head"><span>UK <strong>RECOVERY</strong></span><p>DRIVER REGISTRATION</p></div>
  <div className="ss8-body"><h1 id="ss8-title">Join as a Recovery Driver</h1><p className="ss8-lead">Create your account and start receiving recovery jobs in your area after verification and eligibility checks.</p>
- <div className="ss8-progress" aria-label="Registration progress"> {[1,2,3].map(n=><span key={n} className={step===n?"current":step>n?"complete":""}>{n===1?"Account":n===2?"Vehicle & services":"Coverage"}</span>)}</div>
+ <div className="ss8-progress" aria-label="Registration progress"> {[1,2,3,4].map(n=><span key={n} className={step===n?"current":step>n?"complete":""}>{n===1?"Account":n===2?"Vehicle & services":n===3?"Coverage":"Documents"}</span>)}</div>
  {step===1?<form className="ss8-form" onSubmit={goNext}>
   <label>Full Name<input required autoComplete="name" maxLength={120} minLength={2} placeholder="Full Name" value={fullName} onChange={e=>setFullName(e.target.value)}/></label>
   <label>Email Address<input required type="email" autoComplete="email" placeholder="Email Address" value={email} onChange={e=>setEmail(e.target.value)}/></label>
@@ -59,7 +58,7 @@ export default function DriverRegisterPage(){
   <label>UK coverage postcode<input required placeholder="M1 1AA" value={postcode} onChange={e=>setPostcode(e.target.value.toUpperCase())}/></label>
   <label>Operating Areas (comma separated)<input value={operatingAreas} onChange={e=>setOperatingAreas(e.target.value)} placeholder="Manchester, Salford"/></label>
   <label>Coverage radius (miles)<input required type="number" min="1" max="300" value={radius} onChange={e=>setRadius(e.target.value)}/></label>
-  <p className="ss8-notice">Email verification and admin approval are required. You will remain Pending and Offline until checked. Insurance and valid ID must be uploaded privately before admin approval. Driver profile picture and recovery truck photos can also be uploaded privately. When Supabase email confirmation is switched OFF, verified email sessions can submit immediately.</p>
+  <p className="ss8-notice">Admin approval is required. If email confirmation is enabled for your account, confirm your email before submitting. You will remain Pending and Offline until checked. Insurance and valid ID must be uploaded privately before admin approval. Driver profile picture and recovery truck photos can also be uploaded privately. When Supabase email confirmation is disabled, a valid authenticated session can submit immediately.</p>
   <div className="ss8-controls"><button type="button" onClick={()=>setStep(2)} disabled={busy}>Back</button><button className="ss8-primary" type="submit" disabled={busy}>{busy?"Submitting…":"Submit for Admin Review"}</button></div>
  </form>:<div className="ss8-confirmed"><h2>Application Pending Review</h2><p>Registration does not grant access to recovery jobs. Complete private document uploads below and wait for admin approval.</p>{saved&&<><DriverDocuments/><p className="ss8-login"><Link href="/driver" className="ss8-primary">Open Driver Dashboard →</Link></p></>}</div>}
  <p className="ss8-status" role="status">{message}</p>
