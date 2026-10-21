@@ -15,3 +15,13 @@ test("Screenshot 8 first screen has exactly five fields, password only on step t
  assert.doesNotMatch(first, /Password|type="password"/);
  assert.match(second,/<label>Password<input type="password"/);
 });
+
+test("Driver application stays on document upload step before dashboard",()=>{
+ const s=read("app/driver/register/page.tsx");
+ assert.match(s,/setSaved\(true\);setStep\(4\)/);
+ assert.doesNotMatch(s,/window\.location\.assign\("\/driver\?application=pending"\)/);
+ assert.match(s,/Complete private document uploads below/);
+ assert.match(s,/<DriverDocuments\/>/);
+ assert.match(s,/<Link href="\/driver" className="ss8-primary">Open Driver Dashboard/);
+ assert.match(s,/\[1,2,3,4\]\.map/);
+});
