@@ -20,7 +20,7 @@ test("PWA, customer signup, preview isolation, mobile accessibility",()=>{
  assert.match(header,/InstallAppButton/);
  assert.match(menu,/\/login\?role=customer&mode=signup/);
  assert.match(menu,/isDashboardPreviewEnabled/);
- assert.match(menu,/AccountNavigation/);
+ assert.doesNotMatch(menu,/AccountNavigation/);
  assert.match(menu,/Escape/);assert.match(menu,/e.key==="Tab"/);
  assert.match(menu,/previous.current\?\.focus/);
  assert.match(read("app/preview/layout.tsx"),/notFound/);
