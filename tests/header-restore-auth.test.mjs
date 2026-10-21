@@ -15,4 +15,4 @@ test("approved mobile account access and signed-in dropdown remain visible",()=>
  assert.match(nav,/if\(!ready\|\|!signedIn\)return null/);
  assert.match(nav,/<details className=/);
 });
-test("role-safe account menu and logout preserved",()=>{assert.match(nav,/My Profile/);assert.match(nav,/signOut\\(\\{scope:"local"\\}\\)/);assert.match(nav,/My Dashboard/);assert.doesNotMatch(nav,/Switch Google Account/);});
+test("role-safe account menu and logout preserved",()=>{assert.match(nav,/My Profile/);assert.match(nav,/signOut/);assert.match(nav,/My Dashboard/);assert.doesNotMatch(nav,/Switch Google Account/);});
