@@ -48,7 +48,7 @@ test("Private documents are never exposed through public paths",()=>{
  assert.match(api,/createSignedUrl\(doc.storage_path,60\)/);
  assert.match(api,/doc.storage_path.startsWith\(user.id\+"\/"\)/);
  assert.match(api,/file.size>5242880/);
- assert.match(api,/!isDriverRegistrationEnabled\(\)/);
+ assert.match(api,/!\(await isDriverRegistrationEnabled\(\)\)/);
 });
 test("Application remains in private staging and production OAuth and offers unchanged",()=>{
  assert.match(src("src/lib/client-review.ts"),/return true/);
