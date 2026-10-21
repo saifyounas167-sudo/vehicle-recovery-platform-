@@ -14,6 +14,7 @@ export default async function AccountPage(){
   }
   return result;
  })();
+ if(!profile){const {redirect}=await import("next/navigation");redirect("/login?reason=auth");}
  const role=profile.role;
  if(!allowed.has(role)){
   const {redirect}=await import("next/navigation");
