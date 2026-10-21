@@ -7,7 +7,7 @@ import {randomUUID} from "node:crypto";
 export const dynamic="force-dynamic";
 const json=(x:unknown,status=200)=>NextResponse.json(x,{status,headers:{"Cache-Control":"no-store"}});
 export async function POST(req:Request){
- if(!isDriverRegistrationEnabled())return json({error:"Uploads are paused in client-review mode"},503);
+ if(!(await isDriverRegistrationEnabled()))return json({error:"Uploads are paused in client-review mode"},503);
  try{
   const dbAuth=await createClient(),{data:{user}}=await dbAuth.auth.getUser();
   if(!user)return json({error:"Verified sign-in required"},401);
@@ -35,7 +35,7 @@ export async function POST(req:Request){
 
 /** Driver may list/view ONLY their own private uploaded documents. Never expose storage paths. */
 export async function GET(req:Request){
- if(!isDriverRegistrationEnabled())return json({error:"Document review is available only in isolated Staging"},503);
+ if(!(await isDriverRegistrationEnabled()))return json({error:"Document review is available only in isolated Staging"},503);
  try{
   const auth=await createClient(),{data:{user}}=await auth.auth.getUser();
   if(!user)return json({error:"Login required"},401);
