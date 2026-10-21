@@ -15,7 +15,7 @@ export default async function AccountPage(){
   return result;
  })();
  if(!profile){const {redirect}=await import("next/navigation");redirect("/login?reason=auth");}
- const role=profile.role;
+ const role=profile!.role;
  if(!allowed.has(role)){
   const {redirect}=await import("next/navigation");
   if(role==="customer")redirect("/customer/account");
@@ -31,8 +31,8 @@ export default async function AccountPage(){
    <div className="dashboard-card">
     <h2>Your account details</h2>
     <dl>
-     <dt>Full name</dt><dd>{profile.full_name||"Not provided"}</dd>
-     <dt>Email address</dt><dd>{profile.email||"Not provided"}</dd>
+     <dt>Full name</dt><dd>{profile!.full_name||"Not provided"}</dd>
+     <dt>Email address</dt><dd>{profile!.email||"Not provided"}</dd>
      <dt>Account type</dt><dd>{role==="driver"?"Driver":"Administrator"}</dd>
     </dl>
     <p>Profile changes are unavailable during client review. Your role and account access are protected.</p>
