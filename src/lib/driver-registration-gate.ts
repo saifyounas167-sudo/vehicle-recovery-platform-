@@ -2,29 +2,68 @@ import {isIsolatedMarketplaceStaging} from "./marketplace-staging";
 
 const STAGING="https://ozphvosiqbzvkthlppkd.supabase.co";
 const PRODUCTION="https://eosrparfgrycdnykekcn.supabase.co";
-const BRANCH="feature/ss8-driver-approval-inbox-secure";
+export const DRIVER_ONBOARDING_BRANCH="feature/ss8-driver-approval-inbox-secure";
 
-/** Scoped to Driver onboarding, NOT the marketplace staging write gate. */
-export function isDriverRegistrationConfigured():boolean{
+/**
+ * Onboarding ONLY: never turn on the general marketplace staging gate.
+ * Checks contain booleans only; no credential, URL or response body is exposed.
+ */
+export function driverRegistrationChecks():Record<string,boolean>{
  const e=process.env;
- return e.VERCEL_ENV==="preview"&&e.VERCEL_GIT_COMMIT_REF===BRANCH
-  &&e.MARKETPLACE_STAGING_MODE==="enabled"
-  &&e.NEXT_PUBLIC_SUPABASE_URL===STAGING
-  &&e.STAGING_SUPABASE_URL===STAGING
-  &&e.PRODUCTION_SUPABASE_URL===PRODUCTION
-  &&!!e.STAGING_SUPABASE_SERVICE_ROLE_KEY
-  &&e.SUPABASE_SERVICE_ROLE_KEY===e.STAGING_SUPABASE_SERVICE_ROLE_KEY
-  &&!!e.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  &&!isIsolatedMarketplaceStaging();
+ const service=e.SUPABASE_SERVICE_ROLE_KEY;
+ const publishable=e.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+ return {
+  previewEnvironment:e.VERCEL_ENV==="preview"&&e.VERCEL_ENV!=="production",
+  correctPreviewBranch:e.VERCEL_GIT_COMMIT_REF===DRIVER_ONBOARDING_BRANCH,
+  explicitStagingOptIn:e.MARKETPLACE_STAGING_MODE==="enabled",
+  activeProjectIsStaging:e.NEXT_PUBLIC_SUPABASE_URL===STAGING,
+  stagingProjectIsPinned:e.STAGING_SUPABASE_URL===STAGING,
+  productionProjectIsSeparate:e.PRODUCTION_SUPABASE_URL===PRODUCTION,
+  stagingServiceKeyPresent:!!e.STAGING_SUPABASE_SERVICE_ROLE_KEY,
+  serviceKeyMatchesStaging:!!service&&service===e.STAGING_SUPABASE_SERVICE_ROLE_KEY,
+  serviceKeyTypeSafe:!!service&&!service.startsWith("sb_publishable_"),
+  publishableKeyPresent:!!publishable,
+  publishableKeyTypeSafe:!!publishable&&!publishable.startsWith("sb_secret_"),
+  generalMarketplaceGateClosed:!isIsolatedMarketplaceStaging()
+ };
 }
-/** Verify both keys against the pinned Staging provider, not merely names. No secrets are logged. */
-export async function isDriverRegistrationEnabled():Promise<boolean>{
- if(!isDriverRegistrationConfigured())return false;
+
+export function isDriverRegistrationConfigured():boolean{
+ return Object.values(driverRegistrationChecks()).every(Boolean);
+}
+
+type ProviderCheck="passed"|"rejected"|"unavailable"|"not_checked";
+
+/** Provider verifies apikey against the pinned Staging project. */
+async function verifyStagingKey(key:string):Promise<ProviderCheck>{
  try{
-  const keys=[process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!];
-  const results=await Promise.all(keys.map(key=>fetch(STAGING+"/auth/v1/settings",{
-   headers:{apikey:key},cache:"no-store",signal:AbortSignal.timeout(4000)
-  })));
-  return results.every(r=>r.ok);
- }catch{return false;}
+  const res=await fetch(STAGING+"/auth/v1/settings",{
+   method:"GET",headers:{apikey:key},
+   cache:"no-store",signal:AbortSignal.timeout(4500)
+  });
+  if(res.ok)return "passed";
+  return res.status===401||res.status===403?"rejected":"unavailable";
+ }catch{return "unavailable";}
+}
+
+export async function getDriverRegistrationGateDiagnostics(){
+ const checks=driverRegistrationChecks();
+ const configured=Object.values(checks).every(Boolean);
+ let publishable:ProviderCheck="not_checked",service:ProviderCheck="not_checked";
+ if(configured){
+  [publishable,service]=await Promise.all([
+   verifyStagingKey(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!),
+   verifyStagingKey(process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY!)
+  ]);
+ }
+ return {
+  checks,
+  providerVerification:{publishable,service},
+  registrationEnabled:configured&&publishable==="passed"&&service==="passed"
+ };
+}
+
+/** Fail closed on missing/incorrect runtime settings, wrong project or provider denial. */
+export async function isDriverRegistrationEnabled():Promise<boolean>{
+ return (await getDriverRegistrationGateDiagnostics()).registrationEnabled;
 }
