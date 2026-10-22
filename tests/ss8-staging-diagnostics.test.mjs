@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 const read=p=>readFileSync(p,"utf8");
 test("Staging gate is pinned, fail closed and never requires Production service-role credentials",()=>{
  const s=read("src/lib/driver-registration-gate.ts");
- for(const x of ["ozphvosiqbzvkthlppkd","eosrparfgrycdnykekcn","VERCEL_ENV","VERCEL_GIT_COMMIT_REF","MARKETPLACE_STAGING_MODE","STAGING_SUPABASE_URL","STAGING_SUPABASE_SERVICE_ROLE_KEY","NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY","isIsolatedMarketplaceStaging","registrationEnabled:configured&&publishable==="+"passed"+'"&&service==="passed"']) assert.ok(s.includes(x),x);
+ for(const x of ["ozphvosiqbzvkthlppkd","eosrparfgrycdnykekcn","VERCEL_ENV","VERCEL_GIT_COMMIT_REF","MARKETPLACE_STAGING_MODE","STAGING_SUPABASE_URL","STAGING_SUPABASE_SERVICE_ROLE_KEY","NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY","isIsolatedMarketplaceStaging",'registrationEnabled:configured&&publishable==="passed"&&service==="passed"']) assert.ok(s.includes(x),x);
  assert.doesNotMatch(s,/PRODUCTION_SUPABASE_SERVICE_ROLE_KEY/);
 });
 test("Status GET bypasses read-only proxy but marketplace operations remain protected",()=>{
