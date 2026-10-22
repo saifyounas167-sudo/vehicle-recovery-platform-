@@ -7,6 +7,10 @@ export async function proxy(request:NextRequest){
  // Public homepage never requires server-side Supabase auth. Keep protected
  // dashboard routes on updateSession; this avoids a failing Preview Auth
  // dependency from preventing the public site from loading.
+ // OPTIONS is a safe capability probe on the PUBLIC root, not a write.
+ // Never grant OPTIONS bypasses to APIs or authenticated dashboard routes.
+ if(request.nextUrl.pathname==="/"&&request.method==="OPTIONS")
+  return new NextResponse(null,{status:204,headers:{"Allow":"GET, HEAD, OPTIONS","Cache-Control":"no-store"}});
  if(request.nextUrl.pathname==="/"&&(request.method==="GET"||request.method==="HEAD"))
   return NextResponse.next({request});
  if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging()){
