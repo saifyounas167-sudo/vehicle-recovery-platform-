@@ -18,7 +18,8 @@ test("Diagnostic response is Admin-only and contains no secrets",()=>{
  const p=read("app/api/driver/registration-diagnostics/route.ts");
  assert.match(p,/requireRole\("admin"\)/);
  assert.match(p,/getDriverRegistrationGateDiagnostics/);
- assert.doesNotMatch(p,/process\.env|SUPABASE_SERVICE_ROLE_KEY|apiKey|secret:/);
+ assert.match(p,/VERCEL_ENV/);assert.match(p,/DRIVER_ONBOARDING_BRANCH/);
+ assert.doesNotMatch(p,/SUPABASE_SERVICE_ROLE_KEY|apiKey|secret:/);
  const d=read("src/lib/driver-registration-gate.ts");
  assert.match(d,/providerVerification:\{publishable,service\}/);
  assert.match(d,/res.status===401\|\|res.status===403/);
