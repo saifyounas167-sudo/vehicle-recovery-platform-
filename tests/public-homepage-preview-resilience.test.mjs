@@ -13,3 +13,13 @@ test("authenticated routes continue to refresh sessions and marketplace writes r
  assert.match(proxy,/if\(!path\.startsWith\("\/api\/"\) && method!=="GET" && method!=="HEAD"\)/);
  assert.doesNotMatch(proxy,/request\.nextUrl\.pathname==="\/admin"/);
 });
+
+test("OPTIONS root is 204 and scoped narrowly to public homepage",()=>{
+ assert.match(proxy,/pathname==="\/"&&request\.method==="OPTIONS"/);
+ assert.match(proxy,/status:204/);
+ assert.match(proxy,/"Allow":"GET, HEAD, OPTIONS"/);
+ const rootOption=proxy.indexOf('pathname==="/"&&request.method==="OPTIONS"');
+ const writeGate=proxy.indexOf("if(isClientReviewDemo()");
+ assert.ok(rootOption>=0&&rootOption<writeGate);
+ assert.match(proxy,/if\(!path\.startsWith\("\/api\/"\) && method!=="GET" && method!=="HEAD"\)/);
+});
