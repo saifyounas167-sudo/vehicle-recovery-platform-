@@ -13,7 +13,7 @@ export function driverRegistrationChecks():Record<string,boolean>{
  const service=e.SUPABASE_SERVICE_ROLE_KEY;
  const publishable=e.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
  return {
-  previewEnvironment:e.VERCEL_ENV==="preview"&&e.VERCEL_ENV!=="production",
+  previewEnvironment:e.VERCEL_ENV==="preview",
   correctPreviewBranch:e.VERCEL_GIT_COMMIT_REF===DRIVER_ONBOARDING_BRANCH,
   explicitStagingOptIn:e.MARKETPLACE_STAGING_MODE==="enabled",
   activeProjectIsStaging:e.NEXT_PUBLIC_SUPABASE_URL===STAGING,
