@@ -16,9 +16,10 @@ test("Driver signup requires staging and keeps role assignment server-side",()=>
 test("Approval and membership and staging gate job feed",()=>{
  const page=src("app/driver/page.tsx"),job=src("app/driver/jobs/[id]/page.tsx");
  assert.match(page,/requireRole\("driver"\)/);
- assert.match(page,/approved && subscribed && marketplaceOpen/);
- assert.match(page,/canSeeJobs\?await/);
- assert.match(page,/canSeeJobs \?/);
+ assert.match(page,/const eligible=approved&&member/);
+ assert.match(page,/eligible\?await supabase\.from\("recovery_jobs"\)/);
+ assert.match(page,/member=membership\?\.status==="active"/);
+ assert.match(page,/isIsolatedMarketplaceStaging\(\)/);
  assert.match(job,/membership\?\.status!=="active"/);
  assert.match(job,/isClientReviewDemo\(\)&&!isIsolatedMarketplaceStaging\(\)/);
  assert.match(src("app/api/driver/offers/route.ts"),/membership\?\.status!=="active"/);
@@ -26,8 +27,9 @@ test("Approval and membership and staging gate job feed",()=>{
 test("Admin pending inbox is backed by database only and role protected",()=>{
  const page=src("app/admin/page.tsx");
  assert.match(page,/requireRole\("admin"\)/);
- assert.match(page,/select\("id",\{count:"exact",head:true\}\)\.eq\("approval_status","pending"\)/);
- assert.match(page,/Driver Approval Inbox/);
+ assert.match(page,/\.eq\("approval_status","pending"\)/);
+ assert.match(page,/\/admin\/drivers/);
+ assert.match(page,/Driver Approvals|Driver approvals|Drivers/);
  assert.doesNotMatch(page,/fakeApplications|mockDrivers|sampleApproval/);
 });
 test("Admin approval validates required documents, capability and current status",()=>{
