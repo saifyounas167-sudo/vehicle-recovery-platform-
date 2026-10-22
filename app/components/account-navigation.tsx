@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import {useEffect,useState} from "react";
-import {createClient} from "@/lib/supabase/client";
+import {createClient,hasBrowserSupabaseConfig} from "@/lib/supabase/client";
 type Role="customer"|"driver"|"admin";
 export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boolean,onNavigate?:()=>void}){
  const [role,setRole]=useState<Role|null>(null),[signedIn,setSignedIn]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false);
  useEffect(()=>{
   let active=true;
+  // The public header must render even if Preview was built without Auth env.
+  if(!hasBrowserSupabaseConfig()){setReady(true);return;}
   const supabase=createClient();
   async function refresh(){
    const {data:{user}}=await supabase.auth.getUser();
