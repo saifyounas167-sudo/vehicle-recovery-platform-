@@ -56,10 +56,10 @@ test("Application remains in private staging and production OAuth and offers unc
  assert.match(src("proxy.ts"),/if\(!allowedGet&&!allowedEstimate\)/);
 });
 
-test("Existing Staging Driver may inspect boolean-only diagnostics without admin access",()=>{
+test("Staging diagnostics require Admin role and deny Driver access",()=>{
  const route=src("app/api/driver/registration-diagnostics/route.ts");
- assert.match(route,/getCurrentProfile/);
- assert.match(route,/\["admin","driver"\]\.includes\(profile\.role\)/);
+ assert.match(route,/requireRole\("admin"\)/);
+ assert.doesNotMatch(route,/\["admin","driver"\]\.includes\(profile\.role\)/);
  assert.match(route,/VERCEL_ENV!=="preview"/);
  assert.match(route,/DRIVER_ONBOARDING_BRANCH/);
  assert.match(route,/getDriverRegistrationGateDiagnostics/);
