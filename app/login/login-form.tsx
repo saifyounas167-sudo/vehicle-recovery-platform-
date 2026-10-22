@@ -8,7 +8,9 @@ import CustomerSignup from "./customer-signup";
 const destination={driver:"/driver",customer:"/customer",admin:"/admin"} as const;
 type Role=keyof typeof destination;
 function readableAuthError(error:unknown):string{
- const message=error instanceof Error?error.message:String(error??"");
+ const message=error instanceof Error?error.message:
+   error&&typeof error==="object"&&"message" in error&&typeof error.message==="string"
+    ?error.message:"Authentication is temporarily unavailable. Please try again.";
  if(/failed to fetch|networkerror|network request failed|load failed/i.test(message)){
   return "Cannot connect to the authentication server. Check your internet connection, disable VPN/ad blockers temporarily, then try again. If it continues, contact support; your password has not been changed.";
  }
@@ -23,6 +25,7 @@ export default function LoginForm(){
  const [showPassword,setShowPassword]=useState(false);
  const [googleEnabled,setGoogleEnabled]=useState(false);
  const [recoveryReady,setRecoveryReady]=useState(false);
+ const [emailUnconfirmed,setEmailUnconfirmed]=useState(false);
  useEffect(()=>{if(mode!=="recovery")return;createClient().auth.getSession().then(({data})=>setRecoveryReady(Boolean(data.session))).catch(()=>setRecoveryReady(false))},[mode]);
  useEffect(()=>{let active=true;fetch("/api/auth/google-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{if(active)setGoogleEnabled(v?.enabled===true)}).catch(()=>{if(active)setGoogleEnabled(false)});return()=>{active=false}},[]);
  async function googleSignIn(){if(!googleEnabled||busy)return;setBusy(true);setError("");try{
@@ -32,7 +35,12 @@ export default function LoginForm(){
   if(error)throw error;
  }catch(e){setError(readableAuthError(e));setBusy(false)}
  }
- async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");setNotice("");
+ async function resendVerification(){if(busy||!email.trim())return;setBusy(true);setError("");setNotice("");try{
+  const {error}=await createClient().auth.resend({type:"signup",email:email.trim().toLowerCase(),options:{emailRedirectTo:window.location.origin+"/auth/confirm?type=signup"}});
+  if(error)throw error;
+  setNotice("If this account is waiting for confirmation, a new email will arrive. Check Inbox and Spam. Open the newest link.");
+ }catch(e){setError(readableAuthError(e));}finally{setBusy(false)}}
+ async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");setNotice("");setEmailUnconfirmed(false);
  try{
   const supabase=createClient();
   if(mode==="forgot"){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/auth/confirm?type=recovery"});if(error)throw error;setNotice("If this email has an account, a password reset link will arrive shortly.");return;}
@@ -40,12 +48,14 @@ export default function LoginForm(){
 
   const {data,error:loginError}=await supabase.auth.signInWithPassword({email,password});if(loginError)throw loginError;
   if(!data.user)throw Error("Unable to verify your session.");
-  const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",data.user.id).maybeSingle();if(profileError)throw profileError;
+  const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",data.user.id).maybeSingle();
+  if(profileError){console.error("Customer login profile lookup failed",profileError.code);
+   throw new Error("Account profile could not be loaded. Please try again. If it continues, contact support (reference "+(profileError.code||"profile") +").");}
   if(!profile||profile.role!==role){await supabase.auth.signOut({scope:"local"});window.location.assign("/403");return;}
   const next=params.get("next");
   const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")&&!next.includes("\\")&&(next===destination[role]||next.startsWith(destination[role]+"/"))?next:destination[role];
   window.location.assign(safeNext);
- }catch(e){setError(readableAuthError(e));}finally{setBusy(false)}
+ }catch(e){const message=readableAuthError(e);const unconfirmed=/email not confirmed/i.test(message);setEmailUnconfirmed(unconfirmed);setError(unconfirmed?"Email not confirmed. Check your email verification link or request a new one below.":message);}finally{setBusy(false)}
  }
  if(mode==="signup"&&role==="customer")return <CustomerSignup/>;
  const heading=mode==="forgot"?"Forgot Password":mode==="recovery"?"Choose New Password":mode==="signup"?"Create Customer Account":role==="driver"?"Driver Login":role==="admin"?"Admin Login":"Customer Login";
@@ -54,8 +64,11 @@ export default function LoginForm(){
   <h1 id="premium-login-heading">{heading}</h1>
   <p className="premium-login-intro">{mode==="forgot"?"Enter your account email to receive a secure reset link.":mode==="recovery"?"Set a strong new password for your account.":"Welcome back. Sign in to your secure dashboard."}</p>
   {params.get("reason")==="auth"&&<p className="premium-login-notice">Please sign in to continue.</p>}
+  {params.get("reason")==="verified"&&<p className="premium-login-notice">Email verified. Please sign in to continue.</p>}
+  {["expired_link","invalid_link","access_pending"].includes(params.get("reason")||"")&&<p className="premium-login-error" role="alert">Confirmation could not be completed. The link may be expired or already used. Please request a new confirmation email.</p>}
   {error&&<p className="premium-login-error" role="alert">{error}</p>}
   {notice&&<p className="premium-login-notice" role="status">{notice}</p>}
+  {role==="customer"&&mode!=="forgot"&&mode!=="recovery"&&emailUnconfirmed&&<button type="button" className="premium-login-google" disabled={busy||!email.trim()} onClick={()=>void resendVerification()}>Resend Confirmation Email</button>}
   <form onSubmit={submit} className="premium-login-form">
    {mode!=="recovery"&&<label>Email Address<div className="premium-login-field"><Icon name="email"/><input type="email" required autoComplete="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/></div></label>}
    {mode!=="forgot"&&<label>{mode==="recovery"?"New Password":"Password"}<div className="premium-login-field"><Icon name="lock"/><input type={showPassword?"text":"password"} required minLength={mode==="recovery"?10:undefined} autoComplete={mode==="recovery"?"new-password":"current-password"} placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" className="premium-login-reveal" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Hide password":"Show password"}>{showPassword?"Hide":"Show"}</button></div></label>}
