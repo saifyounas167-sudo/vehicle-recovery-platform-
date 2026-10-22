@@ -15,6 +15,12 @@ test("Preview build check reports missing NAMES only and fails closed",()=>{
  assert.match(run.stderr,/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
  assert.doesNotMatch(run.stderr,/sk_live_|eyJ/);
 });
+test("Vercel deployment preflight also fails closed when VERCEL_ENV is absent",()=>{
+ const run=spawnSync(process.execPath,["scripts/validate-public-env.mjs"],{env:{PATH:process.env.PATH,VERCEL:"1"},encoding:"utf8"});
+ assert.notEqual(run.status,0);
+ assert.match(run.stderr,/Missing effective BUILD-TIME public environment variable names/);
+ assert.doesNotMatch(run.stderr,/sk_live_|eyJ/);
+});
 test("Local build does not require connected Supabase",()=>{
  const run=spawnSync(process.execPath,["scripts/validate-public-env.mjs"],{env:{PATH:process.env.PATH},encoding:"utf8"});
  assert.equal(run.status,0);
