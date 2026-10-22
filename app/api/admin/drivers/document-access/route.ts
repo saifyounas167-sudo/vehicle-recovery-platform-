@@ -1,12 +1,12 @@
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 import {serverDb} from "@/src/lib/guest-access";
-import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isDriverRegistrationEnabled} from "@/src/lib/driver-registration-gate";
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 export const dynamic="force-dynamic";
 export async function GET(req:Request){
  const fail=(message:string,status:number)=>NextResponse.json({error:message},{status,headers:{"Cache-Control":"no-store"}});
- if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return fail("Admin review paused",503);
+ if(!(await isDriverRegistrationEnabled()))return fail("Admin review paused",503);
  try{
   const auth=await createClient(),{data:{user}}=await auth.auth.getUser();
   if(!user)return fail("Admin login required",401);
