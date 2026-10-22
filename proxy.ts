@@ -12,12 +12,18 @@ export async function proxy(request:NextRequest){
   if(path.startsWith("/api/")){
    const allowedGet=method==="GET" && [
     "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/driver/registration-status","/api/driver/registration-diagnostics","/api/recovery/postcode",
-    "/api/recovery/location-suggest"
+    "/api/recovery/location-suggest",
+    "/api/driver/registration-status"
    ].includes(path);
    // Estimates may only resolve postcodes/ORS; the quote handler is read-only.
    const allowedEstimate=method==="POST" && [
     "/api/recovery/open-estimate","/api/recovery/estimate"
    ].includes(path);
+   // Admin-authenticated diagnostics are read-only and restricted to PR56 Preview.
+   if(method==="GET"&&path==="/api/driver/staging-diagnostics"&&
+      process.env.VERCEL_ENV==="preview"&&
+      process.env.VERCEL_GIT_COMMIT_REF==="feature/ss8-driver-approval-inbox-secure")
+    return NextResponse.next({request});
    // PR #56: isolated driver onboarding only; no general marketplace writes.
    const onboardingGet=method==="GET"&&[
     "/api/driver/registration-status","/api/driver/documents",
