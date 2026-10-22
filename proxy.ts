@@ -27,7 +27,7 @@ export async function proxy(request:NextRequest){
     "/api/driver/apply","/api/driver/documents","/api/admin/drivers"
    ].includes(path);
    if((onboardingGet||onboardingWrite)&&await isDriverRegistrationEnabled())
-    return NextResponse.next({request});
+    return updateSession(request);
    if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
