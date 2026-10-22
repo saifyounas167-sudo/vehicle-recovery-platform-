@@ -24,6 +24,15 @@ export async function proxy(request:NextRequest){
       process.env.VERCEL_ENV==="preview"&&
       process.env.VERCEL_GIT_COMMIT_REF==="feature/ss8-driver-approval-inbox-secure")
     return NextResponse.next({request});
+   // Single-use Admin setup is limited to the exact Staging Preview and remains
+   // additionally guarded in its route by Auth, verified UUID and setup token.
+   if(method==="POST"&&path==="/api/staging/admin-activate"&&
+      process.env.VERCEL_ENV==="preview"&&
+      process.env.VERCEL_GIT_COMMIT_REF==="feature/ss8-driver-approval-inbox-secure"&&
+      process.env.STAGING_ADMIN_ACTIVATION_ENABLED==="enabled"&&
+      process.env.NEXT_PUBLIC_SUPABASE_URL==="https://ozphvosiqbzvkthlppkd.supabase.co"&&
+      process.env.STAGING_SUPABASE_URL==="https://ozphvosiqbzvkthlppkd.supabase.co")
+    return updateSession(request);
    // PR #56: isolated driver onboarding only; no general marketplace writes.
    const onboardingGet=method==="GET"&&[
     "/api/driver/registration-status","/api/driver/documents",
