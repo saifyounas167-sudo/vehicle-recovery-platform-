@@ -4,6 +4,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isClientReviewDemo } from "@/src/lib/client-review";
 export async function proxy(request:NextRequest){
+ // Public homepage never requires server-side Supabase auth. Keep protected
+ // dashboard routes on updateSession; this avoids a failing Preview Auth
+ // dependency from preventing the public site from loading.
+ if(request.nextUrl.pathname==="/"&&(request.method==="GET"||request.method==="HEAD"))
+  return NextResponse.next({request});
  if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging()){
   const path=request.nextUrl.pathname, method=request.method;
   // Prevent Next.js Server Actions and any page-origin POST/PUT/PATCH/DELETE.
