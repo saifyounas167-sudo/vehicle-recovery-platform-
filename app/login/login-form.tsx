@@ -43,7 +43,7 @@ export default function LoginForm(){
  async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");setNotice("");setEmailUnconfirmed(false);
  try{
   const supabase=createClient();
-  if(mode==="forgot"){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/auth/confirm?type=recovery"});if(error)throw error;setNotice("If this email has an account, a password reset link will arrive shortly.");return;}
+  if(mode==="forgot"){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/auth/confirm?type=recovery&role="+(role==="driver"?"driver":"customer")});if(error)throw error;setNotice("If this email has an account, a password reset link will arrive shortly.");return;}
   if(mode==="recovery"){if(!recoveryReady)throw Error("Open a valid password reset email link first.");if(password.length<10)throw Error("Use at least 10 characters.");const {error}=await supabase.auth.updateUser({password});if(error)throw error;await supabase.auth.signOut({scope:"local"});setNotice("Password updated. You can now sign in.");return;}
 
   const {data,error:loginError}=await supabase.auth.signInWithPassword({email,password});if(loginError)throw loginError;
@@ -65,7 +65,7 @@ export default function LoginForm(){
   <p className="premium-login-intro">{mode==="forgot"?"Enter your account email to receive a secure reset link.":mode==="recovery"?"Set a strong new password for your account.":"Welcome back. Sign in to your secure dashboard."}</p>
   {params.get("reason")==="auth"&&<p className="premium-login-notice">Please sign in to continue.</p>}
   {params.get("reason")==="verified"&&<p className="premium-login-notice">Email verified. Please sign in to continue.</p>}
-  {["expired_link","invalid_link","access_pending"].includes(params.get("reason")||"")&&<p className="premium-login-error" role="alert">Confirmation could not be completed. The link may be expired or already used. Please request a new confirmation email.</p>}
+  {["expired_link","invalid_link","access_pending"].includes(params.get("reason")||"")&&<p className="premium-login-error" role="alert">Confirmation or reset link was invalid, expired or already used. <Link href={"/login?role="+role+"&mode=forgot"}>Request a fresh password reset email</Link>.</p>}
   {error&&<p className="premium-login-error" role="alert">{error}</p>}
   {notice&&<p className="premium-login-notice" role="status">{notice}</p>}
   {role==="customer"&&mode!=="forgot"&&mode!=="recovery"&&emailUnconfirmed&&<button type="button" className="premium-login-google" disabled={busy||!email.trim()} onClick={()=>void resendVerification()}>Resend Confirmation Email</button>}
