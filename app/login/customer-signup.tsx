@@ -42,7 +42,7 @@ export default function CustomerSignup(){
     ?"If this email is already registered, sign in or reset your password.":m);
   }finally{setBusy(false)}
  }
- if(sent)return <section className="premium-login-card" aria-live="polite"><div className="premium-login-role">UK RECOVERY · CUSTOMER</div><h1>Check your email</h1><p className="premium-login-intro">If the address is eligible, a verification email will arrive shortly. Open its secure link to finish registration.</p><p className="premium-login-safety">Check spam or junk mail if needed.</p><Link className="premium-login-submit" href="/login?role=customer">Back to Sign In</Link></section>;
+ if(sent)return <section className="premium-login-card" aria-live="polite"><div className="premium-login-role">UK RECOVERY · CUSTOMER</div><h1>Check your email</h1><p className="premium-login-intro">If the address is eligible, a verification email will arrive shortly. Open its secure link to finish registration.</p><p className="premium-login-safety">Check spam or junk mail if needed.</p>{window.location.hostname.endsWith(".vercel.app")&&<p className="premium-login-safety">If this is a protected Preview, open the confirmation email in a browser already authorised for this Vercel Preview. Public Production customers will not need Vercel access.</p>}<Link className="premium-login-submit" href="/login?role=customer">Back to Sign In</Link></section>;
  return <section className="premium-login-card" aria-labelledby="customer-signup-title">
   <div className="premium-login-brand">UK <strong>RECOVERY</strong></div>
   <div className="premium-login-role">CUSTOMER PORTAL</div><h1 id="customer-signup-title">Create your account</h1>
