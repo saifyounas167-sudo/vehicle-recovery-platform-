@@ -13,7 +13,7 @@ test("email confirmation consumes single-use code and never redirects to user-pr
  const src=read("app/auth/confirm/route.ts");
  assert.match(src,/exchangeCodeForSession\(code\)/);
  assert.match(src,/verifyOtp\(/);
- assert.match(src,/profile\?\.role!==\"customer\"/);
+ assert.match(src,/profile\?\.role!==\(kind==="signup"\?"customer":role\)/);
  assert.match(src,/new URL\(\"\/customer\",origin\)/);
  assert.doesNotMatch(src,/searchParams\.get\(\"next\"\)|searchParams\.get\(\"redirect\"\)/);
  assert.match(src,/Referrer-Policy/);
