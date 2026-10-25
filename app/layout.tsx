@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PwaRegister } from "./pwa-register";
+import RecoveryFragmentHandler from "./recovery-fragment-handler";
 
 export const metadata: Metadata = {
   title: "UK Vehicle Recovery",
@@ -22,5 +23,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-GB"><body><PwaRegister />{children}</body></html>;
+  return <html lang="en-GB"><body><RecoveryFragmentHandler/><PwaRegister />{children}</body></html>;
 }
