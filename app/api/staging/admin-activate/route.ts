@@ -53,10 +53,21 @@ export async function POST(req:Request){
   if(activationError){
    // Server logs only: PostgREST/PostgreSQL error code and tightly allowlisted cause.
    // Do not log error.message/details/hint, user IDs, tokens, or credentials.
-   const cause=activationError.message==="Account role change denied"?"role_guard_denied":"rpc_database_error";
+   const rawCode=activationError.code;
+   const code=typeof rawCode==="string"&&/^(?:[A-Z0-9]{5}|PGRST[0-9]{3})$/.test(rawCode)?rawCode:"unknown";
+   // PostgREST may return an error without a SQLSTATE (e.g. network/fetch failure).
+   // Never emit raw messages, stack traces, headers, token, or provider response bodies.
+   const message=typeof activationError.message==="string"?activationError.message:"";
+   const cause=message==="Account role change denied"?"role_guard_denied":
+    /fetch failed|failed to fetch|network|connection|timeout/i.test(message)?"network_or_transport":
+    /permission denied|insufficient privilege/i.test(message)?"rpc_permission":
+    /function .* not found|schema cache/i.test(message)?"rpc_missing_or_schema_cache":"rpc_database_error";
+   const stagingServiceKey=process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY;
    console.warn("[staging-admin-activate] rpc_failed",{
-    code:/^(?:[A-Z0-9]{5}|PGRST[0-9]{3})$/.test(activationError.code||"")?activationError.code:"unknown",
-    cause
+    code,cause,
+    serviceKeyPresent:Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    stagingServiceKeyPresent:Boolean(stagingServiceKey),
+    serviceKeyMatchesStaging:Boolean(stagingServiceKey)&&process.env.SUPABASE_SERVICE_ROLE_KEY===stagingServiceKey
    });
    return fail("Activation unavailable or already used",409);
   }
