@@ -20,8 +20,15 @@ export async function POST(req:Request){
   process.env.STAGING_ADMIN_ACTIVATION_ENABLED!=="enabled")return fail("Unavailable",404);
  const pinnedId=process.env.STAGING_ADMIN_USER_ID;
  const digest=process.env.STAGING_ADMIN_SETUP_TOKEN_SHA256;
- if(!pinnedId||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pinnedId)||
-  !digest||!/^[a-f0-9]{64}$/i.test(digest))return fail("Setup not configured",503);
+ const invalidSetupNames=[
+  ...(!pinnedId||!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(pinnedId)?["STAGING_ADMIN_USER_ID"]:[]),
+  ...(!digest||!/^[a-f0-9]{64}$/i.test(digest)?["STAGING_ADMIN_SETUP_TOKEN_SHA256"]:[])
+ ];
+ if(invalidSetupNames.length){
+  // Log variable NAMES only. Do not log secret values, lengths, hashes or tokens.
+  console.warn("[staging-admin-activate] missing_or_invalid_env_names",invalidSetupNames);
+  return fail("Setup not configured",503);
+ }
  if(Number(req.headers.get("content-length")||0)>1024)return fail("Request too large",413);
  const origin=req.headers.get("origin");
  if(!origin||origin!==new URL(req.url).origin)return fail("Invalid origin",403);
