@@ -50,7 +50,22 @@ export async function POST(req:Request){
   const {data, error:activationError}=await serverDb().rpc("activate_single_staging_admin",{
    p_user_id:user.id,p_email:EMAIL
   });
-  if(activationError||data!==true)return fail("Activation unavailable or already used",409);
+  if(activationError){
+   // Server logs only: PostgREST/PostgreSQL error code and tightly allowlisted cause.
+   // Do not log error.message/details/hint, user IDs, tokens, or credentials.
+   const cause=activationError.message==="Account role change denied"?"role_guard_denied":"rpc_database_error";
+   console.warn("[staging-admin-activate] rpc_failed",{
+    code:/^[A-Z0-9]{5}$/.test(activationError.code||"")?activationError.code:"unknown",
+    cause
+   });
+   return fail("Activation unavailable or already used",409);
+  }
+  if(data!==true){
+   console.warn("[staging-admin-activate] rpc_result_not_true",{
+    resultType:data===false?"false":data===null?"null":typeof data
+   });
+   return fail("Activation unavailable or already used",409);
+  }
   return NextResponse.json({activated:true,signInAt:"/login?role=admin"},{headers:{"Cache-Control":"no-store"}});
  }catch{return fail("Activation unavailable",503);}
 }
