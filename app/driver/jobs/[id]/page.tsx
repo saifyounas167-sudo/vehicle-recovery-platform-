@@ -1,4 +1,6 @@
 import DriverOfferForm from "./offer-form";
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -8,7 +10,9 @@ export default async function DriverJobPage({ params }: { params: Promise<{ id: 
   const { user } = await requireRole("driver");
   const supabase = await createClient();
   const { data: driver } = await supabase.from("driver_profiles").select("approval_status").eq("id", user.id).maybeSingle();
-  if (driver?.approval_status !== "approved") return notFound();
+  if (driver?.approval_status !== "approved" || (isClientReviewDemo()&&!isIsolatedMarketplaceStaging())) return notFound();
+  const {data:membership}=await supabase.from("driver_memberships").select("status,valid_until").eq("driver_id",user.id).maybeSingle();
+  if(membership?.status!=="active"||!membership.valid_until||new Date(membership.valid_until)<=new Date())return notFound();
 
   const { id } = await params;
   const { data: job } = await supabase.from("recovery_jobs").select("id,recovery_type,pickup_postcode,destination_postcode,vehicle_type,running_status,problem_description,is_urgent,status,preferred_collection_time").eq("id", id).maybeSingle();

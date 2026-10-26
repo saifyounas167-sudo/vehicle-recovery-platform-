@@ -1,4 +1,5 @@
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
+import {isDriverRegistrationEnabled} from "@/src/lib/driver-registration-gate";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isClientReviewDemo } from "@/src/lib/client-review";
@@ -10,13 +11,38 @@ export async function proxy(request:NextRequest){
    return NextResponse.json({error:"Client demo read-only.",clientDemo:true},{status:503});
   if(path.startsWith("/api/")){
    const allowedGet=method==="GET" && [
-    "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/recovery/postcode",
-    "/api/recovery/location-suggest"
+    "/api/build-info","/api/client-review-status","/api/auth/google-status","/api/driver/registration-status","/api/driver/registration-diagnostics","/api/recovery/postcode",
+    "/api/recovery/location-suggest",
+    "/api/driver/registration-status"
    ].includes(path);
    // Estimates may only resolve postcodes/ORS; the quote handler is read-only.
    const allowedEstimate=method==="POST" && [
     "/api/recovery/open-estimate","/api/recovery/estimate"
    ].includes(path);
+   // Admin-authenticated diagnostics are read-only and restricted to PR56 Preview.
+   if(method==="GET"&&path==="/api/driver/staging-diagnostics"&&
+      process.env.VERCEL_ENV==="preview"&&
+      process.env.VERCEL_GIT_COMMIT_REF==="feature/ss8-driver-approval-inbox-secure")
+    return NextResponse.next({request});
+   // Single-use Admin setup is limited to the exact Staging Preview and remains
+   // additionally guarded in its route by Auth, verified UUID and setup token.
+   if(method==="POST"&&path==="/api/staging/admin-activate"&&
+      process.env.VERCEL_ENV==="preview"&&
+      process.env.VERCEL_GIT_COMMIT_REF==="feature/ss8-driver-approval-inbox-secure"&&
+      process.env.STAGING_ADMIN_ACTIVATION_ENABLED==="enabled"&&
+      process.env.NEXT_PUBLIC_SUPABASE_URL==="https://ozphvosiqbzvkthlppkd.supabase.co"&&
+      process.env.STAGING_SUPABASE_URL==="https://ozphvosiqbzvkthlppkd.supabase.co")
+    return updateSession(request);
+   // PR #56: isolated driver onboarding only; no general marketplace writes.
+   const onboardingGet=method==="GET"&&[
+    "/api/driver/registration-status","/api/driver/documents",
+    "/api/admin/drivers","/api/admin/drivers/document-access"
+   ].includes(path);
+   const onboardingWrite=method==="POST"&&[
+    "/api/driver/apply","/api/driver/documents","/api/admin/drivers"
+   ].includes(path);
+   if((onboardingGet||onboardingWrite)&&await isDriverRegistrationEnabled())
+    return updateSession(request);
    if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
