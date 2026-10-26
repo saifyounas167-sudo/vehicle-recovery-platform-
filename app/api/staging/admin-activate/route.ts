@@ -29,6 +29,7 @@ export async function POST(req:Request){
   console.warn("[staging-admin-activate] missing_or_invalid_env_names",invalidSetupNames);
   return fail("Setup not configured",503);
  }
+ if(typeof digest!=="string")return fail("Setup not configured",503);
  if(Number(req.headers.get("content-length")||0)>1024)return fail("Request too large",413);
  const origin=req.headers.get("origin");
  if(!origin||origin!==new URL(req.url).origin)return fail("Invalid origin",403);
