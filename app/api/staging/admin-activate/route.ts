@@ -55,7 +55,7 @@ export async function POST(req:Request){
    // Do not log error.message/details/hint, user IDs, tokens, or credentials.
    const cause=activationError.message==="Account role change denied"?"role_guard_denied":"rpc_database_error";
    console.warn("[staging-admin-activate] rpc_failed",{
-    code:/^[A-Z0-9]{5}$/.test(activationError.code||"")?activationError.code:"unknown",
+    code:/^(?:[A-Z0-9]{5}|PGRST[0-9]{3})$/.test(activationError.code||"")?activationError.code:"unknown",
     cause
    });
    return fail("Activation unavailable or already used",409);
