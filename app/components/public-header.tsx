@@ -21,7 +21,6 @@ export default function PublicHeader(){
    <Link href="/login?mode=signup&role=customer" className="get-started">GET STARTED</Link>
    <Link href="/login?role=driver" className="role-login"><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login"><Icon type="truck"/>Driver Login</Link>
-   <Link href="/login?role=admin" className="account-link admin-login"><Icon type="shield"/>Admin Login</Link>
    <InstallAppButton className="header-install"/><AccountNavigation/>
   </div>
   <div className="public-mobile-actions"><InstallAppButton className="header-install" hideWhenInstalled/><button className="uk-menu" type="button" aria-expanded={open} aria-controls="public-mobile-menu" onClick={()=>setOpen(v=>!v)} aria-label={open?"Close menu":"Open menu"}>{open?"×":"☰"}</button></div>
@@ -33,7 +32,6 @@ export default function PublicHeader(){
    <Link href="/recovery/request" className="get-started" onClick={close}>GET STARTED</Link>
    <Link href="/login?role=business" className="role-login" onClick={close}><Icon type="business"/>Business Login</Link>
    <Link href="/login?role=driver" className="role-login" onClick={close}><Icon type="truck"/>Driver Login</Link>
-   <Link href="/login?role=admin" onClick={close}><Icon type="shield"/>Admin Login</Link>
    <AccountNavigation mobile onNavigate={close}/>
   </div>
  </div>
