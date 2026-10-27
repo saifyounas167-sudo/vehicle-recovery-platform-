@@ -8,8 +8,11 @@ const send=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{"C
 async function admin(){
  const auth=await createClient(),{data:{user}}=await auth.auth.getUser();
  if(!user)return null;
- const db=serverDb(),{data:profile,error}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
+ // Verify the Admin role using the same authenticated RLS-scoped client as /admin.
+ // The service-role client is reserved for authorised data operations, never identity.
+ const {data:profile,error}=await auth.from("profiles").select("role").eq("id",user.id).maybeSingle();
  if(error||profile?.role!=="admin")return null;
+ const db=serverDb();
  return {db,user};
 }
 export async function GET(){
