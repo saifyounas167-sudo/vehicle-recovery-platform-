@@ -63,7 +63,7 @@ test("Staging diagnostics require Admin role and deny Driver access",()=>{
  assert.match(route,/requireRole\("admin"\)/);
  assert.doesNotMatch(route,/\["admin","driver"\]\.includes\(profile\.role\)/);
  assert.match(route,/VERCEL_ENV!=="preview"/);
- assert.match(route,/DRIVER_ONBOARDING_BRANCH/);
+ assert.match(route,/isDriverOnboardingPreviewBranch/);
  assert.match(route,/getDriverRegistrationGateDiagnostics/);
  assert.doesNotMatch(route,/SERVICE_ROLE_KEY|console\.log|process\.env\.[A-Z_]+\s*[,}]/);
  const admin=src("app/api/admin/drivers/route.ts");
