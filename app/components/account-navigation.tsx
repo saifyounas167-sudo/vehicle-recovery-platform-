@@ -3,7 +3,7 @@ import Link from "next/link";
 import {useEffect,useState} from "react";
 import {createClient,hasBrowserSupabaseConfig} from "@/lib/supabase/client";
 type Role="customer"|"driver"|"admin";
-export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boolean,onNavigate?:()=>void}){
+export default function AccountNavigation({mobile=false,onNavigate,allowAdmin=false}:{mobile?:boolean,onNavigate?:()=>void,allowAdmin?:boolean}){
  const [role,setRole]=useState<Role|null>(null),[signedIn,setSignedIn]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false);
  useEffect(()=>{
   let active=true;
@@ -38,7 +38,7 @@ export default function AccountNavigation({mobile=false,onNavigate}:{mobile?:boo
   try{const {error}=await createClient().auth.signOut({scope:"local"});if(error)throw error;setRole(null);setSignedIn(false);onNavigate?.();window.location.replace("/");}
   catch{setBusy(false)}
  }
- if(!ready||!signedIn)return null;
+ if(!ready||!signedIn||(role==="admin"&&!allowAdmin))return null;
  return <details className={"account-menu "+(mobile?"account-menu-mobile":"")}>
   <summary aria-label="Open account menu">Account <span aria-hidden="true">⌄</span></summary>
   <div className="account-menu-items">
