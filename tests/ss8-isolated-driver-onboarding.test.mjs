@@ -9,6 +9,7 @@ const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.Common
 const safe={
  VERCEL_ENV:"preview",VERCEL_GIT_COMMIT_REF:"feature/ss8-driver-approval-inbox-secure",
  MARKETPLACE_STAGING_MODE:"enabled",
+ DRIVER_ONBOARDING_STAGING_ENABLED:"disabled",
  NEXT_PUBLIC_SUPABASE_URL:"https://ozphvosiqbzvkthlppkd.supabase.co",
  STAGING_SUPABASE_URL:"https://ozphvosiqbzvkthlppkd.supabase.co",
  PRODUCTION_SUPABASE_URL:"https://eosrparfgrycdnykekcn.supabase.co",
@@ -28,6 +29,9 @@ function gate(overrides={},verify=async()=>({ok:true}),marketplace=false){
 }
 test("only pinned isolated branch and project may enable onboarding",()=>{
  assert.equal(gate().isDriverRegistrationConfigured(),true);
+ assert.equal(gate({VERCEL_GIT_COMMIT_REF:"integration/staging-recovery-pr56-pr55-pr70",MARKETPLACE_STAGING_MODE:"disabled",DRIVER_ONBOARDING_STAGING_ENABLED:"enabled"}).isDriverRegistrationConfigured(),true);
+ assert.equal(gate({VERCEL_GIT_COMMIT_REF:"integration/staging-recovery-pr56-pr55-pr70",MARKETPLACE_STAGING_MODE:"disabled"}).isDriverRegistrationConfigured(),false);
+ assert.equal(gate({VERCEL_GIT_COMMIT_REF:"integration/staging-recovery-pr56-pr55-pr70",DRIVER_ONBOARDING_STAGING_ENABLED:"enabled"}).isDriverRegistrationConfigured(),false);
  for(const vars of [
  {VERCEL_ENV:"production"},{VERCEL_ENV:"development"},{VERCEL_GIT_COMMIT_REF:"main"},
  {MARKETPLACE_STAGING_MODE:"disabled"},
