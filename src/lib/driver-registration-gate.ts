@@ -3,6 +3,8 @@ import {isIsolatedMarketplaceStaging} from "./marketplace-staging";
 const STAGING="https://ozphvosiqbzvkthlppkd.supabase.co";
 const PRODUCTION="https://eosrparfgrycdnykekcn.supabase.co";
 export const DRIVER_ONBOARDING_BRANCH="feature/ss8-driver-approval-inbox-secure";
+export const DRIVER_ONBOARDING_INTEGRATION_BRANCH="integration/staging-recovery-pr56-pr55-pr70";
+export const isDriverOnboardingPreviewBranch=()=>[DRIVER_ONBOARDING_BRANCH,DRIVER_ONBOARDING_INTEGRATION_BRANCH].includes(process.env.VERCEL_GIT_COMMIT_REF||"");
 
 /**
  * Onboarding ONLY: never turn on the general marketplace staging gate.
@@ -14,8 +16,10 @@ export function driverRegistrationChecks():Record<string,boolean>{
  const publishable=e.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
  return {
   previewEnvironment:e.VERCEL_ENV==="preview",
-  correctPreviewBranch:e.VERCEL_GIT_COMMIT_REF===DRIVER_ONBOARDING_BRANCH,
-  explicitStagingOptIn:e.MARKETPLACE_STAGING_MODE==="enabled",
+  correctPreviewBranch:isDriverOnboardingPreviewBranch(),
+  explicitStagingOptIn:e.VERCEL_GIT_COMMIT_REF===DRIVER_ONBOARDING_INTEGRATION_BRANCH
+   ?e.DRIVER_ONBOARDING_STAGING_ENABLED==="enabled"&&e.MARKETPLACE_STAGING_MODE!=="enabled"
+   :e.MARKETPLACE_STAGING_MODE==="enabled",
   activeProjectIsStaging:e.NEXT_PUBLIC_SUPABASE_URL===STAGING,
   stagingProjectIsPinned:e.STAGING_SUPABASE_URL===STAGING,
   productionProjectIsSeparate:e.PRODUCTION_SUPABASE_URL===PRODUCTION,
