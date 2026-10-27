@@ -11,7 +11,7 @@ test("Registration status remains readable even when onboarding is disabled",()=
 });
 test("nonsecret diagnostics are admin-only, preview-only and require role verification",()=>{
  const route=read("app/api/driver/staging-diagnostics/route.ts");
- for(const x of ["VERCEL_ENV","isDriverOnboardingPreviewBranch",'auth.getUser()','select("role")','profile?.role!=="admin"',"getDriverRegistrationGateDiagnostics","no-store"])assert.ok(route.includes(x),x);
+ for(const x of ["VERCEL_ENV","DRIVER_ONBOARDING_BRANCH",'auth.getUser()','select("role")','profile?.role!=="admin"',"getDriverRegistrationGateDiagnostics","no-store"])assert.ok(route.includes(x),x);
  assert.doesNotMatch(route,/SERVICE_ROLE_KEY|console\.log|JSON\.stringify\(process\.env\)/);
 });
 test("Onboarding gate fails closed and does not enable general marketplace writes",()=>{
