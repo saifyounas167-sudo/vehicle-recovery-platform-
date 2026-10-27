@@ -10,7 +10,7 @@ test("original desktop header login controls and order preserved",()=>{
 test("original mobile links remain visible beside compact signed-in account dropdown",()=>{
  for(const role of ["customer","business","driver"])assert.ok(header.includes('/login?role='+role));
  assert.match(header,/AccountNavigation mobile onNavigate={close}/);
- assert.match(nav,/if\(!ready\|\|!signedIn\)return null/);
+ assert.match(nav,/if\(!ready\|\|!signedIn\|\|\(role==="admin"&&!allowAdmin\)\)return null/);
  assert.match(nav,/<details className=/);
 });
 test("secure session switch and logout preserved",()=>{
