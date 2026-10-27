@@ -66,7 +66,7 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{se
   <header className="ss11-topbar"><div className="ss11-topbar-inner">
    <Link href="/" className="ss11-brand" aria-label="UK Recovery home"><span aria-hidden="true">◢</span> UK <b>Recovery</b></Link>
    <span className="ss11-admin-badge">Admin</span>
-   <AccountNavigation/>
+   <AccountNavigation allowAdmin/>
   </div></header>
   <div className="ss11-layout">
    <aside className="ss11-sidebar"><NavLinks selected={section}/><div className="ss11-sidebar-foot"><span>MANAGEMENT TOOLS</span><Link href="/admin/pricing">Pricing Rules →</Link><Link href="/admin/drivers">Driver Approvals →</Link></div></aside>
