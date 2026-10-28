@@ -15,6 +15,7 @@ const empty:Draft={fullName:"",email:"",phone:"",companyName:"",truckType:"",bus
 
 export default function DriverRegisterPage(){
  const [draft,setDraft]=useState<Draft>(empty),[password,setPassword]=useState(""),[showPassword,setShowPassword]=useState(false);
+ const [existingSession,setExistingSession]=useState(false);
  const [step,setStep]=useState(1),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[agree,setAgree]=useState(false),[hydrated,setHydrated]=useState(false);
  const firstField=useRef<HTMLDivElement>(null),inFlight=useRef(false);
  const change=(name:keyof Draft,value:string)=>setDraft(d=>({...d,[name]:value}));
@@ -26,6 +27,7 @@ export default function DriverRegisterPage(){
   }catch{/* Browser storage is optional; no credentials are persisted. */}
   setHydrated(true);
  },[]);
+ useEffect(()=>{createClient().auth.getUser().then(({data})=>setExistingSession(Boolean(data.user))).catch(()=>{});},[]);
  useEffect(()=>{
   if(!hydrated||saved)return;
   try{sessionStorage.setItem(DRAFT_KEY,JSON.stringify(draft));}catch{/* Safe fallback: current in-memory state remains. */}
@@ -35,7 +37,7 @@ export default function DriverRegisterPage(){
    if(draft.fullName.trim().length<2)return "Enter your full name (at least 2 characters).";
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim()))return "Enter a valid email address.";
    if(!phonePattern.test(draft.phone.replace(/[\s-]/g,"")))return "Enter a UK mobile number, e.g. 07123 456789 or +447123456789.";
-   if(password.length<10)return "Password must contain at least 10 characters. Existing drivers can sign in below.";
+   if(!existingSession&&password.length<10)return "Password must contain at least 10 characters. Existing drivers can sign in below.";
   }
   if(stage===2){
    if(!draft.truckType)return "Select your recovery truck type.";
@@ -110,7 +112,7 @@ export default function DriverRegisterPage(){
      <label>Full Name <em>Required</em><input required autoComplete="name" minLength={2} maxLength={120} value={d.fullName} placeholder="Your full name" onChange={e=>change("fullName",e.target.value)}/></label>
      <label>Email Address <em>Required</em><input required type="email" autoComplete="email" value={d.email} placeholder="you@example.co.uk" onChange={e=>change("email",e.target.value)}/></label>
      <label>UK Phone Number <em>Required</em><input required type="tel" autoComplete="tel" inputMode="tel" value={d.phone} placeholder="07123 456789" onChange={e=>change("phone",e.target.value)}/></label>
-     <label>Password <em>Required for new accounts</em><span className="ss8-password"><input required type={showPassword?"text":"password"} autoComplete="new-password" minLength={10} value={password} placeholder="At least 10 characters" onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword} onClick={()=>setShowPassword(v=>!v)}>{showPassword?"Hide":"Show"}</button></span></label>
+     <label>Password <em>{existingSession?"Already signed in — optional":"Required for new accounts"}</em><span className="ss8-password"><input required={!existingSession} type={showPassword?"text":"password"} autoComplete="new-password" minLength={10} value={password} placeholder="At least 10 characters" onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword} onClick={()=>setShowPassword(v=>!v)}>{showPassword?"Hide":"Show"}</button></span></label>
     </div>
     <p className="ss8-help">Already registered? <Link href="/login?role=driver&next=/driver/register">Sign In</Link> — your saved details will remain on this Preview.</p>
     <button className="ss8-primary" type="submit">Continue →</button>
