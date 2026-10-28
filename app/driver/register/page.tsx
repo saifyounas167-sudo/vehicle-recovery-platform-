@@ -93,7 +93,7 @@ export default function DriverRegisterPage(){
    const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable.");
    // Only show success after the backend confirms the database write.
    setSaved(true);setPassword("");try{sessionStorage.removeItem(DRAFT_KEY);}catch{}
-   setMessage("Application Submitted Successfully. Your application is pending Admin approval.");
+   setMessage("Application Submitted Successfully. Your application is pending Admin approval. Pending Admin Approval.");
   }catch(error){
    const detail=error instanceof Error?error.message:"Application unavailable.";
    setMessage(/already registered|already exists/i.test(detail)?"If you already have an account, please Sign In to continue.":detail);
