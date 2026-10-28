@@ -1,2 +1,35 @@
 .ss8-page{background:#f5f6f8;min-height:100vh;padding:26px 14px 60px;color:#15191e}.ss8-shell{width:min(100%,540px);margin:0 auto;background:white;border:1px solid #e8eaee;border-radius:17px;box-shadow:0 14px 36px #11182712;overflow:hidden}.ss8-head{display:flex;justify-content:space-between;align-items:center;background:#111820;color:white;padding:20px 24px;gap:12px}.ss8-head span{font-size:19px;font-weight:850;letter-spacing:-.03em}.ss8-head strong{color:#ff6600}.ss8-head p{margin:0;font-size:10px;letter-spacing:.1em;color:#cdd2d6}.ss8-body{padding:30px 26px}.ss8-body h1{font-size:clamp(24px,4vw,31px);line-height:1.2;letter-spacing:-.035em;margin:0 0 9px}.ss8-lead{color:#67707c;font-size:14px;line-height:1.55;margin:0 0 19px}.ss8-progress{display:flex;gap:7px;margin:0 0 25px}.ss8-progress span{flex:1;text-align:center;font-size:10px;font-weight:750;color:#7c838c;background:#f0f1f2;padding:10px 3px;border-radius:7px}.ss8-progress span.current{background:#ff6600;color:#fff}.ss8-progress span.complete{background:#fff0e5;color:#bd4d00}.ss8-form{display:grid;gap:16px}.ss8-form>label{display:grid;gap:7px;color:#32383f;font-size:13px;font-weight:700}.ss8-form input:not([type=checkbox]),.ss8-form select,.ss8-form textarea{width:100%;min-width:0;border:1px solid #e1e4e9;background:#fff;border-radius:9px;min-height:49px;padding:12px;font-size:14px;color:#131820}.ss8-form textarea{min-height:95px;resize:vertical}.ss8-form input:focus-visible,.ss8-form select:focus-visible,.ss8-form textarea:focus-visible{outline:2px solid #ff6600;outline-offset:1px}.ss8-primary{border:0;border-radius:9px;background:#ff6600;color:#fff;font-weight:800;min-height:49px;padding:12px 18px;cursor:pointer}.ss8-primary:disabled{opacity:.6;cursor:wait}.ss8-controls{display:flex;gap:10px}.ss8-controls button{flex:1}.ss8-controls button:not(.ss8-primary){background:#f2f3f5;border:1px solid #e2e5e8;border-radius:9px}.ss8-options{border:1px solid #e0e3e7;border-radius:10px;padding:13px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ss8-options legend{font-size:13px;font-weight:750;padding:0 5px}.ss8-options label{display:flex;align-items:center;gap:8px;font-size:12px}.ss8-notice{background:#eaf3ff;color:#245279;padding:13px;border-radius:10px;font-size:12px;line-height:1.55}.ss8-status{color:#8a3900;font-size:13px;line-height:1.6}.ss8-status:empty{display:none}.ss8-login{text-align:center;margin-top:16px;font-size:13px;color:#727984}.ss8-login a{color:#ff6600;font-weight:750}.ss8-confirmed h2{font-size:21px;margin:0 0 10px}.ss8-confirmed p{font-size:14px;color:#5d6872}.ss8-confirmed .form-grid{margin-top:22px}@media(max-width:420px){.ss8-body{padding:22px 16px}.ss8-head{padding:16px}.ss8-head p{font-size:8px}.ss8-options{grid-template-columns:1fr}.ss8-progress span{font-size:9px}}
 .ss8-docs{display:grid;gap:14px;margin-top:20px}.ss8-docs h2{font-size:18px;margin:0}.ss8-docs-list{display:grid;gap:8px;list-style:none;padding:0;margin:0}.ss8-docs-list li{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#f6f7f9;border:1px solid #e1e4e9;padding:12px;border-radius:9px}.ss8-docs-list li span{font-weight:700;font-size:13px}.ss8-docs-list li small{display:block;color:#687783;font-size:11px;margin-top:4px}.ss8-docs-list button{font-size:12px}.ss8-docs .ss8-form{margin-top:10px}
+
+
+/* Premium four-step driver registration (existing UK Recovery palette). */
+.ss8-page{background:linear-gradient(135deg,#101820 0,#20272f 210px,#f5f6f8 210px);padding:32px 12px 72px}
+.ss8-shell{width:min(100%,780px);border-radius:20px;box-shadow:0 24px 65px #08121a28}
+.ss8-body{padding:34px clamp(18px,4vw,44px)}
+.ss8-head{padding:22px clamp(18px,4vw,44px)}
+.ss8-progress{gap:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.ss8-progress span{display:flex;flex-direction:column;gap:5px;justify-content:center;min-width:0;padding:13px 5px}
+.ss8-progress b{font-size:16px}.ss8-progress small{font-size:11px;line-height:1.2}
+.ss8-form h2,.ss8-review h2{font-size:21px;margin:0}
+.ss8-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ss8-fields>label{display:grid;align-content:start;gap:8px;min-width:0;color:#303944;font-size:13px;font-weight:750}
+.ss8-fields>label small{font-size:12px;line-height:1.4;font-weight:400;color:#687683}
+.ss8-fields em,.ss8-options em{font-style:normal;font-weight:500;color:#7b8590;font-size:11px}
+.ss8-fields input:not([type=checkbox]),.ss8-fields select,.ss8-fields textarea{box-sizing:border-box;min-height:50px;width:100%;max-width:100%;min-width:0;padding:12px 14px;border:1px solid #d7dce2;border-radius:11px;color:#131820;background:#fff;font:inherit;font-weight:450}
+.ss8-fields textarea{min-height:94px;resize:vertical}
+.ss8-fields input:focus-visible,.ss8-fields select:focus-visible,.ss8-fields textarea:focus-visible{outline:2px solid #ff6600;outline-offset:1px}
+.ss8-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px}
+.ss8-options label{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid #e5e9ed;border-radius:9px;min-width:0;font-size:13px;cursor:pointer}
+.ss8-options input[type=checkbox],.ss8-agree input[type=checkbox]{appearance:auto!important;width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;max-width:17px!important;margin:0!important;padding:0!important;accent-color:#ff6600;flex:none}
+.ss8-password{display:flex;position:relative;min-width:0}.ss8-password input{padding-right:66px!important}
+.ss8-password button{position:absolute;right:6px;top:6px;bottom:6px;border:0;background:#fff1e8;color:#b84900;border-radius:7px;padding:0 10px;cursor:pointer;font-weight:700}
+.ss8-help{font-size:13px;line-height:1.6;color:#657381}.ss8-help a{color:#dd5500;font-weight:750}
+.ss8-controls{display:flex;gap:12px;margin-top:8px}.ss8-controls button{cursor:pointer;min-height:48px;padding:10px 14px}
+.ss8-review{display:grid;gap:18px}.ss8-summary{margin:0;display:grid;gap:8px}
+.ss8-summary>div{display:grid;gap:4px;padding:13px 15px;background:#f5f7f9;border:1px solid #e6eaee;border-radius:10px;overflow-wrap:anywhere}
+.ss8-summary dt{font-weight:800;font-size:12px;color:#535e6a}.ss8-summary dd{font-size:13px;color:#1d2731;margin:0;line-height:1.55}
+.ss8-agree{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.6}.ss8-agree a{color:#cc5100}
+.ss8-status{padding:12px 14px;background:#fff1e8;border-left:3px solid #ff6600;border-radius:8px}
+@media(max-width:600px){.ss8-fields{grid-template-columns:1fr}.ss8-progress small{font-size:9px}.ss8-head{padding:16px 18px}.ss8-body{padding:24px 18px}}
+@media(max-width:430px){.ss8-options{grid-template-columns:1fr}.ss8-progress{gap:4px}.ss8-progress span{padding:10px 3px}.ss8-progress small{font-size:8px}.ss8-controls{gap:8px}}
+@media(max-width:350px){.ss8-body{padding:18px 12px}.ss8-head p{letter-spacing:0}.ss8-progress span{padding:8px 2px}.ss8-progress small{font-size:7px}}
