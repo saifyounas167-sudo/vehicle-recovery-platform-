@@ -6,12 +6,12 @@ export async function GET(request:NextRequest){
  const origin=request.nextUrl.origin;
  const kind=request.nextUrl.searchParams.get("type");
  const requestedRole=request.nextUrl.searchParams.get("role");
- const role=kind==="recovery"&&requestedRole==="driver"?"driver":"customer";
+ const role=requestedRole==="driver"?"driver":"customer";
  const reason=(message:string)=>NextResponse.redirect(new URL("/login?role="+role+"&reason="+encodeURIComponent(message),origin));
  if(request.nextUrl.searchParams.has("error"))return reason("expired_link");
  if(kind!=="signup"&&kind!=="recovery")return reason("invalid_link");
  const env=getSupabaseEnv();if(!env)return reason("auth_unavailable");
- const dest=kind==="recovery"?"/login?role="+role+"&mode=recovery":"/login?role=customer&reason=verified";
+ const dest=kind==="recovery"?"/login?role="+role+"&mode=recovery":role==="driver"?"/driver/register":"/login?role=customer&reason=verified";
  const response=NextResponse.redirect(new URL(dest,origin),{headers:{"Cache-Control":"no-store","Referrer-Policy":"no-referrer"}});
  const supabase=createServerClient(env.url,env.key,{cookies:{
   getAll(){return request.cookies.getAll()},
@@ -27,8 +27,13 @@ export async function GET(request:NextRequest){
   if(error||!user)throw Error("Unauthenticated");
   if(kind==="signup"||kind==="recovery"){
    const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",user.id).maybeSingle();
-   if(profileError||profile?.role!==(kind==="signup"?"customer":role)){await supabase.auth.signOut({scope:"local"});return reason("access_pending")}
-   if(kind==="signup")response.headers.set("Location",new URL("/customer",origin).toString());
+   // Driver profile is created only after the verified driver submits /api/driver/apply.
+   // Reject an existing non-driver role; do not require an application before signup is complete.
+   const acceptable=kind==="signup"&&role==="driver"
+    ?(!profile||profile.role==="driver")
+    :profile?.role===(kind==="signup"?"customer":role);
+   if(profileError||!acceptable){await supabase.auth.signOut({scope:"local"});return reason("access_pending")}
+   if(kind==="signup")response.headers.set("Location",new URL(role==="driver"?"/driver/register":"/customer",origin).toString());
   }
   return response;
  }catch{await supabase.auth.signOut({scope:"local"}).catch(()=>{});return reason("expired_link")}
