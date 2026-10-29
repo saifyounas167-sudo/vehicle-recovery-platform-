@@ -28,7 +28,26 @@ export default function DriverRegisterPage(){
   }catch{/* Browser storage is optional; no credentials are persisted. */}
   setHydrated(true);
  },[]);
- useEffect(()=>{createClient().auth.getUser().then(({data})=>setExistingSession(Boolean(data.user))).catch(()=>{});},[]);
+ useEffect(()=>{
+  const params=new URLSearchParams(window.location.search);
+  if(params.get("confirm")!=="driver")return;
+  const code=params.get("code"),tokenHash=params.get("token_hash");
+  // Remove one-time credentials before requests or telemetry can capture the URL.
+  window.history.replaceState(window.history.state,"","/driver/register");
+  void (async()=>{
+   try{
+    const client=createClient();
+    if(code){const {error}=await client.auth.exchangeCodeForSession(code);if(error)throw error;}
+    else if(tokenHash){const {error}=await client.auth.verifyOtp({token_hash:tokenHash,type:"email"});if(error)throw error;}
+    else return; // Implicit #signup tokens are processed by the global fragment handler.
+    const {data:{user},error}=await client.auth.getUser();
+    if(error||!user?.email_confirmed_at)throw Error("Email verification not complete");
+    const {data:profile,error:profileError}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();
+    if(profileError||(profile&&profile.role!=="driver"))throw Error("Driver access not available");
+    setExistingSession(true);setMessage("Email verified. Your saved application is ready to complete.");
+   }catch{setMessage("Verification link expired or could not be verified. Sign in if your email is already confirmed.");}
+  })();
+ },[]);
  useEffect(()=>{fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>setDesignPreviewAvailable(data?.designPreviewEnabled===true)).catch(()=>{});},[]);
  useEffect(()=>{
   if(!hydrated||saved)return;
@@ -75,7 +94,7 @@ export default function DriverRegisterPage(){
    const supabase=createClient();
    let {data:{user}}=await supabase.auth.getUser();
    if(!user){
-    const signup=await supabase.auth.signUp({email:draft.email.trim(),password,options:{emailRedirectTo:window.location.origin+"/auth/confirm?type=signup&role=driver",data:{registration_flow:"driver_application_v1",full_name:draft.fullName.trim()}}});
+    const signup=await supabase.auth.signUp({email:draft.email.trim(),password,options:{emailRedirectTo:window.location.origin+"/driver/register?confirm=driver",data:{registration_flow:"driver_application_v1",full_name:draft.fullName.trim()}}});
     if(signup.error)throw signup.error;
     if(!signup.data.session){
      setPassword("");setStep(1);
