@@ -28,7 +28,7 @@ test("confirmed drivers without an application may resume and cannot access othe
  const login=r("app/login/login-form.tsx"),confirm=r("app/auth/confirm/route.ts");
  assert.match(login,/user\.user_metadata\?\.registration_flow==="driver_application_v1"/);
  assert.match(login,/window\.location\.assign\("\/driver\/register"\)/);
- assert.match(confirm,/profile&&profile\.role!=="driver"/);
+ assert.match(confirm,/profile&&profile.role!=="driver"/);
  assert.match(confirm,/kind==="signup"&&role==="driver"/);
  assert.match(confirm,/role==="driver"\?"\/driver\/register"/);
  const apply=r("app/api/driver/apply/route.ts");
