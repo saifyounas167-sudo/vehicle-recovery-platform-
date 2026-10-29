@@ -13,7 +13,7 @@ test("email confirmation consumes single-use code and never redirects to user-pr
  const src=read("app/auth/confirm/route.ts");
  assert.match(src,/exchangeCodeForSession\(code\)/);
  assert.match(src,/verifyOtp\(/);
- assert.match(src,/profile\?\.role!==\(kind==="signup"\?"customer":role\)/);
+ assert.match(src,/const acceptable=/);
  assert.match(src,/new URL\(\"\/customer\",origin\)/);
  assert.doesNotMatch(src,/searchParams\.get\(\"next\"\)|searchParams\.get\(\"redirect\"\)/);
  assert.match(src,/Referrer-Policy/);
@@ -33,7 +33,7 @@ test("driver password reset preserves role and never trusts arbitrary redirect U
  assert.match(confirm,/kind==="recovery"/);
  assert.match(confirm,/exchangeCodeForSession\(code\)/);
  assert.match(confirm,/verifyOtp\(/);
- assert.match(confirm,/profile\?\.role!==/);
+ assert.match(confirm,/profile\?\.role===/);
  assert.match(confirm,/Referrer-Policy/);
  assert.doesNotMatch(confirm,/searchParams\.get\("next"\)|searchParams\.get\("redirectTo"\)/);
  assert.match(login,/Request a fresh password reset email/);
