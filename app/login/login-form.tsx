@@ -51,6 +51,10 @@ export default function LoginForm(){
   const {data:profile,error:profileError}=await supabase.from("profiles").select("role").eq("id",data.user.id).maybeSingle();
   if(profileError){console.error("Customer login profile lookup failed",profileError.code);
    throw new Error("Account profile could not be loaded. Please try again. If it continues, contact support (reference "+(profileError.code||"profile") +").");}
+  // Verified Driver signup may not have a profile until /api/driver/apply succeeds.
+  if(role==="driver"&&!profile&&data.user.email_confirmed_at&&data.user.user_metadata?.registration_flow==="driver_application_v1"){
+   window.location.assign("/driver/register");return;
+  }
   if(!profile||profile.role!==role){await supabase.auth.signOut({scope:"local"});window.location.assign("/403");return;}
   const next=params.get("next");
   const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")&&!next.includes("\\")&&(next===destination[role]||next.startsWith(destination[role]+"/"))?next:destination[role];
