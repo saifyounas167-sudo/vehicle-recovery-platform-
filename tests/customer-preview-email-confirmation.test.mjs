@@ -14,7 +14,7 @@ test("email confirmation consumes single-use code and never redirects to user-pr
  assert.match(src,/exchangeCodeForSession\(code\)/);
  assert.match(src,/verifyOtp\(/);
  assert.match(src,/const acceptable=/);
- assert.match(src,/new URL\(\"\/customer\",origin\)/);
+ assert.match(src,/new URL\(role===\"driver\"\?\"\/driver\/register\":\"\/customer\",origin\)/);
  assert.doesNotMatch(src,/searchParams\.get\(\"next\"\)|searchParams\.get\(\"redirect\"\)/);
  assert.match(src,/Referrer-Policy/);
 });
