@@ -26,7 +26,7 @@ test("driver code and implicit fragment confirmation safely verify identity and 
 });
 test("confirmed drivers without an application may resume and cannot access other roles",()=>{
  const login=r("app/login/login-form.tsx"),confirm=r("app/auth/confirm/route.ts");
- assert.match(login,/user\.user_metadata\?\.registration_flow==="driver_application_v1"/);
+ assert.match(login,/role==="driver"&&!profile&&Boolean\(data\.user\.email_confirmed_at\)/);
  assert.match(login,/window\.location\.assign\("\/driver\/register"\)/);
  assert.match(confirm,/profile\.role==="driver"/);
  assert.match(confirm,/kind==="signup"&&role==="driver"/);
