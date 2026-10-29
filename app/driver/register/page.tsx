@@ -98,7 +98,7 @@ export default function DriverRegisterPage(){
     if(signup.error)throw signup.error;
     if(!signup.data.session){
      setPassword("");setStep(1);
-     setMessage("Check your email and verify your account. Then sign in on this same Preview to finish your saved application. Nothing has been submitted yet.");
+     setMessage("For a new account, check your verification email. If your email is already confirmed, use Sign In with your existing password. Your saved application will be ready here. Nothing has been submitted yet.");
      return;
     }
     user=signup.data.user;
