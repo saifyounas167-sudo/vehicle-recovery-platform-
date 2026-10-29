@@ -119,17 +119,17 @@ export default function DriverRegisterPage(){
     <p className="ss8-help">Already registered? <Link href="/login?role=driver&next=/driver/register">Sign In</Link> — your saved details will remain on this Preview.</p>
     <button className="ss8-primary" type="submit">Continue →</button>
    </form>:null}
-   {step===2&&!saved?<form className="ss8-form" onSubmit={goNext} noValidate>
+   {step===2&&!saved?<form className="ss8-form ss8-step-two" onSubmit={goNext} noValidate>
     <h2>Business & recovery vehicle</h2>
     <div ref={firstField} className="ss8-fields">
      <label>Company Name <em>Optional</em><input maxLength={120} value={d.companyName} onChange={e=>change("companyName",e.target.value)} placeholder="Your recovery company"/></label>
      <label>Recovery Truck Type <em>Required</em><select required value={d.truckType} onChange={e=>change("truckType",e.target.value)}><option value="">Choose a truck type</option>{truckTypes.map(t=><option key={t} value={t}>{t}</option>)}</select></label>
      <fieldset className="ss8-options"><legend>Services Provided <em>Required</em></legend>{recoveryServices.map(s=><label key={s}><input type="checkbox" checked={d.services.includes(s)} onChange={()=>toggle(s)}/><span>{s}</span></label>)}</fieldset>
      <label>Business Address <em>Required</em><input required maxLength={400} value={d.businessAddress} onChange={e=>change("businessAddress",e.target.value)} placeholder="Street, town and postcode"/></label>
-     <label>Recovery Experience (years) <em>Optional</em><input type="number" min="0" max="80" value={d.recoveryExperience} onChange={e=>change("recoveryExperience",e.target.value)} placeholder="e.g. 5"/></label>
+     <details className="ss8-additional"><summary>Additional Details (Optional)<span>Company registration, experience & vehicle information</span></summary><div className="ss8-additional-fields">     <label>Recovery Experience (years) <em>Optional</em><input type="number" min="0" max="80" value={d.recoveryExperience} onChange={e=>change("recoveryExperience",e.target.value)} placeholder="e.g. 5"/></label>
      <label>Company Registration Number <em>Optional</em><input maxLength={120} value={d.companyRegistrationNumber} onChange={e=>change("companyRegistrationNumber",e.target.value)}/></label>
      <label>Recovery Truck Details <em>Optional</em><textarea maxLength={1000} value={d.truckDetails} onChange={e=>change("truckDetails",e.target.value)} placeholder="Capacity, equipment and vehicle notes"/></label>
-     <label>Vehicle Registration Details <em>Optional</em><input maxLength={150} value={d.vehicleRegistration} onChange={e=>change("vehicleRegistration",e.target.value)}/></label>
+     <label>Vehicle Registration Details <em>Optional</em><input maxLength={150} value={d.vehicleRegistration} onChange={e=>change("vehicleRegistration",e.target.value)}/></label></div></details>
     </div>
     <div className="ss8-controls"><button type="button" onClick={goBack}>← Back</button><button className="ss8-primary" type="submit">Continue →</button></div>
    </form>:null}
