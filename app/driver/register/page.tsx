@@ -50,9 +50,9 @@ export default function DriverRegisterPage(){
  },[]);
  useEffect(()=>{fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>setDesignPreviewAvailable(data?.designPreviewEnabled===true)).catch(()=>{});},[]);
  useEffect(()=>{
-  if(!hydrated||saved)return;
+  if(!hydrated||saved||designPreview)return;
   try{const value=JSON.stringify({updatedAt:Date.now(),details:draft,step});sessionStorage.setItem(DRAFT_KEY,value);localStorage.setItem(DRAFT_KEY,value);}catch{/* Safe fallback: current in-memory state remains. */}
- },[draft,step,hydrated,saved]);
+ },[draft,step,hydrated,saved,designPreview]);
  function validationError(stage:number):string|null{
   if(stage===1){
    if(draft.fullName.trim().length<2)return "Enter your full name (at least 2 characters).";
@@ -126,7 +126,7 @@ export default function DriverRegisterPage(){
   <div className="ss8-body">
    <h1 id="ss8-title">Join as a Recovery Driver</h1>
    <p className="ss8-lead">Four simple steps to apply. Your application stays Pending and Offline until Admin approval.</p>
-   {designPreviewAvailable&&!saved?<div className="ss8-notice"><button type="button" onClick={()=>{setDesignPreview(v=>!v);setStep(1);setMessage("");}}>{designPreview?"Exit Design Preview":"Preview All Steps"}</button>{designPreview?<strong> DESIGN PREVIEW — NO REGISTRATION. Submission and document uploads disabled.</strong>:null}</div>:null}
+   {designPreviewAvailable&&!saved?<div className="ss8-notice"><button type="button" onClick={()=>{setDesignPreview(v=>!v);setStep(1);setMessage(designPreview?"Design Preview closed. Complete your details to submit a real application.":"Design Preview is read-only. Exit Preview to submit an application.");}}>{designPreview?"Exit Design Preview":"Preview All Steps"}</button>{designPreview?<strong> DESIGN PREVIEW — NO REGISTRATION. Submission and document uploads disabled.</strong>:null}</div>:null}
    <div className="ss8-progress" aria-label="Registration progress">{["Account","Business & truck","Coverage","Review & documents"].map((label,i)=><span key={label} className={step===i+1?"current":step>i+1?"complete":""} aria-current={step===i+1?"step":undefined}><b>{i+1}</b><small>{label}</small></span>)}</div>
    {!hydrated?<p role="status">Loading your saved details…</p>:<>
    {step===1&&!saved?<form className="ss8-form" onSubmit={goNext} noValidate>
