@@ -16,7 +16,7 @@ const empty:Draft={fullName:"",email:"",phone:"",companyName:"",truckType:"",bus
 export default function DriverRegisterPage(){
  const [draft,setDraft]=useState<Draft>(empty),[password,setPassword]=useState(""),[showPassword,setShowPassword]=useState(false);
  const [existingSession,setExistingSession]=useState(false);
- const [step,setStep]=useState(1),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[agree,setAgree]=useState(false),[hydrated,setHydrated]=useState(false);
+ const [step,setStep]=useState(1),[message,setMessage]=useState(""),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[agree,setAgree]=useState(false),[hydrated,setHydrated]=useState(false),[designPreviewAvailable,setDesignPreviewAvailable]=useState(false),[designPreview,setDesignPreview]=useState(false);
  const firstField=useRef<HTMLDivElement>(null),inFlight=useRef(false);
  const change=(name:keyof Draft,value:string)=>setDraft(d=>({...d,[name]:value}));
  const toggle=(value:string)=>setDraft(d=>({...d,services:d.services.includes(value)?d.services.filter(s=>s!==value):[...d.services,value]}));
@@ -28,6 +28,7 @@ export default function DriverRegisterPage(){
   setHydrated(true);
  },[]);
  useEffect(()=>{createClient().auth.getUser().then(({data})=>setExistingSession(Boolean(data.user))).catch(()=>{});},[]);
+ useEffect(()=>{fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>setDesignPreviewAvailable(data?.designPreviewEnabled===true)).catch(()=>{});},[]);
  useEffect(()=>{
   if(!hydrated||saved)return;
   try{sessionStorage.setItem(DRAFT_KEY,JSON.stringify(draft));}catch{/* Safe fallback: current in-memory state remains. */}
@@ -58,12 +59,12 @@ export default function DriverRegisterPage(){
   window.requestAnimationFrame(()=>firstField.current?.querySelector<HTMLElement>("input,select,textarea")?.focus());
  }
  function goNext(e:FormEvent){e.preventDefault();setMessage("");
-  const error=validationError(step);if(error){setMessage(error);focusError();return;}
+  const error=designPreview?null:validationError(step);if(error){setMessage(error);focusError();return;}
   setStep(s=>Math.min(4,s+1));window.scrollTo({top:0,behavior:"smooth"});
  }
  function goBack(){setMessage("");setStep(s=>Math.max(1,s-1));window.scrollTo({top:0,behavior:"smooth"});}
  async function submit(e:FormEvent){
-  e.preventDefault();if(inFlight.current||saved)return;
+  e.preventDefault();if(designPreview||inFlight.current||saved)return;
   const error=[1,2,3,4].map(validationError).find(Boolean);
   if(error){setMessage(error);return;}
   inFlight.current=true;setBusy(true);setMessage("");
@@ -105,6 +106,7 @@ export default function DriverRegisterPage(){
   <div className="ss8-body">
    <h1 id="ss8-title">Join as a Recovery Driver</h1>
    <p className="ss8-lead">Four simple steps to apply. Your application stays Pending and Offline until Admin approval.</p>
+   {designPreviewAvailable&&!saved?<div className="ss8-notice"><button type="button" onClick={()=>{setDesignPreview(v=>!v);setStep(1);setMessage("");}}>{designPreview?"Exit Design Preview":"Preview All Steps"}</button>{designPreview?<strong> DESIGN PREVIEW — NO REGISTRATION. Submission and document uploads disabled.</strong>:null}</div>:null}
    <div className="ss8-progress" aria-label="Registration progress">{["Account","Business & truck","Coverage","Review & documents"].map((label,i)=><span key={label} className={step===i+1?"current":step>i+1?"complete":""} aria-current={step===i+1?"step":undefined}><b>{i+1}</b><small>{label}</small></span>)}</div>
    {!hydrated?<p role="status">Loading your saved details…</p>:<>
    {step===1&&!saved?<form className="ss8-form" onSubmit={goNext} noValidate>
@@ -146,7 +148,7 @@ export default function DriverRegisterPage(){
      <dl className="ss8-summary"><div><dt>Driver</dt><dd>{d.fullName} · {d.email} · {d.phone}</dd></div><div><dt>Business & truck</dt><dd>{d.companyName||"Independent driver"} · {d.truckType}</dd></div><div><dt>Services</dt><dd>{d.services.join(", ")}</dd></div><div><dt>Business address</dt><dd>{d.businessAddress}</dd></div><div><dt>Coverage</dt><dd>{d.postcode} · {d.radius} miles · {d.operatingAreas}</dd></div></dl>
      <p className="ss8-notice">Insurance certificate and valid ID are required before Admin approval. Recovery truck and driver profile photos are optional. Private uploads accept PDF, JPG or PNG up to 5 MB.</p>
      <form onSubmit={submit}><label className="ss8-agree"><input type="checkbox" checked={agree} onChange={e=>setAgree(e.target.checked)}/><span>I confirm these details are accurate and agree to the applicable <Link href="/terms" target="_blank" rel="noopener noreferrer">Terms</Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.</span></label>
-      <div className="ss8-controls"><button type="button" onClick={goBack} disabled={busy}>← Back</button><button className="ss8-primary" type="submit" disabled={busy||!agree}>{busy?"Submitting securely…":"Submit for Admin Review"}</button></div>
+      <div className="ss8-controls"><button type="button" onClick={goBack} disabled={busy}>← Back</button><button className="ss8-primary" type="submit" disabled={designPreview||busy||!agree}>{busy?"Submitting securely…":"Submit for Admin Review"}</button></div>
      </form></>:<div className="ss8-confirmed"><h2>Application Submitted Successfully</h2><p>Your application is pending Admin approval. Your driver account remains Pending and Offline. Upload required private documents below.</p><DriverDocuments/><p className="ss8-login"><Link href="/driver">Open Driver Dashboard →</Link></p></div>}
     </section>:null}
    </>}
