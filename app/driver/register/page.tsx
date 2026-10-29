@@ -10,6 +10,7 @@ const truckTypes=["Flatbed","Wheel-lift","Spec-lift","Heavy Recovery","Motorbike
 const postcodePattern=/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
 const phonePattern=/^(?:\+447\d{9}|07\d{9})$/;
 const DRAFT_KEY="uk-recovery-driver-application-draft-v1";
+const DRAFT_TTL=24*60*60*1000;
 type Draft={fullName:string;email:string;phone:string;companyName:string;truckType:string;businessAddress:string;companyRegistrationNumber:string;recoveryExperience:string;truckDetails:string;vehicleRegistration:string;operatingAreas:string;postcode:string;radius:string;services:string[]};
 const empty:Draft={fullName:"",email:"",phone:"",companyName:"",truckType:"",businessAddress:"",companyRegistrationNumber:"",recoveryExperience:"",truckDetails:"",vehicleRegistration:"",operatingAreas:"",postcode:"",radius:"25",services:[]};
 
@@ -22,8 +23,8 @@ export default function DriverRegisterPage(){
  const toggle=(value:string)=>setDraft(d=>({...d,services:d.services.includes(value)?d.services.filter(s=>s!==value):[...d.services,value]}));
  useEffect(()=>{
   try{
-   const json=sessionStorage.getItem(DRAFT_KEY);
-   if(json){const value=JSON.parse(json) as Partial<Draft>;setDraft({...empty,...value,services:Array.isArray(value.services)?value.services.filter(v=>recoveryServices.includes(v as typeof recoveryServices[number])):[]});}
+   const json=sessionStorage.getItem(DRAFT_KEY)||localStorage.getItem(DRAFT_KEY);
+   if(json){const record=JSON.parse(json) as {updatedAt?:number;details?:Partial<Draft>};const value=record.details; if(value&&typeof record.updatedAt==="number"&&Date.now()-record.updatedAt<DRAFT_TTL){setDraft({...empty,...value,services:Array.isArray(value.services)?value.services.filter(v=>recoveryServices.includes(v as typeof recoveryServices[number])):[]});}else{sessionStorage.removeItem(DRAFT_KEY);localStorage.removeItem(DRAFT_KEY);}}
   }catch{/* Browser storage is optional; no credentials are persisted. */}
   setHydrated(true);
  },[]);
@@ -31,7 +32,7 @@ export default function DriverRegisterPage(){
  useEffect(()=>{fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>setDesignPreviewAvailable(data?.designPreviewEnabled===true)).catch(()=>{});},[]);
  useEffect(()=>{
   if(!hydrated||saved)return;
-  try{sessionStorage.setItem(DRAFT_KEY,JSON.stringify(draft));}catch{/* Safe fallback: current in-memory state remains. */}
+  try{const value=JSON.stringify({updatedAt:Date.now(),details:draft});sessionStorage.setItem(DRAFT_KEY,value);localStorage.setItem(DRAFT_KEY,value);}catch{/* Safe fallback: current in-memory state remains. */}
  },[draft,hydrated,saved]);
  function validationError(stage:number):string|null{
   if(stage===1){
@@ -74,7 +75,7 @@ export default function DriverRegisterPage(){
    const supabase=createClient();
    let {data:{user}}=await supabase.auth.getUser();
    if(!user){
-    const signup=await supabase.auth.signUp({email:draft.email.trim(),password,options:{emailRedirectTo:window.location.origin+"/login?role=driver&next=/driver/register",data:{registration_flow:"driver_application_v1",full_name:draft.fullName.trim()}}});
+    const signup=await supabase.auth.signUp({email:draft.email.trim(),password,options:{emailRedirectTo:window.location.origin+"/auth/confirm?type=signup&role=driver",data:{registration_flow:"driver_application_v1",full_name:draft.fullName.trim()}}});
     if(signup.error)throw signup.error;
     if(!signup.data.session){
      setPassword("");setStep(1);
@@ -93,7 +94,7 @@ export default function DriverRegisterPage(){
    })});
    const result=await response.json();if(!response.ok)throw Error(result.error||"Driver application unavailable.");
    // Only show success after the backend confirms the database write.
-   setSaved(true);setPassword("");try{sessionStorage.removeItem(DRAFT_KEY);}catch{}
+   setSaved(true);setPassword("");try{sessionStorage.removeItem(DRAFT_KEY);localStorage.removeItem(DRAFT_KEY);}catch{}
    setMessage("Application Submitted Successfully. Your application is pending Admin approval. Pending Admin Approval.");
   }catch(error){
    const detail=error instanceof Error?error.message:"Application unavailable.";
