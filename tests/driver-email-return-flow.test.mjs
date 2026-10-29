@@ -34,4 +34,5 @@ test("confirmed drivers without an application may resume and cannot access othe
  const apply=r("app/api/driver/apply/route.ts");
  assert.match(apply,/approval_status:"pending"/);
  assert.match(apply,/availability:"offline"/);
+ assert.match(apply,/if\(!user.email_confirmed_at\)/);
 });
