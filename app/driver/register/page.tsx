@@ -24,7 +24,7 @@ export default function DriverRegisterPage(){
  useEffect(()=>{
   try{
    const json=sessionStorage.getItem(DRAFT_KEY)||localStorage.getItem(DRAFT_KEY);
-   if(json){const record=JSON.parse(json) as {updatedAt?:number;details?:Partial<Draft>};const value=record.details; if(value&&typeof record.updatedAt==="number"&&Date.now()-record.updatedAt<DRAFT_TTL){setDraft({...empty,...value,services:Array.isArray(value.services)?value.services.filter(v=>recoveryServices.includes(v as typeof recoveryServices[number])):[]});}else{sessionStorage.removeItem(DRAFT_KEY);localStorage.removeItem(DRAFT_KEY);}}
+   if(json){const record=JSON.parse(json) as {updatedAt?:number;details?:Partial<Draft>;step?:number};const value=record.details; if(value&&typeof record.updatedAt==="number"&&Date.now()-record.updatedAt<DRAFT_TTL){setDraft({...empty,...value,services:Array.isArray(value.services)?value.services.filter(v=>recoveryServices.includes(v as typeof recoveryServices[number])):[]});if(Number.isInteger(record.step)&&record.step!>=1&&record.step!<=4)setStep(record.step!);}else{sessionStorage.removeItem(DRAFT_KEY);localStorage.removeItem(DRAFT_KEY);}}
   }catch{/* Browser storage is optional; no credentials are persisted. */}
   setHydrated(true);
  },[]);
@@ -51,8 +51,8 @@ export default function DriverRegisterPage(){
  useEffect(()=>{fetch("/api/driver/registration-status",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>setDesignPreviewAvailable(data?.designPreviewEnabled===true)).catch(()=>{});},[]);
  useEffect(()=>{
   if(!hydrated||saved)return;
-  try{const value=JSON.stringify({updatedAt:Date.now(),details:draft});sessionStorage.setItem(DRAFT_KEY,value);localStorage.setItem(DRAFT_KEY,value);}catch{/* Safe fallback: current in-memory state remains. */}
- },[draft,hydrated,saved]);
+  try{const value=JSON.stringify({updatedAt:Date.now(),details:draft,step});sessionStorage.setItem(DRAFT_KEY,value);localStorage.setItem(DRAFT_KEY,value);}catch{/* Safe fallback: current in-memory state remains. */}
+ },[draft,step,hydrated,saved]);
  function validationError(stage:number):string|null{
   if(stage===1){
    if(draft.fullName.trim().length<2)return "Enter your full name (at least 2 characters).";
