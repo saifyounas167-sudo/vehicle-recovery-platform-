@@ -16,6 +16,7 @@ export async function POST(req:Request){
   const auth=await createClient();
   const {data:{user},error:authError}=await auth.auth.getUser();
   if(authError||!user)return error("Verified email sign-in required",401);
+  if(!user.email_confirmed_at)return error("Confirm your email before submitting a Driver application",403);
   const b=await req.json() as Record<string,unknown>;
   const name=typeof b.fullName==="string"?b.fullName.trim():"",phone=typeof b.phone==="string"?b.phone.replace(/[\s-]/g,""):"",company=typeof b.companyName==="string"?b.companyName.trim():"",truck=typeof b.truckType==="string"?b.truckType.trim():"",pc=typeof b.coveragePostcode==="string"?b.coveragePostcode.trim().toUpperCase():"";
   const radius=Number(b.coverageRadiusMiles),services=b.services;
