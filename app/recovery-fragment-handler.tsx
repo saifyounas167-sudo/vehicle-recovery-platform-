@@ -13,11 +13,12 @@ export default function RecoveryFragmentHandler(){
   const values=new URLSearchParams(raw.slice(1));
   const hasCredentials=values.has("access_token")||values.has("refresh_token");
   const recovery=values.get("type")==="recovery";
+  const driverSignup=values.get("type")==="signup"&&window.location.pathname==="/driver/register"&&new URLSearchParams(window.location.search).get("confirm")==="driver";
   const hasError=values.has("error")||values.has("error_code");
   if(!hasCredentials&&!hasError)return;
   // Remove tokens immediately, before async work. URL path is trusted same origin.
   window.history.replaceState(window.history.state,"",window.location.pathname+window.location.search);
-  if(!recovery&&!hasError)return;
+  if(!recovery&&!driverSignup&&!hasError)return;
   if(hasError||!hasCredentials){
    window.location.replace("/login?role=customer&reason=expired_link");
    return;
@@ -35,7 +36,8 @@ export default function RecoveryFragmentHandler(){
     const {data:{user},error:userError}=await client.auth.getUser();
     if(userError||!user)throw Error("Recovery session not verified");
     const {data:profile,error:profileError}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();
-    if(profileError||!profile||!["customer","driver","admin"].includes(profile.role))throw Error("Account role not verified");
+    if(profileError||(driverSignup?(profile&&profile.role!=="driver"||!user.email_confirmed_at):(!profile||!["customer","driver","admin"].includes(profile.role))))throw Error("Account role not verified");
+    if(driverSignup){window.location.replace("/driver/register");return;}
     // Role is derived only from the verified account, never the URL fragment.
     window.location.replace("/login?role="+profile.role+"&mode=recovery");
    }catch{
