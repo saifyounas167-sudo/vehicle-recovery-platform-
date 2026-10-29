@@ -39,6 +39,7 @@ export default function RecoveryFragmentHandler(){
     if(profileError||(driverSignup?(profile&&profile.role!=="driver"||!user.email_confirmed_at):(!profile||!["customer","driver","admin"].includes(profile.role))))throw Error("Account role not verified");
     if(driverSignup){window.location.replace("/driver/register");return;}
     // Role is derived only from the verified account, never the URL fragment.
+    if(!profile)throw Error("Account role not verified");
     window.location.replace("/login?role="+profile.role+"&mode=recovery");
    }catch{
     try{await createClient().auth.signOut({scope:"local"})}catch{}
