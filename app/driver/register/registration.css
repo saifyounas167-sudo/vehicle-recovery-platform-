@@ -33,3 +33,20 @@
 @media(max-width:600px){.ss8-fields{grid-template-columns:1fr}.ss8-progress small{font-size:9px}.ss8-head{padding:16px 18px}.ss8-body{padding:24px 18px}}
 @media(max-width:430px){.ss8-options{grid-template-columns:1fr}.ss8-progress{gap:4px}.ss8-progress span{padding:10px 3px}.ss8-progress small{font-size:8px}.ss8-controls{gap:8px}}
 @media(max-width:350px){.ss8-body{padding:18px 12px}.ss8-head p{letter-spacing:0}.ss8-progress span{padding:8px 2px}.ss8-progress small{font-size:7px}}
+
+/* Compact Step 2: preserve 44px-friendly hit areas with visually small controls. */
+.ss8-step-two{gap:12px}
+.ss8-step-two .ss8-fields{gap:12px 14px}
+.ss8-step-two .ss8-options{gap:6px 8px;padding:10px 12px}
+.ss8-step-two .ss8-options label{min-height:40px;box-sizing:border-box;padding:7px 9px;gap:8px;font-size:12px;line-height:1.2}
+.ss8-step-two .ss8-options input[type=checkbox]{width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important}
+.ss8-step-two .ss8-additional{grid-column:1/-1;border:1px solid #e0e5e9;border-radius:10px;min-width:0}
+.ss8-step-two .ss8-additional summary{cursor:pointer;padding:12px 14px;font-size:13px;font-weight:750;color:#232c36;list-style:disclosure-closed}
+.ss8-step-two .ss8-additional[open] summary{list-style:disclosure-open}
+.ss8-step-two .ss8-additional summary span{display:block;padding-left:17px;color:#717d89;font-size:11px;font-weight:400;margin-top:2px}
+.ss8-step-two .ss8-additional-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;border-top:1px solid #e8ebee}
+.ss8-step-two .ss8-additional-fields>label{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:700}
+.ss8-step-two .ss8-additional-fields textarea,.ss8-step-two .ss8-additional-fields input{box-sizing:border-box;width:100%;min-width:0}
+.ss8-step-two .ss8-additional summary:focus-visible{outline:2px solid #ff6600;outline-offset:2px}
+@media(max-width:600px){.ss8-step-two .ss8-options{grid-template-columns:repeat(2,minmax(0,1fr))}.ss8-step-two .ss8-additional-fields{grid-template-columns:1fr}}
+@media(max-width:360px){.ss8-step-two .ss8-options{grid-template-columns:1fr}}
