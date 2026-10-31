@@ -1,5 +1,5 @@
 -- STAGING ONLY. Review and apply manually in ozphvosiqbzvkthlppkd; never Production.
--- A verified operator must explicitly approve recovery after checking the Auth signup origin.
+-- Only the exact verified legacy test account may be recovered after Admin review.
 -- This RPC is NEVER callable by ordinary logged-in users.
 BEGIN;
 CREATE OR REPLACE FUNCTION public.ss8_recover_verified_driver_signup(p_user_id uuid)
@@ -11,7 +11,8 @@ BEGIN
     RAISE EXCEPTION 'Service role required' USING ERRCODE = '42501';
   END IF;
   SELECT * INTO v_auth FROM auth.users WHERE id=p_user_id FOR UPDATE;
-  IF NOT FOUND OR v_auth.email_confirmed_at IS NULL
+  IF NOT FOUND OR lower(v_auth.email) <> 'mirpurdigitalmarketing@gmail.com'
+     OR v_auth.email_confirmed_at IS NULL
      OR COALESCE(v_auth.raw_user_meta_data->>'registration_flow','') <> 'driver_application_v1'
   THEN RETURN false; END IF;
   -- Never relabel a Customer account with existing Customer marketplace activity.
