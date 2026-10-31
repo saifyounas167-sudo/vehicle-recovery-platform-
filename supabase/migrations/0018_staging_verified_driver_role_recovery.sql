@@ -15,6 +15,9 @@ BEGIN
      OR v_auth.email_confirmed_at IS NULL
      OR COALESCE(v_auth.raw_user_meta_data->>'registration_flow','') <> 'driver_application_v1'
   THEN RETURN false; END IF;
+  IF to_regclass('public.recovery_jobs') IS NULL OR to_regclass('public.driver_profiles') IS NULL THEN
+    RAISE EXCEPTION 'Marketplace schema incomplete; apply reviewed Staging foundation repair before recovery';
+  END IF;
   -- Never relabel a Customer account with existing Customer marketplace activity.
   IF EXISTS (SELECT 1 FROM public.recovery_jobs WHERE customer_id=p_user_id)
      OR EXISTS (SELECT 1 FROM public.driver_profiles WHERE id=p_user_id)
