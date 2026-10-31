@@ -23,26 +23,23 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.create_customer_profile_on_signup() FROM PUBLIC, anon, authenticated;
+-- Preserve existing auth.users trigger; fail closed if missing, disabled or wrong function.
 DO $$
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_trigger
-    WHERE tgrelid='auth.users'::regclass AND NOT tgisinternal
-      AND tgname <> 'on_auth_user_created_customer'
-      AND (pg_get_triggerdef(oid) ILIKE '%insert%')
-  ) THEN
-    RAISE EXCEPTION 'Existing auth.users INSERT trigger detected: review and reuse before applying';
-  END IF;
+ IF NOT EXISTS (
+  SELECT 1 FROM pg_trigger t
+  JOIN pg_proc p ON p.oid=t.tgfoid
+  JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE t.tgrelid='auth.users'::regclass
+    AND t.tgname='on_auth_user_created_customer'
+    AND t.tgenabled='O' AND NOT t.tgisinternal
+    AND n.nspname='public' AND p.proname='create_customer_profile_on_signup'
+ ) THEN RAISE EXCEPTION 'Expected enabled signup trigger not found; review Staging before proceeding'; END IF;
 END $$;
-DROP TRIGGER IF EXISTS on_auth_user_created_customer ON auth.users;
-CREATE TRIGGER on_auth_user_created_customer
-AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE FUNCTION public.create_customer_profile_on_signup();
 COMMIT;
 -- Verify:
 -- SELECT tgname,tgenabled,pg_get_triggerdef(oid) FROM pg_trigger
 -- WHERE tgrelid='auth.users'::regclass AND NOT tgisinternal;
 -- SELECT proname,prosecdef FROM pg_proc WHERE proname='create_customer_profile_on_signup';
 -- Rollback (review before execution):
--- DROP TRIGGER IF EXISTS on_auth_user_created_customer ON auth.users;
--- DROP FUNCTION IF EXISTS public.create_customer_profile_on_signup();
+-- Restore the previous reviewed function body only. Never remove the trigger.
