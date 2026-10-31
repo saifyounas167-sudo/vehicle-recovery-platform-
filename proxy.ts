@@ -48,7 +48,8 @@ export async function proxy(request:NextRequest){
     "/api/admin/drivers","/api/admin/drivers/document-access"
    ].includes(path);
    const onboardingWrite=method==="POST"&&[
-    "/api/driver/apply","/api/driver/documents","/api/admin/drivers"
+    "/api/driver/apply","/api/driver/documents","/api/admin/drivers",
+    "/api/admin/driver-role-recovery"
    ].includes(path);
    if((onboardingGet||onboardingWrite)&&await isDriverRegistrationEnabled())
     return updateSession(request);
