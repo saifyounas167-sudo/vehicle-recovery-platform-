@@ -56,7 +56,13 @@ export default function LoginForm(){
    window.location.assign("/driver/register");return;
   }
   // Existing customer/admin profiles cannot be converted through Driver login.
-  if(!profile||profile.role!==role){await supabase.auth.signOut({scope:"local"});window.location.assign("/403");return;}
+  if(!profile||profile.role!==role){
+   await supabase.auth.signOut({scope:"local"});
+   setError(!profile
+    ?"This account does not have a portal profile yet. Contact support or finish the correct registration process."
+    :"This account is not registered for the "+role.charAt(0).toUpperCase()+role.slice(1)+" Portal. Please sign in to the correct portal with the matching account.");
+   return;
+  }
   const next=params.get("next");
   const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")&&!next.includes("\\")&&(next===destination[role]||next.startsWith(destination[role]+"/"))?next:destination[role];
   window.location.assign(safeNext);
