@@ -1,3 +1,4 @@
+import {customerMilestoneStagingEnabled} from "@/src/lib/customer-milestone-gate";
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {isDriverRegistrationEnabled} from "@/src/lib/driver-registration-gate";
 import { type NextRequest, NextResponse } from "next/server";
@@ -51,6 +52,8 @@ export async function proxy(request:NextRequest){
     "/api/driver/apply","/api/driver/documents","/api/admin/drivers",
     "/api/admin/driver-role-recovery"
    ].includes(path);
+   if(method==="POST"&&path==="/api/recovery/jobs"&&customerMilestoneStagingEnabled())
+    return updateSession(request);
    if((onboardingGet||onboardingWrite)&&await isDriverRegistrationEnabled())
     return updateSession(request);
    if(!allowedGet&&!allowedEstimate)
