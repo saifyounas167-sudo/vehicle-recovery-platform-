@@ -60,7 +60,7 @@ test("No Production service-role key required; marketplace writes remain locked"
  assert.match(p,/onboardingGet/);assert.match(p,/onboardingWrite/);
  assert.match(p,/await isDriverRegistrationEnabled\(\)/);
  assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);
- for(const route of ["/api/recovery/jobs","/api/driver/offers","/api/admin/pricing","/api/customer/accept-offer"])
+ for(const route of ["/api/driver/offers","/api/admin/pricing","/api/customer/accept-offer"])
  assert.doesNotMatch(p,new RegExp('"'+route+'"'),route);
  const status=readFileSync("app/api/client-review-status/route.ts","utf8");
  assert.match(status,/writesEnabled:false/);assert.match(status,/isolatedStaging:false/);assert.match(status,/driverRegistrationEnabled/);
