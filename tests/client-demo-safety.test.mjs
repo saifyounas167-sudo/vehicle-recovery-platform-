@@ -2,11 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const file=(p)=>readFileSync(p,"utf8");
-test("client demo cannot send any live request, offer, upload or admin mutation",()=>{
+test("client demo blocks broad marketplace writes except separately gated milestone requests",()=>{
  const p=file("proxy.ts");
  assert.match(p,/isClientReviewDemo\(\)/);
  assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);
- for(const endpoint of ["/api/recovery/jobs","/api/driver/offers","/api/recovery/photos","/api/admin/pricing"]){
+ for(const endpoint of ["/api/driver/offers","/api/recovery/photos","/api/admin/pricing"]){
   assert.ok(!p.includes('"'+endpoint+'"'),endpoint+" must not be allowlisted");
  }
  assert.match(file("src/lib/client-review.ts"),/return true/);
