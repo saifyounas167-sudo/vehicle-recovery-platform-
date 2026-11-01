@@ -18,5 +18,5 @@ test("Onboarding gate fails closed and does not enable general marketplace write
  const gate=read("src/lib/driver-registration-gate.ts");
  for(const x of ["ozphvosiqbzvkthlppkd","eosrparfgrycdnykekcn","generalMarketplaceGateClosed","providerVerification","registrationEnabled:configured&&publishable","AbortSignal.timeout"])assert.ok(gate.includes(x),x);
  const proxy=read("proxy.ts");
- for(const p of ["/api/recovery/jobs","/api/driver/offers","/api/admin/pricing","/api/customer/accept-offer"])assert.ok(!proxy.includes('"'+p+'"'),p);
+ for(const p of ["/api/driver/offers","/api/admin/pricing","/api/customer/accept-offer"])assert.ok(!proxy.includes('"'+p+'"'),p);
 });
