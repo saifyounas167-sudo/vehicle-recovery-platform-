@@ -12,7 +12,8 @@ test("Status GET bypasses read-only proxy but marketplace operations remain prot
  assert.match(p,/"\/api\/driver\/registration-status"/);
  assert.match(p,/"\/api\/driver\/registration-diagnostics"/);
  assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);
- assert.doesNotMatch(p,/"\/api\/recovery\/jobs"|"\/api\/driver\/offers"/);
+ assert.match(p,/path==="\/api\/recovery\/jobs"&&customerMilestoneStagingEnabled\(\)/);
+ assert.doesNotMatch(p,/"\/api\/driver\/offers"/);
 });
 test("Diagnostic response is Admin-only and contains no secrets",()=>{
  const p=read("app/api/driver/registration-diagnostics/route.ts");
