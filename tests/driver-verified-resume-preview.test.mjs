@@ -7,7 +7,7 @@ test("Verified Driver missing profile resumes application, existing wrong roles 
  assert.match(login,/role==="driver"&&!profile&&Boolean\(data\.user\.email_confirmed_at\)/);
  assert.match(login,/window\.location\.assign\("\/driver\/register"\)/);
  assert.match(login,/if\(!profile\|\|profile\.role!==role\)/);
- assert.match(login,/window\.location\.assign\("\/403"\)/);
+ assert.match(login,/setError\(!profile/);
 });
 test("Preview cannot submit, is explicitly exited, or overwrite real registration draft",()=>{
  const page=read("app/driver/register/page.tsx");
