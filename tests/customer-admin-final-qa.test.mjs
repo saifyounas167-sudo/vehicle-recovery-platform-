@@ -16,7 +16,7 @@ test("Login checks Supabase profile role and signs out on mismatch",()=>{
   assert.match(login,/from\("profiles"\)\.select\("role"\)/);
   assert.match(login,/!profile\s*\|\|\s*profile\.role\s*!==\s*role/);
   assert.match(login,/signOut\(\{scope:"local"\}\)/);
-  assert.match(login,/window\.location\.assign\("\/403"\)/);
+  assert.match(login,/setError\(!profile/);
 });
 test("Staging-only Customer API requires customer session; Production writes blocked",()=>{
   const api=source("app/api/recovery/jobs/route.ts");
