@@ -6,9 +6,11 @@ test("client demo cannot send any live request, offer, upload or admin mutation"
  const p=file("proxy.ts");
  assert.match(p,/isClientReviewDemo\(\)/);
  assert.match(p,/if\(!allowedGet&&!allowedEstimate\)/);
- for(const endpoint of ["/api/recovery/jobs","/api/driver/offers","/api/recovery/photos","/api/admin/pricing"]){
+ for(const endpoint of ["/api/driver/offers","/api/recovery/photos","/api/admin/pricing"]){
   assert.ok(!p.includes('"'+endpoint+'"'),endpoint+" must not be allowlisted");
  }
+ assert.match(p,/method==="POST"&&path==="\/api\/recovery\/jobs"&&customerMilestoneProductionEnabled\(\)/);
+ assert.match(file("src/lib/customer-production-gate.ts"),/CUSTOMER_ADMIN_PRODUCTION_ENABLED==="enabled"/);
  assert.match(file("src/lib/client-review.ts"),/return true/);
  assert.match(file("src/lib/google-oauth-gate.ts"),/VERCEL_ENV/);
 });

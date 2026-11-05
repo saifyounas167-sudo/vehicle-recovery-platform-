@@ -1,3 +1,4 @@
+import {customerMilestoneProductionEnabled} from "@/src/lib/customer-production-gate";
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {resolvePostcode} from "@/src/lib/open-routing";
 import { NextResponse } from "next/server";
@@ -16,7 +17,7 @@ const bad=(error:string,status=400,diagnosticStage?:string)=>NextResponse.json({
 export async function POST(request:Request){
  try{
   // Hard server guard: direct API calls must not create bookings in client-review mode.
-  if((isClientReviewDemo()&&!isIsolatedMarketplaceStaging())||process.env.VERCEL_ENV==="production")return bad("Live recovery requests are paused for client review",403,"read_only");
+  if(!customerMilestoneProductionEnabled()&&((isClientReviewDemo()&&!isIsolatedMarketplaceStaging())||process.env.VERCEL_ENV==="production"))return bad("Live recovery requests are paused for client review",403,"read_only");
   const type=request.headers.get("content-type")||"";
   if(!type.includes("application/json"))return bad("JSON required",415);
   const length=Number(request.headers.get("content-length")||0);
@@ -47,6 +48,7 @@ export async function POST(request:Request){
   const admin=createAdminClient(url,key,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{"X-Client-Info":"recovery-preview-guest-submission"}}});
   let userId:string|null=null;
   try{const client=await createClient();const {data:{user}}=await client.auth.getUser();if(user){const {data:profile}=await client.from("profiles").select("role").eq("id",user.id).maybeSingle();if(profile?.role!=="customer")return bad("Customer role required",403);userId=user.id;}}catch{console.warn("Optional guest session lookup unavailable; continuing with server-side guest validation");}
+  if(customerMilestoneProductionEnabled()&&!userId)return bad("Verified Customer login required",401);
   const secret=process.env.GUEST_REQUEST_HASH_SECRET;
   if(!secret||secret.length<32)return bad("Guest request protection is not configured",503,"guest_secret");
   const clientIp=request.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()||request.headers.get("cf-connecting-ip")||"unknown";
