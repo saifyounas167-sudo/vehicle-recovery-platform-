@@ -17,7 +17,7 @@ type Values=Record<string,string>;
 const initial:Values={pickupPostcode:"",destinationPostcode:"",destinationMode:"",pickupAddress:"",destinationAddress:"",registration:"",make:"",model:"",vehicleType:"",transmission:"",runningStatus:"",rollingStatus:"",passengerCount:"",lockedWheels:"",damagedWheels:"",accident:"",recoveryType:"",problemDescription:"",timing:"urgent",preferredCollectionTime:"",equipment:"",difficulty:"",customerName:"",phone:"",email:"",contactPreference:"Phone"};
 export default function RecoveryRequestPage(){
  const [clientReview,setClientReview]=useState(true); // Fail closed until the server attests isolated staging.
- useEffect(()=>{let mounted=true;fetch("/api/client-review-status",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(mounted&&d.isolatedStaging===true&&d.writesEnabled===true)setClientReview(false);}).catch(()=>{});return()=>{mounted=false};},[]);
+ useEffect(()=>{let mounted=true;fetch("/api/client-review-status",{cache:"no-store"}).then(r=>r.json()).then(d=>{if(mounted&&(d.isolatedStaging===true||d.customerProductionEnabled===true)&&d.writesEnabled===true)setClientReview(false);}).catch(()=>{});return()=>{mounted=false};},[]);
  const [estimateAttempt,setEstimateAttempt]=useState(0);
  const [scheduleDate,setScheduleDate]=useState("");
  const [scheduleTime,setScheduleTime]=useState("");
