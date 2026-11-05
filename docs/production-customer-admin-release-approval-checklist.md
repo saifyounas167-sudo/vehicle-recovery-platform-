@@ -31,3 +31,19 @@ Target: existing Vercel Production project and existing client URL. Database: `e
 4. Ensure CI (tests, TS, build, security) passes on approved final PR SHA. Obtain explicit merge approval, then merge PR #71 only.
 5. Obtain explicit deployment/activation approval; deploy existing Production Vercel project/URL, enable only Customer/Admin milestone, verify production isolation and route authorization with existing authorized accounts and minimal no-destructive E2E.
 6. Roll back deployment or disable Customer milestone gate if post-release checks fail; do not roll back SQL grants blindly.
+
+## Final audit reconciliation (5 November 2026)
+- CONFIRMED: `authenticated` and `anon` have no `profiles.role` UPDATE privilege; `ss8_guard_profile_identity_trg` is enabled.
+- STILL NOT PROVEN: enabled trigger is not enough to verify its action. The exact `pg_get_functiondef` of the trigger's `tgfoid`, including whether it blocks all unauthorized role changes and permits only trusted service-role actions, is absent from available evidence. Do not assert its logic PASS. Also verify all callable SECURITY DEFINER functions that might update the role.
+- CONFIRMED from reviewed Production policy summaries: assigned Driver job visibility uses `assigned_driver_id=auth.uid()`; approved Drivers see limited `submitted`, `matching`, `offered` statuses. Authenticated SELECT is a table-wide grant filtered by the OR of ALL permissive SELECT RLS policies, so this *preserves and activates* existing Driver read visibility; it does not enable Driver onboarding, matching or billing. Confirm this existing visibility is acceptable before approval.
+- FUNCTION: `current_user_role()` is SECURITY DEFINER and looks up `public.profiles.role` via `auth.uid()`. Source/owner/search_path and EXECUTE privileges should be checked as final runtime security evidence, not inferred just from SECURITY DEFINER.
+
+## Current Production Vercel inventory (variable names/scopes ONLY)
+- `NEXT_PUBLIC_SUPABASE_URL`: Production scope present; value NOT decrypted or verified.
+- `CUSTOMER_ADMIN_PRODUCTION_ENABLED`, `PRODUCTION_SUPABASE_URL`, `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GUEST_REQUEST_HASH_SECRET`: Production-scope entries NOT FOUND as of latest inspection. Preview entries are not substitutes. `CUSTOMER_ADMIN_PRODUCTION_ENABLED` must be the exact string `enabled` only after separate activation approval. Check secrets match the actual Production project without revealing values; no Staging keys in Production.
+- Existing website Production URL and Vercel project must be retained. New environment variables require a deployment to take effect; do not enable prematurely.
+
+## Release stop/go criteria (no Production actions authorized)
+STOP until: actual trigger body and role-RPC escalation reviewed; driver permissive policy exposure accepted; Production-scoped variables configured and identity verified; separately approved Production SQL granted; read-only post-migration checks verified; final SHA CI PASS; explicit merge and deployment approvals. Existing CI PASS is for an earlier SHA; revalidate after any PR edits.
+
+After separate authorizations, order: approve/run minimum service_role SQL; verify; approve/run authenticated SELECT SQL; verify RLS and privacy; configure Production-scoped env with gate disabled; merge reviewed PR; deploy same Production project/client domain with gate disabled; explicitly approve enabling gate and redeploy; perform existing-account Customer submit -> own dashboard -> authorised Admin view and negative cross-role checks; if failed, disable gate/redeploy or revert deployment to prior SHA (never remove grants without impact review).
