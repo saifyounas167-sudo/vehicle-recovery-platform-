@@ -1,6 +1,9 @@
--- READ-ONLY production readiness check; no SQL changes.
--- Run ONLY in Production SQL Editor eosrparfgrycdnykekcn.
--- Inspect every result. This script never modifies data, triggers or privileges.
+-- UK RECOVERY PRODUCTION: ONE READ-ONLY RESULT SET / ONE CSV EXPORT.
+-- Run manually ONLY in Production Supabase eosrparfgrycdnykekcn.
+-- No INSERT/UPDATE/DELETE/DDL, no changes to access, data, or roles.
+-- Rows type=CHECK have passes TRUE/FALSE. REVIEW rows contain definitions for human review;
+-- passes=NULL is NOT a PASS. Do not upload secret data or credentials.
+WITH checks AS (
 SELECT 'profiles id uuid' AS check_name, EXISTS (
  SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='id' AND udt_name='uuid'
 ) AS passes
@@ -48,15 +51,25 @@ UNION ALL SELECT 'signup trigger enabled',EXISTS(
  JOIN pg_namespace n ON n.oid=p.pronamespace WHERE t.tgrelid='auth.users'::regclass
  AND t.tgname='on_auth_user_created_customer' AND t.tgenabled='O' AND NOT t.tgisinternal
  AND n.nspname='public' AND p.proname='create_customer_profile_on_signup')
-ORDER BY check_name;
-
--- Review exact RLS policy predicates and live trigger definitions manually.
-SELECT schemaname,tablename,policyname,roles,cmd,qual,with_check
-FROM pg_policies WHERE schemaname='public' AND tablename IN
-('profiles','recovery_jobs','recovery_job_private_contacts','recovery_request_rate_limits')
-ORDER BY tablename,policyname;
-SELECT t.tgname,t.tgenabled,pg_get_triggerdef(t.oid) AS definition
-FROM pg_trigger t WHERE t.tgrelid='auth.users'::regclass AND NOT t.tgisinternal;
-SELECT p.proname,p.prosecdef,p.proconfig,pg_get_functiondef(p.oid) AS definition
-FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-WHERE n.nspname='public' AND p.proname IN ('allow_recovery_request','create_customer_profile_on_signup');
+),
+report AS (
+ SELECT 'CHECK'::text AS row_type,check_name,passes,NULL::text AS details FROM checks
+ UNION ALL
+ SELECT 'REVIEW','rls policy: '||tablename||' / '||policyname,NULL::boolean,
+  jsonb_build_object('roles',roles,'cmd',cmd,'using',qual,'with_check',with_check)::text
+ FROM pg_policies WHERE schemaname='public'
+ AND tablename IN ('profiles','recovery_jobs','recovery_job_private_contacts','recovery_request_rate_limits')
+ UNION ALL
+ SELECT 'REVIEW','auth trigger: '||t.tgname,NULL::boolean,
+  jsonb_build_object('enabled',t.tgenabled,'definition',pg_get_triggerdef(t.oid))::text
+ FROM pg_trigger t WHERE t.tgrelid='auth.users'::regclass AND NOT t.tgisinternal
+ UNION ALL
+ SELECT 'REVIEW','function: '||p.proname,NULL::boolean,
+  jsonb_build_object('security_definer',p.prosecdef,'config',p.proconfig,
+   'definition',pg_get_functiondef(p.oid))::text
+ FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname='public'
+ AND p.proname IN ('allow_recovery_request','create_customer_profile_on_signup')
+)
+SELECT row_type,check_name,passes,details FROM report
+ORDER BY CASE WHEN row_type='CHECK' THEN 0 ELSE 1 END,check_name;
