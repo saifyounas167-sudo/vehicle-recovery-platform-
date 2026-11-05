@@ -1,3 +1,4 @@
+import {customerMilestoneProductionEnabled} from "@/src/lib/customer-production-gate";
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
@@ -17,6 +18,8 @@ export async function proxy(request:NextRequest){
    const allowedEstimate=method==="POST" && [
     "/api/recovery/open-estimate","/api/recovery/estimate"
    ].includes(path);
+   if(method==="POST"&&path==="/api/recovery/jobs"&&customerMilestoneProductionEnabled())
+    return updateSession(request);
    if(!allowedGet&&!allowedEstimate)
     return NextResponse.json({error:"Client demo only. Live marketplace operations are paused.",clientDemo:true},
      {status:503,headers:{"Cache-Control":"no-store"}});
