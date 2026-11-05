@@ -46,6 +46,19 @@ UNION ALL SELECT 'service role rate limit insert',has_table_privilege('service_r
 UNION ALL SELECT 'service role rate limit sequence usage',has_sequence_privilege('service_role','public.recovery_request_rate_limits_id_seq','USAGE')
 UNION ALL SELECT 'service role rate limit execute',has_function_privilege('service_role','public.allow_recovery_request(text)','EXECUTE')
 UNION ALL SELECT 'authenticated no rate limit execute',NOT has_function_privilege('authenticated','public.allow_recovery_request(text)','EXECUTE')
+UNION ALL SELECT 'service role jobs select',has_table_privilege('service_role','public.recovery_jobs','SELECT')
+UNION ALL SELECT 'service role jobs delete',has_table_privilege('service_role','public.recovery_jobs','DELETE')
+UNION ALL SELECT 'service role contacts select',has_table_privilege('service_role','public.recovery_job_private_contacts','SELECT')
+UNION ALL SELECT 'service role contacts delete',has_table_privilege('service_role','public.recovery_job_private_contacts','DELETE')
+UNION ALL SELECT 'authenticated jobs select',has_table_privilege('authenticated','public.recovery_jobs','SELECT')
+UNION ALL SELECT 'authenticated profiles select',has_table_privilege('authenticated','public.profiles','SELECT')
+UNION ALL SELECT 'anon contacts insert denied',NOT has_table_privilege('anon','public.recovery_job_private_contacts','INSERT')
+UNION ALL SELECT 'authenticated contacts insert denied',NOT has_table_privilege('authenticated','public.recovery_job_private_contacts','INSERT')
+UNION ALL SELECT 'anon contacts delete denied',NOT has_table_privilege('anon','public.recovery_job_private_contacts','DELETE')
+UNION ALL SELECT 'authenticated contacts delete denied',NOT has_table_privilege('authenticated','public.recovery_job_private_contacts','DELETE')
+UNION ALL SELECT 'anon rate-limit execute denied',NOT has_function_privilege('anon','public.allow_recovery_request(text)','EXECUTE')
+UNION ALL SELECT 'signup function SECURITY DEFINER', EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON p.pronamespace=n.oid WHERE n.nspname='public' AND p.proname='create_customer_profile_on_signup' AND p.prosecdef)
+UNION ALL SELECT 'signup function flow guard', EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON p.pronamespace=n.oid WHERE n.nspname='public' AND p.proname='create_customer_profile_on_signup' AND pg_get_functiondef(p.oid) LIKE '%customer_public_v1%')
 UNION ALL SELECT 'signup trigger enabled',EXISTS(
  SELECT 1 FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid
  JOIN pg_namespace n ON n.oid=p.pronamespace WHERE t.tgrelid='auth.users'::regclass
@@ -59,6 +72,11 @@ report AS (
   jsonb_build_object('roles',roles,'cmd',cmd,'using',qual,'with_check',with_check)::text
  FROM pg_policies WHERE schemaname='public'
  AND tablename IN ('profiles','recovery_jobs','recovery_job_private_contacts','recovery_request_rate_limits')
+ UNION ALL
+ SELECT 'REVIEW','rls table: '||c.relname,NULL::boolean,
+  jsonb_build_object('rls_enabled',c.relrowsecurity,'force_rls',c.relforcerowsecurity)::text
+ FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='public' AND c.relname IN ('profiles','recovery_jobs','recovery_job_private_contacts','recovery_request_rate_limits')
  UNION ALL
  SELECT 'REVIEW','auth trigger: '||t.tgname,NULL::boolean,
   jsonb_build_object('enabled',t.tgenabled,'definition',pg_get_triggerdef(t.oid))::text
