@@ -1,0 +1,20 @@
+-- DRAFT ONLY — NOT APPROVED, DO NOT EXECUTE.
+-- Customer/Admin authenticated SELECT grants must follow manual review of the
+-- 13 Production policy records. The Production policy predicates are NOT yet
+-- available here, so neither grant is authorized by the current audit.
+--
+-- Expected access requirements:
+-- public.profiles: signed-in user can read ONLY their own profile (id=auth.uid()).
+-- public.recovery_jobs: customer can read ONLY own rows (customer_id=auth.uid());
+-- existing authorized admin role may read jobs; never permit all authenticated
+-- users to read all rows. SELECT must also be backed by matching enabled RLS.
+-- public.recovery_job_private_contacts: NO authenticated SELECT.
+--
+-- After inspecting exact Production pg_policies expressions, prepare a separate
+-- approval-specific migration with explicit predicate compatibility guards.
+-- Candidate grants (INTENTIONALLY COMMENTED AND INERT):
+-- GRANT SELECT ON TABLE public.profiles TO authenticated;
+-- GRANT SELECT ON TABLE public.recovery_jobs TO authenticated;
+--
+-- DO NOT uncomment without verified Production RLS and explicit approval.
+SELECT 'BLOCKED — Production pg_policies definitions and explicit approval required'::text AS release_status;
