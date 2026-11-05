@@ -25,9 +25,13 @@ test("Submission UI only opens with attested status and Admin jobs retain RLS gu
  assert.match(a,/requireRole\("admin"\)/);
  assert.match(a,/from\("recovery_jobs"\)/);
 });
-test("Production migration grants only INSERT and does not alter RLS or other roles",()=>{
+test("Production migration grants exact service-role permissions without RLS or public grants",()=>{
  const sql=read("supabase/migrations/production_customer_admin_service_role_insert_APPROVAL_REQUIRED.sql");
- assert.match(sql,/GRANT INSERT ON TABLE public\.recovery_jobs TO service_role/);
+ assert.match(sql,/GRANT SELECT, INSERT, DELETE ON TABLE public\.recovery_jobs TO service_role/);
  assert.match(sql,/GRANT INSERT ON TABLE public\.recovery_job_private_contacts TO service_role/);
+ assert.doesNotMatch(sql,/GRANT (?:SELECT|DELETE)[^;]*public\.recovery_job_private_contacts TO service_role/i);
+ assert.match(sql,/BEGIN;/);
+ assert.match(sql,/DO \$verify\$/);
+ assert.match(sql,/COMMIT;/);
  assert.doesNotMatch(sql,/DISABLE ROW LEVEL SECURITY|GRANT .* TO authenticated|GRANT .* TO anon|UPDATE |DELETE FROM/i);
 });
