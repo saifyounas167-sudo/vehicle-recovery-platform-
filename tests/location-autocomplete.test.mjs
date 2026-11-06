@@ -14,11 +14,12 @@ test("client quote CTA opens the existing form with its pickup and drop-off auto
   assert.ok(customer.includes('UkLocationSearch label="Pickup Location"'));
   assert.ok(customer.includes('UkLocationSearch label="Drop-off Location"'));
 });
-test("city search keeps exact postcode confirmation in existing recovery form",()=>{
+test("single-location search still requires complete UK postcode without extra fields",()=>{
   assert.match(customer,/pickupLocation/);
   assert.match(customer,/destinationLocation/);
-  assert.match(customer,/Confirm complete UK pickup postcode/);
-  assert.ok(customer.includes("Confirm UK destination postcode"));
+  assert.doesNotMatch(customer,/field\("pickupPostcode"/);
+  assert.doesNotMatch(customer,/field\("destinationPostcode"/);
+  assert.match(customer,/A complete destination postcode is enough/);
   assert.match(customer,/postcode\.test\(v\.pickupPostcode\.trim\(\)\)/);
 });
 test("autocomplete supports keyboard, safe suggestion selection and debounced requests",()=>{
