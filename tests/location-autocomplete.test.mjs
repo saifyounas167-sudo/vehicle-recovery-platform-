@@ -20,7 +20,7 @@ test("single-location search still requires complete UK postcode without extra f
   assert.doesNotMatch(customer,/field\("pickupPostcode"/);
   assert.doesNotMatch(customer,/field\("destinationPostcode"/);
   assert.match(customer,/A complete destination postcode is enough/);
-  assert.match(customer,/postcode\.test\(v\.pickupPostcode\.trim\(\)\)/);
+  assert.match(customer,/checkPostcode\(v\.pickupPostcode,"pickup"\)/);
 });
 test("autocomplete supports keyboard, safe suggestion selection and debounced requests",()=>{
   assert.match(component,/role="combobox"/);
