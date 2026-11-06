@@ -22,7 +22,7 @@ export function validateRecoveryDetails(input:Record<string,unknown>):string|nul
  const service=value(input.recoveryType),rule=getServiceRules(service);
  if(!rule)return "Choose a recovery service.";
  if(!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(value(input.pickupPostcode)))return "Enter a valid UK pickup postcode.";
- if(!value(input.pickupAddress))return "Confirm the pickup street/address or nearest landmark.";
+ // Exact address is optional; a verified complete UK postcode is the minimum location identifier.
  if(rule.destination==="choice"&&!["transport","Roadside Assistance Without Transport"].includes(value(input.destinationMode)))return "Choose roadside assistance or vehicle transport.";
  if(requiresDestination(service,value(input.destinationMode))&&!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(value(input.destinationPostcode)))return "Enter a valid UK destination postcode.";
  if(value(input.destinationPostcode)&&!/^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i.test(value(input.destinationPostcode)))return "Enter a valid UK destination postcode.";
