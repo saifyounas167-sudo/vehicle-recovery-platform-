@@ -110,14 +110,15 @@ export default function RecoveryRequestPage(){
  function selectLocation(kind:"pickup"|"destination",item:UkLocationSuggestion){
   if(kind==="pickup"){
    setPickupSearch(item.label);
-   if(item.postcode&&(item.kind==="building"||item.kind==="amenity"))setPickupOpen(false);
-   setV(s=>({...s,pickupPostcode:item.postcode||"",pickupAddress:item.kind==="building"||item.kind==="amenity"?item.label:""}));
+   setShowPickupAddressEdit(false);
+   // Never treat a postcode centroid as a precise street address.
+   setV(s=>({...s,pickupPostcode:item.postcode||"",pickupAddress:item.postcode&&["building","amenity","street"].includes(item.kind)?item.label:""}));
   }else{
    setDestinationSearch(item.label);
-   if(item.postcode&&(item.kind==="building"||item.kind==="amenity"))setDropoffOpen(false);
-   setV(s=>({...s,destinationPostcode:item.postcode||"",destinationAddress:item.kind==="building"||item.kind==="amenity"?item.label:""}));
+   setShowDestinationAddressEdit(false);
+   setV(s=>({...s,destinationPostcode:item.postcode||"",destinationAddress:item.postcode&&["building","amenity","street"].includes(item.kind)?item.label:""}));
   }
-  setError("");setPostcodeStatus(item.postcode?"Postcode selected. Choose a precise address if listed, or add an address/landmark manually.":"Location selected. Enter the full postcode and address or landmark.");
+  setError("");setPostcodeStatus(item.postcode?"Postcode selected. Add a precise address/landmark only if needed; the postcode alone can be submitted.":"This suggestion has no full postcode. Enter a complete UK postcode in the same search field.");
  }
  function locationTyped(kind:"pickup"|"destination",text:string){
   setError("");
@@ -157,13 +158,13 @@ export default function RecoveryRequestPage(){
     return false;
    }
    if(!response.ok||data.valid!==true){
-    setPostcodeStatus(which+" postcode verification service is temporarily unavailable. You can confirm your exact address manually.");
+    setPostcodeStatus(which+" postcode verification is unavailable. You can add an optional address/landmark; the full postcode is still required.");
     return null;
    }
-   setPostcodeStatus(which+" postcode confirmed: "+data.postcode+". Please confirm your full street address.");
+   setPostcodeStatus(which+" postcode confirmed: "+data.postcode+". Exact street address is optional.");
    return true;
   }catch{
-   setPostcodeStatus(which+" postcode lookup is temporarily unavailable. Check your postcode and address manually.");
+   setPostcodeStatus(which+" postcode lookup is temporarily unavailable. Please check the entered postcode.");
    return null;
   }
  }
@@ -182,11 +183,11 @@ export default function RecoveryRequestPage(){
   if(pickupCheck===false){setPickupOpen(true);setError("Pickup postcode is invalid or not found. Please correct it.");return;}
   if(transport&&v.destinationPostcode){const destinationCheck=await checkPostcode(v.destinationPostcode,"destination");if(destinationCheck===false){setDropoffOpen(true);setError("Destination postcode is invalid or not found. Please correct it.");return;}}
   // A lookup outage is not a rejection: retain the manually confirmed postcode/address.
-  if(pickupCheck===null)setPostcodeStatus("Postcode service unavailable. Your manually entered pickup address will be used for this demo preview.");
+  if(pickupCheck===null)setPostcodeStatus("Postcode lookup unavailable. The entered postcode is retained; no exact street address has been assumed.");
   navigateStep(4);window.scrollTo(0,0);
  }
  function back(){navigateStep(0);}
- function locate(){if(!navigator.geolocation){setGps("GPS unavailable. Enter a postcode manually.");return;}setGps("Finding your location…");navigator.geolocation.getCurrentPosition(async ({coords})=>{try{const response=await fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude);const data=await response.json();if(!response.ok)throw new Error();setV(s=>({...s,pickupPostcode:data.postcode,pickupAddress:""}));setPickupSearch(data.postcode);setGps("Nearest postcode found: "+data.postcode+". Please confirm your exact pickup address.");}catch{setGps("GPS postcode lookup unavailable. Enter postcode manually.");}},()=>setGps("Location permission unavailable. Enter postcode manually."));}
+ function locate(){if(!navigator.geolocation){setGps("GPS unavailable. Enter a postcode manually.");return;}setGps("Finding your location…");navigator.geolocation.getCurrentPosition(async ({coords})=>{try{const response=await fetch("/api/recovery/postcode?lat="+coords.latitude+"&lng="+coords.longitude);const data=await response.json();if(!response.ok)throw new Error();setV(s=>({...s,pickupPostcode:data.postcode,pickupAddress:""}));setPickupSearch(data.postcode);setGps("Nearest postcode found: "+data.postcode+". Check this is the correct pickup postcode; street address is optional.");}catch{setGps("GPS postcode lookup unavailable. Enter postcode manually.");}},()=>setGps("Location permission unavailable. Enter postcode manually."));}
  async function submit(){setError("");setBusy(true);try{const res=await fetch("/api/recovery/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...v,website,urgent:v.timing==="urgent"})});const result=await res.json();if(!res.ok)throw new Error(result.error||"Request could not be posted.");setDone(result.job);if(result.guestAccess)setGuestAccess(result.guestAccess);if(photos.length&&result.photoUpload){let count=0;for(const photo of photos){if(photo.size>5242880)continue;const form=new FormData();form.set("jobId",result.photoUpload.jobId);form.set("reference",result.photoUpload.reference);form.set("token",result.photoUpload.token);form.set("photo",photo);const response=await fetch("/api/recovery/photos",{method:"POST",body:form});if(response.ok)count++;}setUploadStatus(count+" of "+photos.length+" photos uploaded.");}}catch(e){setError(e instanceof Error?e.message:"Unable to post request.");}finally{setBusy(false);}}
  return <><PublicHeader/><main className="recovery-v2"><div className="recovery-shell">{done?<section className="recovery-card">{guestAccess?<><CustomerDriverOffers access={guestAccess}/><p className="uk-offers-receipt" role="status">Request submitted · Reference {done.id} · No driver has been automatically selected.</p>{uploadStatus&&<p>{uploadStatus}</p>}</>:<><h1>Recovery request received</h1><p>Reference: <strong>{done.id}</strong></p><p>Status: {done.status}</p><p>Driver offers will be available when your request is accessible.</p>{uploadStatus&&<p>{uploadStatus}</p>}</>}</section>:<>{step===0&&<div className="recovery-heading"><span>UK RECOVERY · CUSTOMER REQUEST</span><h1>Request Recovery</h1><p>Enter your details to explore an estimate and compare independent driver offers when the marketplace launches.</p></div>}<ol className="recovery-progress recovery-demo-progress" aria-label="Client recovery journey">{demoStages.map((name,i)=><li key={name} className={i===(step===4?1:0)?"current":i<(step===4?1:0)?"complete":""}><b>{i+1}</b><span>{name}</span></li>)}</ol>{step===0&&<p className="recovery-detail-progress" role="status">Enter pickup, vehicle, issue and contact details</p>}<section className="recovery-card"><div style={{position:"absolute",left:"-9999px"}} aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></label></div>{step===0&&<div className="recovery-step-label">DETAILS · REQUEST RECOVERY</div>}
  {step===0&&<>
@@ -195,12 +196,13 @@ export default function RecoveryRequestPage(){
   <button type="button" className="recovery-demo-toggle" aria-expanded={pickupOpen} aria-controls="demo-pickup-fields" onClick={()=>setPickupOpen(open=>!open)}><span aria-hidden="true">⌖</span><span>Pickup Location<small>{v.pickupPostcode?(v.pickupAddress?v.pickupPostcode+" · "+v.pickupAddress:v.pickupPostcode):"Enter postcode or use my location"}</small></span><span aria-hidden="true">{pickupOpen?"−":"⌄"}</span></button>
   {pickupOpen&&<div id="demo-pickup-fields" className="recovery-demo-fields">
    <UkLocationSearch label="Pickup Location" value={pickupSearch} required onChange={text=>locationTyped("pickup",text)} onSelect={item=>selectLocation("pickup",item)}/>
-   {Boolean(pickupSearch.trim())&&!postcode.test(v.pickupPostcode.trim())&&field("pickupPostcode","Confirm complete UK pickup postcode",true,"text","e.g. SW1A 1AA")}
-   {v.pickupAddress.trim()&&!showPickupAddressEdit?<div className="recovery-address-summary"><span>Address: {v.pickupAddress}</span><button type="button" onClick={()=>setShowPickupAddressEdit(true)}>Edit address</button></div>:pickupSearch.trim()||v.pickupPostcode?field("pickupAddress","Pickup address or nearest landmark",true):<p className="recovery-help">Enter a pickup postcode or search for an address to begin.</p>}
+   {v.pickupAddress.trim()&&!showPickupAddressEdit
+    ?<div className="recovery-address-summary"><span>Address: {v.pickupAddress}</span><button type="button" onClick={()=>setShowPickupAddressEdit(true)}>Edit address</button></div>
+    :<>{!showPickupAddressEdit&&<button type="button" className="recovery-text-button" onClick={()=>setShowPickupAddressEdit(true)}>+ Add address or nearest landmark (optional)</button>}{showPickupAddressEdit&&field("pickupAddress","Address or nearest landmark (optional)")}</>}
    <button type="button" className="recovery-text-button" onClick={locate}>⌖ Use My Current Location</button>
    {gps&&<p role="status">{gps}</p>}
    {postcodeStatus&&<p role="status">{postcodeStatus}</p>}
-   <p className="recovery-help">If address suggestions are unavailable, enter the postcode and nearest address or landmark manually.</p>
+   <p className="recovery-help">Search or enter a complete UK postcode. Suggestions appear automatically; precise address/landmark is optional.</p>
   </div>}
  </div>
  <div className="recovery-demo-collapsible recovery-location-card">
@@ -208,10 +210,11 @@ export default function RecoveryRequestPage(){
   {dropoffOpen&&<div id="demo-dropoff-fields" className="recovery-demo-fields">
    {!transport&&<p className="recovery-help">A destination is not required for roadside assistance.</p>}
    <UkLocationSearch label="Drop-off Location" value={destinationSearch} required={transport} onChange={text=>locationTyped("destination",text)} onSelect={item=>selectLocation("destination",item)}/>
-   {Boolean(destinationSearch.trim())&&!postcode.test(v.destinationPostcode.trim())&&field("destinationPostcode","Confirm UK destination postcode",transport,"text","e.g. M1 1AA")}
-   {v.destinationAddress.trim()&&!showDestinationAddressEdit?<div className="recovery-address-summary"><span>Destination: {v.destinationAddress}</span><button type="button" onClick={()=>setShowDestinationAddressEdit(true)}>Edit address</button></div>:(destinationSearch.trim()||v.destinationPostcode)&&field("destinationAddress","Drop-off address or nearest landmark (optional)")}
+   {v.destinationAddress.trim()&&!showDestinationAddressEdit
+    ?<div className="recovery-address-summary"><span>Destination: {v.destinationAddress}</span><button type="button" onClick={()=>setShowDestinationAddressEdit(true)}>Edit address</button></div>
+    :<>{!showDestinationAddressEdit&&<button type="button" className="recovery-text-button" onClick={()=>setShowDestinationAddressEdit(true)}>+ Add drop-off address or landmark (optional)</button>}{showDestinationAddressEdit&&field("destinationAddress","Address or landmark (optional)")}</>}
    {postcodeStatus&&<p role="status">{postcodeStatus}</p>}
-   <p className="recovery-help">Enter postcode and an address or landmark manually if autocomplete is unavailable.</p>
+   <p className="recovery-help">A complete destination postcode is enough. Add an address/landmark only if helpful.</p>
   </div>}
  </div>
  </div>

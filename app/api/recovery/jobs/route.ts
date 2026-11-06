@@ -32,7 +32,7 @@ export async function POST(request:Request){
   const service=text(b.recoveryType,100);
   if(!postcode.test(pickup)||!(["transport","Nearest Garage","Roadside Assistance Without Transport"].includes(mode)))return bad("Invalid pickup or destination option");
   if(mode==="transport"&&!postcode.test(destination))return bad("Invalid destination postcode");
-  if(!text(b.pickupAddress,250))return bad("Confirm pickup address or nearest landmark");
+  // Do not invent street addresses. A complete postcode is sufficient when exact address is unavailable.
   if(!services.has(service))return bad("Invalid recovery service");
   // Optional does not mean unchecked: validate any supplied fields without requiring them.
   if(b.transmission&&!["Automatic","Manual"].includes(b.transmission))return bad("Invalid transmission");
