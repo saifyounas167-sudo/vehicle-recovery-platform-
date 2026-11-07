@@ -1,7 +1,10 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 import {validPricingConfig} from "@/src/lib/recovery-pricing";
 export async function PUT(request:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Marketplace writes are paused for client review"},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
  if(Number(request.headers.get("content-length")||0)>8192)return NextResponse.json({error:"Request too large"},{status:413});
  const input=await request.json();if(typeof input.id!=="string"||!/^[0-9a-f-]{36}$/i.test(input.id)||!validPricingConfig(input.ruleConfig))return NextResponse.json({error:"Invalid pricing rules"},{status:400});

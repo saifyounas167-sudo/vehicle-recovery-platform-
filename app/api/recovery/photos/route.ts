@@ -1,7 +1,10 @@
+import {isClientReviewDemo} from "@/src/lib/client-review";
+import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import {NextResponse} from "next/server";
 import {createClient} from "@supabase/supabase-js";
 import {createHmac,timingSafeEqual,randomUUID} from "node:crypto";
 export async function POST(request:Request){
+ if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging())return NextResponse.json({error:"Marketplace writes are paused for client review"},{status:503,headers:{"Cache-Control":"no-store"}});
  try{
   const secret=process.env.GUEST_REQUEST_HASH_SECRET,url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!secret||!url||!key)return NextResponse.json({error:"Upload unavailable"},{status:503});
