@@ -5,7 +5,8 @@ export const dynamic="force-dynamic";
 export async function GET(request:NextRequest){
  const origin=request.nextUrl.origin;
  const kind=request.nextUrl.searchParams.get("type");
- const reason=(message:string)=>NextResponse.redirect(new URL("/login?role=customer&reason="+message,origin));
+ const reason=(message:string)=>NextResponse.redirect(new URL("/login?role=customer&reason="+encodeURIComponent(message),origin));
+ if(request.nextUrl.searchParams.has("error"))return reason("expired_link");
  if(kind!=="signup"&&kind!=="recovery")return reason("invalid_link");
  const env=getSupabaseEnv();if(!env)return reason("auth_unavailable");
  const dest=kind==="recovery"?"/login?role=customer&mode=recovery":"/login?role=customer&reason=verified";

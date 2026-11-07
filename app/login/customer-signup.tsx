@@ -31,8 +31,15 @@ export default function CustomerSignup(){
    }
    setSent(true);
   }catch(e){
-   const m=e instanceof Error?e.message:"Registration unavailable.";
-   setError(/already registered|already exists|user already/i.test(m)?"If this email is already registered, sign in or reset your password.":m);
+   const m=e instanceof Error?e.message:
+    e&&typeof e==="object"&&"message" in e&&typeof e.message==="string"?e.message:"Registration unavailable.";
+   const code=e&&typeof e==="object"&&"code" in e&&typeof e.code==="string"?e.code:"";
+   setError(code==="over_email_send_rate_limit"||/email.*rate limit|rate limit.*email|too many emails/i.test(m)
+    ?"Too many confirmation emails have been requested. Please wait and try again later. If you already confirmed your account, use Sign In."
+    :code==="over_request_rate_limit"||/rate limit exceeded|too many requests/i.test(m)
+    ?"Too many requests. Please wait a few minutes before trying again."
+    :/already registered|already exists|user already/i.test(m)
+    ?"If this email is already registered, sign in or reset your password.":m);
   }finally{setBusy(false)}
  }
  if(sent)return <section className="premium-login-card" aria-live="polite"><div className="premium-login-role">UK RECOVERY · CUSTOMER</div><h1>Check your email</h1><p className="premium-login-intro">If the address is eligible, a verification email will arrive shortly. Open its secure link to finish registration.</p><p className="premium-login-safety">Check spam or junk mail if needed.</p><Link className="premium-login-submit" href="/login?role=customer">Back to Sign In</Link></section>;
