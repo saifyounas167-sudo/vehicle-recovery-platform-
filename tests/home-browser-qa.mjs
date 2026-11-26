@@ -19,6 +19,7 @@ for(const width of widths){
   const cards=page.locator("#services .ukrs-card");
   if(await cards.count()!==10)throw Error("expected exactly ten service cards");
   if(width<=600){const a=await cards.nth(0).boundingBox(),b=await cards.nth(1).boundingBox();if(!a||!b||Math.abs(a.y-b.y)>4||b.x<=a.x)throw Error("two-column mobile service layout missing")}
+  await page.route("**/api/recovery/location-suggest?q=*",async route=>{const q=new URL(route.request().url()).searchParams.get("q")||"";const suggestion=q.toLowerCase().startsWith("man")?{id:"mock-manchester",label:"Manchester, Greater Manchester, United Kingdom",detail:"city",postcode:"M1 1AE",kind:"postcode"}:{id:"mock-birmingham",label:"Birmingham, West Midlands, United Kingdom",detail:"city",postcode:"B1 1AA",kind:"postcode"};await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({suggestions:[suggestion]})});});
   const hero=page.locator(".ukr-hero");
   if(!(await hero.locator(".ukr-btn--primary").isVisible()))throw Error("primary CTA hidden");
   await page.screenshot({path:`qa-screenshots/home-${width}.png`,fullPage:true,animations:"disabled"});
@@ -29,11 +30,42 @@ for(const width of widths){
   if(!(await page.getByText("Details",{exact:true}).first().isVisible()))throw Error("Client demo progress missing");
   await page.goBack({waitUntil:"domcontentloaded"});
   await page.locator(".ukr-title").waitFor();
+  const pickupInput=page.getByRole("combobox",{name:"Pickup Location *"});
+  const dropoffInput=page.getByRole("combobox",{name:"Drop-off Location (optional)"});
+  if(!(await pickupInput.isVisible())||!(await dropoffInput.isVisible()))throw Error("Quick Quote location inputs missing");
+  if(await dropoffInput.getAttribute("required")!==null)throw Error("Quick Quote drop-off must remain optional");
+  const continueQuote=page.getByRole("button",{name:/Continue to Full Quote/});
+  await continueQuote.click();
+  if(!(await page.getByRole("alert").getByText("Please enter your pickup postcode, town or address.").isVisible()))throw Error("Quick Quote pickup validation missing");
+  await pickupInput.fill("Manchester");
+  const pickupOption=page.getByRole("option").filter({hasText:"Manchester"}).first();
+  await pickupOption.waitFor({state:"visible",timeout:10000});
+  const pickupBox=await pickupOption.boundingBox();if(!pickupBox||pickupBox.x<0||pickupBox.x+pickupBox.width>width+2)throw Error("Pickup suggestions outside viewport");
+  await pickupOption.click();
+  await dropoffInput.fill("Birmingham");
+  const dropoffOption=page.getByRole("option").filter({hasText:"Birmingham"}).first();
+  await dropoffOption.waitFor({state:"visible",timeout:10000});
+  const dropoffBox=await dropoffOption.boundingBox();if(!dropoffBox||dropoffBox.x<0||dropoffBox.x+dropoffBox.width>width+2)throw Error("Drop-off suggestions outside viewport");
+  await dropoffOption.click();
+  await continueQuote.click();
+  await page.waitForURL(/\/recovery\/request\?/,{timeout:12000});
+  const handoff=new URL(page.url());
+  if(handoff.searchParams.get("pickup")!=="M1 1AE"||!handoff.searchParams.get("pickupLocation")?.includes("Manchester"))throw Error("Pickup location was not handed to recovery form");
+  if(handoff.searchParams.get("destination")!=="B1 1AA"||!handoff.searchParams.get("destinationLocation")?.includes("Birmingham"))throw Error("Drop-off location was not handed to recovery form");
+  await page.getByRole("heading",{name:"Request Recovery"}).waitFor({state:"visible"});
+  const formPickup=page.getByRole("combobox",{name:"Pickup Location *"});
+  if(await formPickup.inputValue()!=="Manchester, Greater Manchester, United Kingdom")throw Error("Pickup location not prefilled in recovery form");
+  await page.getByRole("button",{name:/Drop-off Location/}).click();
+  const formDropoff=page.getByRole("combobox",{name:"Drop-off Location"});
+  if(await formDropoff.inputValue()!=="Birmingham, West Midlands, United Kingdom")throw Error("Drop-off location not prefilled in recovery form");
+  console.log("PASS Quick Quote handoff viewport",width);
+  await page.goBack({waitUntil:"domcontentloaded"});
+  await page.locator(".ukr-title").waitFor();
   if(width<=430){
    const menu=page.getByRole("button",{name:"Open menu"});
    await menu.click();
    if(await page.getByRole("button",{name:"Close menu"}).getAttribute("aria-expanded")!=="true")throw Error("mobile menu not expanded");
-   await page.getByRole("button",{name:"Close menu"}).click();
+   await page.locator("#public-mobile-menu").getByRole("button",{name:"Close menu"}).click();
   }
   if(await hero.locator('a[href="/recovery/nearby"]').count()!==1)throw Error("nearby CTA route missing");
   if(await hero.locator('a[href="/driver/register"]').count()!==1)throw Error("driver CTA route missing");
