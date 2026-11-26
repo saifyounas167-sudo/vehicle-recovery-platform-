@@ -65,7 +65,7 @@ for(const width of widths){
    const menu=page.getByRole("button",{name:"Open menu"});
    await menu.click();
    if(await page.getByRole("button",{name:"Close menu"}).getAttribute("aria-expanded")!=="true")throw Error("mobile menu not expanded");
-   await page.getByRole("button",{name:"Close menu"}).click();
+   await page.locator("#public-mobile-menu").getByRole("button",{name:"Close menu"}).click();
   }
   if(await hero.locator('a[href="/recovery/nearby"]').count()!==1)throw Error("nearby CTA route missing");
   if(await hero.locator('a[href="/driver/register"]').count()!==1)throw Error("driver CTA route missing");
