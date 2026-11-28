@@ -1,9 +1,18 @@
 import {customerMilestoneProductionEnabled} from "@/src/lib/customer-production-gate";
+import {isProductionAdminActivationEnabled} from "@/src/lib/production-admin-activation";
 import {isIsolatedMarketplaceStaging} from "@/src/lib/marketplace-staging";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isClientReviewDemo } from "@/src/lib/client-review";
 export async function proxy(request:NextRequest){
+ const path=request.nextUrl.pathname, method=request.method;
+ // This is the only write exception: a single-purpose, production-only Admin
+ // activation endpoint. The route repeats Auth, email, token and database checks.
+ if(path==="/api/production/admin-activate"&&method==="POST"){
+  if(!isProductionAdminActivationEnabled())
+   return NextResponse.json({error:"Unavailable"},{status:404,headers:{"Cache-Control":"no-store"}});
+  return updateSession(request);
+ }
  if(isClientReviewDemo()&&!isIsolatedMarketplaceStaging()){
   const path=request.nextUrl.pathname, method=request.method;
   // Prevent Next.js Server Actions and any page-origin POST/PUT/PATCH/DELETE.
